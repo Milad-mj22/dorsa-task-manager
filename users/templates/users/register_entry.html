@@ -1,0 +1,498 @@
+
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+/* -------------------- */
+/* 1. متغیرهای ریشه و فونت */
+/* -------------------- */
+:root {
+    --primary: #4f46e5;   /* بنفش (اصلی) */
+    --success: #22c55e;   /* سبز (ورود) */
+    --info: #3b82f6;      /* آبی (خروج) */
+    --danger: #ef4444;    /* قرمز (خطا) */
+    --warning: #f59e0b;   /* زرد/نارنجی (هشدار) */
+}
+
+/* CSS جدید برای انیمیشن چرخش */
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+.fa-spin-active {
+    animation: fa-spin 1s infinite linear;
+}
+
+
+/* -------------------- */
+/* 2. استایل کارت اصلی (Container) */
+/* -------------------- */
+.card-smart {
+    max-width: 420px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, .95);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, .15);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.logo {
+    width: 80px;
+    margin-bottom: 25px;
+
+}
+
+/* -------------------- */
+/* 3. باکس وضعیت (شامل ساعت) */
+/* -------------------- */
+.status-box {
+    padding: 15px 20px;
+    border-radius: 18px;
+    background: #f0f4ff; /* پس‌زمینه روشن */
+    font-weight: bold;
+    margin-bottom: 30px;
+    border-left: 6px solid var(--primary);
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.status-icon {
+    font-size: 28px;
+    margin-left: 15px;
+}
+
+.status-text-wrapper {
+    flex-grow: 1;
+}
+
+.status-time {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: normal;
+    display: block;
+    margin-top: 4px;
+}
+
+/* -------------------- */
+/* 4. استایل دکمه HOLD با دایره پیشرفت */
+/* -------------------- */
+.hold-wrapper {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: auto;
+}
+
+.hold-btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+/* حالت‌های پویا برای ورود و خروج */
+.mode-entry {
+    background: linear-gradient(135deg, var(--success), #4ade80);
+}
+.mode-exit {
+    background: linear-gradient(135deg, var(--info), #60a5fa);
+}
+
+.hold-btn:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.progress-circle {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    /* استفاده از متغیر --deg برای انیمیشن */
+    background: conic-gradient(rgba(255, 255, 255, 0.7) var(--deg), transparent 0);
+    pointer-events: none;
+}
+
+/* -------------------- */
+/* 5. پیام و بازنشانی */
+/* -------------------- */
+#status-message {
+    margin-top: 30px;
+    font-size: 17px;
+    font-weight: bold;
+    min-height: 25px; /* برای جلوگیری از پرش محتوا */
+    color: #475569;
+}
+
+.refresh {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #fff;
+    border: 2px solid var(--primary);
+    border-radius: 15px;
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+.refresh:hover {
+    background: var(--primary);
+    color: #fff;
+}
+</style>
+
+<div class="card-smart">
+    {% csrf_token %}
+    
+    <img src="{% static SITE_LOGO %}" class="logo" alt="لوگو">
+
+    <div class="status-box">
+        <div class="status-icon" id="current-status-icon">
+            </div>
+        <div class="status-text-wrapper">
+            آخرین وضعیت:
+            <span id="current-status-text">
+                {% if last_status == 'IN' %}
+                **داخل**
+                {% else %}
+                **خروج**
+                {% endif %}
+            </span>
+            <span class="status-time" id="last-action-time">
+                {% if last_time %}
+                در ساعت {{ last_time }}
+                {% else %}
+                (هنوز عملی ثبت نشده است)
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="hold-wrapper">
+        <div class="progress-circle" id="progress-circle"></div>
+        <button id="action-btn" class="hold-btn" disabled>
+            <span id="btn-text">در حال بارگیری...</span>
+        </button>
+    </div>
+
+    <p id="status-message">در حال بارگیری موقعیت...</p>
+
+    <button class="refresh" id="refresh-btn">
+        <i class="fas fa-redo-alt" id="refresh-icon"></i>
+        بازنشانی موقعیت
+    </button>
+</div>
+
+
+<audio id="success-sound" src="{% static 'sounds/success.mp3' %}"></audio>
+<audio id="error-sound" src="{% static 'sounds/error.mp3' %}"></audio>
+
+<script>
+// ---------------------------------
+// متغیرهای اولیه
+// ---------------------------------
+let timer = null;
+let deg = 0;
+let latitude, longitude;
+let allowedLocations = [];
+const HOLD_DURATION = 2000; // 2 ثانیه زمان نگه داشتن
+const INTERVAL = 33;        // نرخ بروزرسانی (تقریباً 30 فریم در ثانیه)
+
+// وضعیت اولیه از جنگو
+let currentStatus = '{{ last_status }}'; // 'IN' یا 'OUT'
+let nextAction = currentStatus === 'IN' ? 'EXIT' : 'ENTRY';
+
+const btn = document.getElementById('action-btn');
+const progress = document.getElementById('progress-circle');
+const msg = document.getElementById('status-message');
+const refreshBtn = document.getElementById('refresh-btn');
+const refreshIcon = document.getElementById('refresh-icon'); // آیکون رفرش
+
+const statusTextEl = document.getElementById('current-status-text');
+const statusIconEl = document.getElementById('current-status-icon');
+const lastTimeEl = document.getElementById('last-action-time');
+const btnTextEl = document.getElementById('btn-text');
+
+// ---------------------------------
+// توابع کاربردی
+// ---------------------------------
+
+/**
+ * محاسبه فاصله بین دو نقطه (فرمول Haversine)
+ */
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // شعاع زمین بر حسب متر
+    const toRad = x => x * Math.PI / 180;
+    
+    const Δlat = toRad(lat2 - lat1);
+    const Δlon = toRad(lon2 - lon1);
+
+    const a = Math.sin(Δlat / 2) * Math.sin(Δlat / 2) +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(Δlon / 2) * Math.sin(Δlon / 2);
+    
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // فاصله بر حسب متر
+}
+
+/**
+ * به‌روزرسانی ظاهر دکمه و باکس وضعیت بر اساس nextAction
+ */
+function updateUIForAction() {
+    // 1. به‌روزرسانی دکمه اصلی
+    btn.classList.remove('mode-entry', 'mode-exit');
+
+    if (nextAction === 'ENTRY') {
+        btnTextEl.innerText = 'برای ورود نگه دارید';
+        btn.classList.add('mode-entry');
+    } else {
+        btnTextEl.innerText = 'برای خروج نگه دارید';
+        btn.classList.add('mode-exit');
+    }
+
+    // 2. به‌روزرسانی آیکون باکس وضعیت
+    statusIconEl.innerHTML = ''; // پاک کردن آیکون قبلی
+    if (currentStatus === 'IN') {
+        statusIconEl.innerHTML = `<i class="fas fa-door-open" style="color:var(--success)"></i>`;
+    } else {
+        statusIconEl.innerHTML = `<i class="fas fa-door-closed" style="color:var(--info)"></i>`;
+    }
+}
+
+/**
+ * چک کردن موقعیت مکانی کاربر
+ */
+function checkLocation(lat, lon) {
+    if (!lat || !lon) return false;
+    
+    return allowedLocations.some(l => {
+        const distance = getDistance(lat, lon, l.latitude, l.longitude);
+        return distance <= l.radius;
+    });
+}
+
+/**
+ * دریافت موقعیت فعلی کاربر
+ */
+function getLocation() {
+    msg.innerHTML = "در حال دریافت موقعیت شما <i class='fas fa-map-marker-alt fa-shake'></i>";
+    refreshBtn.disabled = true;
+    btn.disabled = true;
+    
+    // **شروع انیمیشن چرخش**
+    refreshIcon.classList.add('fa-spin-active'); 
+
+    if (!navigator.geolocation) {
+        msg.textContent = "Geolocation توسط مرورگر پشتیبانی نمی‌شود. ❌";
+        msg.style.color = 'var(--danger)';
+        refreshBtn.disabled = false;
+        refreshIcon.classList.remove('fa-spin-active'); // توقف انیمیشن
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        (p) => {
+            latitude = p.coords.latitude;
+            longitude = p.coords.longitude;
+
+            if (checkLocation(latitude, longitude)) {
+                msg.innerHTML = "موقعیت تأیید شد. آماده ثبت اقدام. <i class='fas fa-check-circle'></i>";
+                msg.style.color = 'var(--success)';
+                btn.disabled = false;
+            } else {
+                msg.innerHTML = "خروج از محدوده مجاز. <i class='fas fa-exclamation-triangle'></i>";
+                msg.style.color = 'var(--danger)';
+                btn.disabled = true;
+            }
+            refreshBtn.disabled = false;
+            refreshIcon.classList.remove('fa-spin-active'); // توقف انیمیشن
+        },
+        (error) => {
+            console.error("Geolocation Error:", error);
+            msg.innerHTML = "خطا در دریافت موقعیت. دسترسی موقعیت مکانی را بررسی کنید. <i class='fas fa-times-circle'></i>";
+            msg.style.color = 'var(--danger)';
+            refreshBtn.disabled = false;
+            btn.disabled = true;
+            refreshIcon.classList.remove('fa-spin-active'); // توقف انیمیشن
+        },
+        { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 }
+    );
+}
+
+// ---------------------------------
+// مدیریت رویداد نگه داشتن دکمه (شروع)
+// این تابع برای هر دو رویداد 'mousedown' و 'touchstart' استفاده می‌شود.
+// ---------------------------------
+function startHold(e) {
+    // جلوگیری از اجرای رویداد ماوس پس از تاچ در دستگاه‌های هیبریدی
+    if (e.type === 'mousedown' && e.pointerType === 'touch') return;
+    if (btn.disabled) return; 
+
+    // برای تاچ‌ها، از رفتار پیش‌فرض (مثل اسکرول) جلوگیری می‌کند
+    e.preventDefault(); 
+    
+    // اگر تایمر قبلی وجود دارد، آن را پاک کنید تا از تکرار جلوگیری شود
+    if (timer) clearInterval(timer);
+
+    deg = 0;
+    progress.style.setProperty('--deg', '0deg');
+    msg.innerText = 'دکمه را نگه دارید...';
+    btnTextEl.innerText = '...';
+    
+    // مقدار افزایش زاویه در هر تکرار
+    const angleIncrease = (360 / HOLD_DURATION) * INTERVAL; 
+
+    timer = setInterval(() => {
+        deg += angleIncrease; 
+        
+        if (deg >= 360) {
+            clearInterval(timer);
+            btn.disabled = true; 
+            sendData(); // ارسال داده به سرور
+        } else {
+            progress.style.setProperty('--deg', deg + 'deg');
+        }
+    }, INTERVAL); 
+}
+
+// ---------------------------------
+// مدیریت رویداد نگه داشتن دکمه (پایان/لغو)
+// این تابع برای همه رویدادهای رها کردن استفاده می‌شود.
+// ---------------------------------
+function endHold() {
+    if (timer) {
+        clearInterval(timer);
+        // اگر کامل نشده است، پیشرفت را ریست کن و پیام را برگردان
+        if (deg < 360) { 
+             progress.style.setProperty('--deg', '0deg');
+             if (!btn.disabled) {
+                msg.innerHTML = "موقعیت تأیید شد. آماده ثبت اقدام. <i class='fas fa-check-circle'></i>";
+                btnTextEl.innerText = nextAction === 'ENTRY' ? 'برای ورود نگه دارید' : 'برای خروج نگه دارید';
+             }
+        }
+    }
+}
+
+// **اضافه کردن شنونده‌های رویداد برای دسکتاپ و موبایل**
+
+// شروع (Start)
+btn.addEventListener('mousedown', startHold);
+btn.addEventListener('touchstart', startHold, { passive: false }); // { passive: false } برای جلوگیری از اسکرول ضروری است
+
+// پایان (End/Cancel)
+['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(e => {
+    btn.addEventListener(e, endHold);
+});
+
+
+// ---------------------------------
+// ارسال داده به سرور و به‌روزرسانی UI
+// ---------------------------------
+
+function sendData() {
+    msg.innerHTML = `در حال ثبت **${nextAction === 'ENTRY' ? 'ورود' : 'خروج'}**... <i class='fas fa-spinner fa-spin'></i>`;
+    msg.style.color = 'var(--primary)';
+
+    fetch('/profile/{{ user.id }}/register_entry/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            latitude,
+            longitude,
+            action: nextAction
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        msg.innerHTML = d.message;
+        msg.style.color = d.success ? 'var(--success)' : 'var(--danger)';
+        
+        if (d.success) {
+            // **لرزش موفقیت (پالس کوتاه)**
+            if (navigator.vibrate) navigator.vibrate(100); 
+            
+            currentStatus = nextAction === 'ENTRY' ? 'IN' : 'OUT';
+            nextAction = currentStatus === 'IN' ? 'EXIT' : 'ENTRY';
+            
+            updateUIForAction();
+            
+            statusTextEl.innerHTML = currentStatus === 'IN' ? '**داخل**' : '**خروج**';
+
+            if (d.time) {
+                lastTimeEl.innerText = `در ساعت ${d.time}`;
+            }
+
+        } else {
+             // **لرزش خطا (دو پالس کوتاه)**
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
+            
+            btn.disabled = false;
+        }
+
+        progress.style.setProperty('--deg', '0deg');
+        if (checkLocation(latitude, longitude) && !btn.disabled) {
+             btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error("Fetch Error:", error);
+        msg.innerHTML = `خطای شبکه یا سرور. لطفا دوباره تلاش کنید. <i class='fas fa-bug'></i>`;
+        msg.style.color = 'var(--danger)';
+        
+        // لرزش خطا در صورت عدم توانایی برقراری ارتباط
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        
+        btn.disabled = false; 
+        updateUIForAction();
+    });
+}
+
+// ---------------------------------
+// شروع
+// ---------------------------------
+updateUIForAction(); 
+
+function init() {
+    fetch('/get_allowed_locations/')
+    .then(r => r.json())
+    .then(d => {
+        allowedLocations = d.locations || []; 
+        getLocation();
+    })
+    .catch(error => {
+        msg.innerHTML = "خطا در دریافت مکان‌های مجاز. ❌";
+        msg.style.color = 'var(--danger)';
+        refreshBtn.disabled = false;
+    });
+}
+
+window.onload = init;
+document.getElementById('refresh-btn').onclick = getLocation;
+</script>
+
+{% endblock %}

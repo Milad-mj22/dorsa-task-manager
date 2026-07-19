@@ -1,0 +1,147 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrap py-5" dir="rtl" lang="fa">
+  <div class="container" style="text-align: right;">
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+
+        <!-- Card -->
+        <div class="card modern-card border-0">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+              <div class="icon-circle mb-3">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </div>
+              <h2 class="h4 fw-bold text-dark mb-1">{{ title }}</h2>
+              <div class="text-muted small">
+                اطلاعات ماده اولیه مادر را وارد یا ویرایش کنید
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form method="post" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+
+              <div class="form-wrap">
+                {{ form.as_p }}
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                <a href="{% url 'mother_material_list' %}" class="btn btn-light btn-modern btn-soft">
+                  <i class="fa-solid fa-arrow-right ms-1"></i>
+                  بازگشت
+                </a>
+
+                <button type="submit" class="btn btn-success btn-modern px-4">
+                  <i class="fa-solid fa-check ms-1"></i>
+                  ذخیره
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+        <!-- /Card -->
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+    --shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  /* Page bg */
+  .page-wrap{
+    background:
+      radial-gradient(1000px 500px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  /* Card */
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: var(--shadow);
+  }
+
+  /* Header icon */
+  .icon-circle{
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(79,70,229,.12);
+    border: 1px solid rgba(79,70,229,.20);
+    color: #4338ca;
+    font-size: 26px;
+  }
+
+  /* Buttons */
+  .btn-modern{
+    border-radius: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 18px rgba(2,6,23,.08);
+    white-space: nowrap;
+  }
+  .btn-soft{
+    background: rgba(255,255,255,.75);
+    border: 1px solid var(--stroke);
+    box-shadow: none;
+  }
+
+  /* Form styling */
+  .form-wrap p{
+    margin-bottom: 1.1rem;
+  }
+  .form-wrap label{
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: .35rem;
+    display: block;
+  }
+  .form-wrap input,
+  .form-wrap textarea,
+  .form-wrap select{
+    border-radius: 12px;
+    border: 1px solid var(--stroke);
+    padding: .6rem .75rem;
+    width: 100%;
+    transition: .15s ease;
+  }
+  .form-wrap textarea{
+    min-height: 110px;
+    resize: vertical;
+  }
+  .form-wrap input:focus,
+  .form-wrap textarea:focus,
+  .form-wrap select:focus{
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 .15rem rgba(99,102,241,.15);
+  }
+
+  /* RTL icon spacing fix */
+  [dir="rtl"] .ms-1{
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+  }
+</style>
+
+{% endblock %}

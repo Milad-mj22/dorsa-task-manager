@@ -1,0 +1,152 @@
+{% extends "users/base.html" %}
+{% block content %}
+<style>
+  .notif-create-page {
+    direction: rtl !important;
+    text-align: right !important;
+    font-family: "IRANSans", "Vazirmatn", system-ui;
+  }
+
+  .notif-create-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    max-width: 600px;
+    margin: 40px auto;
+    direction: rtl !important;
+    text-align: right !important;
+  }
+
+  .notif-create-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center !important;
+    margin-bottom: 10px;
+  }
+
+  .notif-create-subtitle {
+    text-align: center !important;
+    color: #64748b;
+    font-size: .9rem;
+    margin-bottom: 25px;
+  }
+
+  .notif-form-group {
+    margin-bottom: 18px;
+    text-align: right !important;
+  }
+
+  .notif-form-group label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+    color: #0f172a;
+    text-align: right !important;
+  }
+
+  .notif-form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: .9rem;
+    text-align: right !important;
+    direction: rtl !important;
+  }
+
+  .notif-form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.18);
+  }
+
+  textarea.notif-form-control {
+    height: 110px;
+    resize: vertical;
+  }
+
+  .notif-create-footer {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center !important;
+    gap: 15px;
+    direction: rtl !important;
+    text-align: center !important;
+  }
+
+  .btn-primary-pill {
+    border-radius: 999px;
+    padding: 10px 28px;
+    font-weight: 600;
+  }
+
+  .btn-outline-secondary-pill {
+    border-radius: 999px;
+    padding: 10px 22px;
+  }
+</style>
+
+<div class="notif-create-page">
+  <div class="notif-create-card">
+
+    <div class="notif-create-title">ایجاد مرحله جدید اعلان</div>
+    <div class="notif-create-subtitle">
+      کد، نام و توضیحات مرحله‌ای که می‌خواهید ایجاد کنید را وارد کنید.
+    </div>
+
+    <form method="post" novalidate style="direction: rtl; text-align: right;">
+      {% csrf_token %}
+
+      <!-- Code -->
+      <div class="notif-form-group">
+        <label for="id_code">کد مرحله</label>
+        <input type="text"
+               id="id_code"
+               name="code"
+               required
+               value="{{ form.code.value|default:'' }}"
+               class="notif-form-control"
+               placeholder="مثال: ORDER_CREATED">
+      </div>
+
+      <!-- Name -->
+      <div class="notif-form-group">
+        <label for="id_name">نام مرحله</label>
+        <input type="text"
+               id="id_name"
+               name="name"
+               required
+               value="{{ form.name.value|default:'' }}"
+               class="notif-form-control"
+               placeholder="مثال: ایجاد سفارش">
+      </div>
+
+      <!-- Description -->
+      <div class="notif-form-group">
+        <label for="id_description">توضیحات</label>
+        <textarea
+            id="id_description"
+            name="description"
+            class="notif-form-control"
+            placeholder="توضیح مختصر درباره این مرحله...">{{ form.description.value|default:'' }}</textarea>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="notif-create-footer">
+        <a href="{% url 'notification_step_list' %}"
+           class="btn btn-outline-secondary btn-outline-secondary-pill">
+          بازگشت
+        </a>
+
+        <button type="submit" class="btn btn-primary btn-primary-pill">
+          ذخیره مرحله
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

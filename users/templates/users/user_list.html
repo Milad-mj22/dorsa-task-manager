@@ -1,0 +1,290 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrap py-5" dir="rtl" lang="fa">
+  <div class="container" style="text-align: right;">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="pill">کاربران</span>
+          <span class="pill pill-soft">مدیریت</span>
+        </div>
+        <h1 class="h3 fw-bold mb-1 text-dark">لیست کاربران</h1>
+        <div class="text-muted">مشاهده، ویرایش و حذف کاربران سیستم</div>
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row gap-2">
+        <!-- Optional search -->
+        <div class="search-wrap">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input id="userSearch" type="text" class="form-control border-0" placeholder="جستجو در کاربران…">
+          </div>
+        </div>
+
+        <a href="{% url 'create_user' %}" class="btn btn-success btn-modern">
+          <i class="fa-solid fa-user-plus ms-1"></i>
+          افزودن کاربر جدید
+        </a>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card modern-card border-0">
+      <div class="card-body p-0">
+
+        {% if users %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 modern-table">
+              <thead>
+                <tr>
+                  <th class="ps-4">کاربر</th>
+                  <th>نام و نام‌خانوادگی</th>
+                  <th>شماره تلفن</th>
+                  <th>سمت</th>
+                  <th class="text-end pe-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                  <tr class="user-row">
+                    <td class="ps-4">
+                      <div class="d-flex align-items-center gap-3">
+                        {% if user.profile.avatar %}
+                          <img
+                            src="{{ user.profile.avatar.url }}"
+                            alt="آواتار"
+                            class="avatar"
+                          >
+                        {% else %}
+                          <div class="avatar avatar-ph">
+                            <i class="fa-regular fa-user"></i>
+                          </div>
+                        {% endif %}
+
+                        <div class="min-w-0">
+                          <div class="fw-bold text-dark user-name">{{ user.username }}</div>
+                          <div class="text-muted small">ID: {{ user.id }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>
+                      {{ user.profile.first_name }} {{ user.profile.last_name }}
+                    </td>
+
+                    <td>
+                      <span class="chip">
+                        <i class="fa-solid fa-phone ms-1"></i>
+                        {{ user.profile.phone|default:"—" }}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span class="badge rounded-pill bg-light text-dark border">
+                        {{ user.profile.job_position|default:"—" }}
+                      </span>
+                    </td>
+
+                    <td class="text-end pe-4">
+                      <div class="d-inline-flex gap-2">
+                        <a href="{% url 'edit_user' user.id %}" class="btn btn-primary btn-modern btn-sm">
+                          <i class="fa-solid fa-pen ms-1"></i>
+                          ویرایش
+                        </a>
+                        <a href="{% url 'delete_user' user.id %}"
+                           class="btn btn-danger btn-modern btn-sm btn-danger-soft"
+                           onclick="return confirm('آیا مطمئن هستید؟')">
+                          <i class="fa-solid fa-trash ms-1"></i>
+                          حذف
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="p-5 text-center">
+            <div class="empty-icon mb-3">
+              <i class="fa-regular fa-users"></i>
+            </div>
+            <div class="fw-bold mb-1">هیچ کاربری ثبت نشده است</div>
+            <div class="text-muted small mb-3">برای شروع یک کاربر جدید اضافه کنید.</div>
+            <a href="{% url 'create_user' %}" class="btn btn-success btn-modern">
+              <i class="fa-solid fa-user-plus ms-1"></i>
+              افزودن کاربر جدید
+            </a>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+    --shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  .page-wrap{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  /* Pills */
+  .pill{
+    font-size: .72rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    background: rgba(15,23,42,.06);
+    border: 1px solid rgba(15,23,42,.10);
+    color: #0f172a;
+  }
+  .pill-soft{
+    background: rgba(99,102,241,.10);
+    border-color: rgba(99,102,241,.20);
+    color: #3730a3;
+  }
+
+  /* Search */
+  .search-wrap .input-group{
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(2,6,23,.06);
+    background: #fff;
+    min-width: 260px;
+  }
+  @media (max-width: 575.98px){
+    .search-wrap .input-group{ min-width: 100%; }
+  }
+  .search-wrap .form-control:focus{ box-shadow: none; }
+
+  /* Table */
+  .modern-table thead th{
+    background: rgba(15,23,42,.03);
+    border-bottom: 1px solid rgba(15,23,42,.08);
+    font-weight: 800;
+    color: #0f172a;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    white-space: nowrap;
+  }
+  .modern-table tbody td{
+    border-top: 1px solid rgba(15,23,42,.06);
+    vertical-align: middle;
+  }
+  .user-row:hover{
+    background: rgba(2,6,23,.02);
+  }
+
+  /* Avatar */
+  .avatar{
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(15,23,42,.10);
+    box-shadow: 0 6px 14px rgba(2,6,23,.12);
+  }
+  .avatar-ph{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.10);
+    color: #4f46e5;
+    font-size: 18px;
+  }
+
+  /* Buttons */
+  .btn-modern{
+    border-radius: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 18px rgba(2,6,23,.08);
+    white-space: nowrap;
+  }
+  .btn-danger-soft{
+    background: rgba(239, 68, 68, .08) !important;
+    border: 1px solid rgba(239, 68, 68, .18) !important;
+    color: #dc2626 !important;
+    box-shadow: none;
+  }
+  .btn-danger-soft:hover{
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #fff !important;
+  }
+
+  /* Chip */
+  .chip{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    background: rgba(15,23,42,.05);
+    border: 1px solid rgba(15,23,42,.08);
+    color: #0f172a;
+  }
+
+  /* Empty */
+  .empty-icon{
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.10);
+    border: 1px solid rgba(99,102,241,.18);
+    color: #4f46e5;
+    font-size: 26px;
+  }
+
+  /* RTL icon spacing fix */
+  [dir="rtl"] .ms-1{
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+  }
+</style>
+
+<script>
+  // Client-side user search
+  (function(){
+    const input = document.getElementById("userSearch");
+    if(!input) return;
+
+    input.addEventListener("input", function(){
+      const q = (this.value || "").trim().toLowerCase();
+      document.querySelectorAll(".user-row").forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(q) ? "" : "none";
+      });
+    });
+  })();
+</script>
+
+{% endblock %}

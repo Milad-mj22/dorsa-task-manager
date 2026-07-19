@@ -1,0 +1,17 @@
+{% extends "users/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div style="text-align: center; display: block;">
+    <h3>ماموریت‌های من</h3>
+    </div>
+    <ul class="list-group" style="text-align: right; display: block;">
+    {% for mission in missions %}
+        <li class="list-group-item">
+            <a href="{% url 'mission_detail' mission.pk %}">{{ mission.project.name }} - {{ mission.location }}</a>
+        </li>
+    {% empty %}
+        <li class="list-group-item">هیچ ماموریتی یافت نشد.</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}

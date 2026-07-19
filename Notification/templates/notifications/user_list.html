@@ -1,0 +1,28 @@
+{% extends "users/base.html" %}
+
+{% block content %}
+<h2>Select a user to manage notifications</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Email</th>
+      <th>Manage</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.get_full_name|default:u.username }}</td>
+        <td>{{ u.email }}</td>
+        <td>
+          <a href="{% url 'manage_notifications' u.id %}" class="btn btn-primary">
+            Edit Notifications
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

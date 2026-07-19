@@ -1,0 +1,242 @@
+{% load custom_filters %}
+{% load static %}
+
+<body>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/persian.datepicker.css' %}">
+
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/persian.date.js' %}"></script>
+<script src="{% static 'js/persian.datepicker.js' %}"></script>
+
+<style>
+    .activity-card {
+        border-radius: 12px;
+        border: 1px solid #e2e2e2;
+        padding: 15px;
+        transition: 0.2s ease-in-out;
+    }
+    .activity-card:hover {
+        background: #f8f9fa;
+    }
+</style>
+
+<script>
+$(document).ready(function () {
+
+    // Apply Persian datepicker to ALL date inputs
+    function activatePicker(selector) {
+        $(selector).persianDatepicker({
+            format: 'YYYY/MM/DD',
+            autoClose: true,
+            initialValue: false
+        });
+    }
+
+    activatePicker("#start_date");
+    activatePicker("#doing_date");
+    activatePicker("#follow_date");
+
+    // Convert Jalali → Gregorian before submit
+    $("form").on("submit", function () {
+
+        $("[start_date]").each(function () {
+            let jalali = $(this).val();
+            if (jalali) {
+                let pd = new persianDate(jalali).toGregorian();
+                let gregorian = `${pd.year}-${String(pd.month).padStart(2, "0")}-${String(pd.day).padStart(2, "0")}`;
+                $(this).val(gregorian);
+            }
+        });
+
+    });
+
+});
+</script>
+
+
+{% if factors == None %}
+
+<!-- ------------------------- BUTTON ------------------------- -->
+<button class="btn btn-primary mb-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addActivityModal">
+    ➕ افزودن فعالیت
+</button>
+
+{% for log in logs %}
+<div class="activity-card mb-3 position-relative">
+
+    <!-- Delete button (top-right) -->
+    <button type="button"
+            class="btn btn-sm btn-outline-danger position-absolute top-0 start-0 m-2"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteActivityModal{{ log.id }}">
+        🗑 حذف
+    </button>
+
+    <!-- زمان ثبت لاگ -->
+    <div class="text-secondary small">
+        ثبت شده در: {{ log.timestamp|to_jalali }}
+    </div>
+
+    {% if log.activity_type %}
+    <div class="small text-muted mt-1">
+        نوع فعالیت: {{ log.activity_type }}
+    </div>
+    {% endif %}
+
+    <div class="fw-bold mt-2">
+        {{ log.description }}
+    </div>
+
+    <div class="mt-2 small">
+        {% if log.created_at %}
+            <div>🔹 تاریخ شروع: {{ log.created_at|to_jalali }}</div>
+        {% endif %}
+        {% if log.next_followup %}
+            <div>🔹 تاریخ پیگیری: {{ log.next_followup|to_jalali }}</div>
+        {% endif %}
+        {% if log.doing_date %}
+            <div>🔹 تاریخ انجام: {{ log.doing_date|to_jalali }}</div>
+        {% endif %}
+    </div>
+
+    {% if log.mentioned_users.exists %}
+    <div class="mt-2 small text-muted">
+        👤 منشن شده برای:
+        {% for u in log.mentioned_users.all %}
+            <span class="badge text-bg-secondary">
+                {% if u.profile.first_name or u.profile.last_name %}
+                    {{ u.profile.first_name }} {{ u.profile.last_name }}
+                {% else %}
+                    {{ u.username }}
+                {% endif %}
+            </span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Delete confirm modal for this log -->
+<div class="modal fade" id="deleteActivityModal{{ log.id }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <form method="POST" action="{% url 'delete_buyer_activity' buyer_id log.id %}">
+        {% csrf_token %}
+
+        <div class="modal-header">
+            <h5 class="modal-title">حذف فعالیت</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+            آیا از حذف این فعالیت مطمئن هستید؟
+            <div class="mt-2 small text-muted">
+                {{ log.description|truncatechars:100 }}
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+            <button type="submit" class="btn btn-danger">بله، حذف شود</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% empty %}
+<p class="text-muted">هیچ فعالیتی ثبت نشده است.</p>
+{% endfor %}
+
+
+
+
+<!-- ------------------------- MODAL ADD ACTIVITY ------------------------- -->
+<div class="modal fade" id="addActivityModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form method="POST" action="/buyers/{{ buyer_id }}/add-activity/">
+        {% csrf_token %}
+
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" style="color: rgb(247, 247, 247);">➕ افزودن فعالیت جدید</h5>
+        </div>
+
+        <div class="modal-body">
+
+          <!-- نوع فعالیت -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">نوع فعالیت</label>
+            <select name="activity_type" class="form-select" required>
+                {% for key in activity_choices %}
+                <option value="{{ key }}">{{ key }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+          <!-- توضیحات -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">توضیحات</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea>
+          </div>
+
+
+          <!-- تاریخ‌ها -->
+          <div class="row">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">تاریخ شروع</label>
+                <input id="start_date" data-gdate name="start_date" class="form-control" placeholder="انتخاب تاریخ">
+            </div>
+
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">تاریخ پیگیری (Follow Date)</label>
+                <input id="follow_date" data-gdate name="follow_date" class="form-control" placeholder="انتخاب تاریخ">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">تاریخ انجام (Doing Date)</label>
+                <input id="doing_date" data-gdate name="doing_date" class="form-control" placeholder="انتخاب تاریخ">
+            </div>
+
+
+          </div>
+
+
+          <!-- انتخاب کاربر Mention -->
+          <div class="mt-3">
+            <label class="form-label fw-bold">منشن کاربران</label>
+            <select name="mention_user" class="form-select">
+                <option value="">انتخاب کاربر...</option>
+                {% for u in users %}
+                <option value="{{ u.id }}">{{ u.username }}</option>
+                {% endfor %}
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">❌ انصراف</button>
+            <button class="btn btn-success">✔ ثبت فعالیت</button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% else %}
+
+<!-- your chart + factors part (unchanged) -->
+
+{% endif %}
+
+</body>

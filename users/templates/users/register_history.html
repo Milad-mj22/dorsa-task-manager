@@ -1,0 +1,482 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}صفحه اصلی{% endblock title %}
+{% block content %}
+
+<div class="page-wrap py-4" dir="rtl" lang="fa" style="text-align: right;">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+      <div class="min-w-0">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          <span class="pill">حضور و غیاب</span>
+          <span class="pill pill-soft">گزارش کارکرد</span>
+          <span class="pill pill-muted">آخرین بروزرسانی: <span id="nowText">—</span></span>
+        </div>
+
+        <h1 class="h4 fw-black mb-1 text-dark">گزارش ساعت ورود/خروج</h1>
+        <div class="text-muted small">
+          نمایش آخرین رکوردها + محاسبه ساعات کارکرد و کارنشده (بر اساس موظفی روزانه).
+        </div>
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+
+        <!-- ✅ Project filter (GET) -->
+        <form method="get" class="project-filter-wrap">
+          {# keep limit when changing project #}
+          {% if limit %}
+            <input type="hidden" name="limit" value="{{ limit }}">
+          {% endif %}
+
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-diagram-project"></i>
+            </span>
+            <select name="project" class="form-select border-0" onchange="this.form.submit()">
+              <option value="">همه پروژه‌ها</option>
+              {% for p in projects %}
+                <option value="{{ p.id }}" {% if selected_project_id|stringformat:"s" == p.id|stringformat:"s" %}selected{% endif %}>
+                  {{ p.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+
+        <!-- Limit selector (GET) -->
+        <form method="get" class="limit-wrap">
+          {# keep project when changing limit #}
+          {% if selected_project_id %}
+            <input type="hidden" name="project" value="{{ selected_project_id }}">
+          {% endif %}
+
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-list-ol"></i>
+            </span>
+            <select name="limit" class="form-select border-0" onchange="this.form.submit()">
+              {% for n in allowed_limits %}
+                <option value="{{ n }}" {% if limit == n %}selected{% endif %}>نمایش {{ n }} مورد</option>
+              {% endfor %}
+            </select>
+          </div>
+        </form>
+
+        <!-- Search (client-side) -->
+        <div class="search-wrap">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input id="tableSearch" type="text" class="form-control border-0" placeholder="جستجو در جدول…">
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-dark btn-modern" onclick="window.print()">
+            <i class="fa-solid fa-print ms-1"></i>
+            پرینت
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- KPI summary -->
+    <div class="card modern-card border-0 mb-4">
+      <div class="card-body p-3 p-md-4">
+        <div class="row g-3">
+          <div class="col-12 col-md-3">
+            <div class="kpi kpi-soft">
+              <div class="kpi-label">تعداد روزهای نمایش داده شده</div>
+              <div class="kpi-value">{{ days_count_displayed }}</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <div class="kpi kpi-blue">
+              <div class="kpi-label">ساعات کارکرد (نمایش داده شده)</div>
+              <div class="kpi-value">{{ worked_time_displayed }}</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <div class="kpi kpi-orange">
+              <div class="kpi-label">ساعات کار نشده</div>
+              <div class="kpi-value">{{ not_worked_time_displayed }}</div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-3">
+            <div class="kpi">
+              <div class="kpi-label">موظفی روزانه</div>
+              <div class="kpi-value">{{ expected_hours_per_day }} ساعت</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint mt-3">
+          <i class="fa-solid fa-circle-info ms-1"></i>
+          محاسبه «کار نشده» بر اساس تعداد روزهای نمایش داده شده × موظفی روزانه انجام می‌شود.
+        </div>
+      </div>
+    </div>
+
+    <!-- Data -->
+    {% if user_time_data %}
+      {% for username, work_times in user_time_data.items %}
+        <div class="card modern-card border-0 mb-4">
+          <div class="card-body p-3 p-md-4">
+
+            <!-- User header -->
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="fw-black text-dark">{{ username }}</div>
+                  <div class="text-muted small">آخرین رکوردهای ورود/خروج</div>
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+                <div class="kpi kpi-soft">
+                  <div class="kpi-label">تعداد رکورد</div>
+                  <div class="kpi-value">{{ work_times|length }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+              <table class="table table-modern align-middle mb-0 work-table">
+                <thead>
+                  <tr>
+                    <th class="text-center">ردیف</th>
+                    <th class="text-center">تاریخ</th>
+                    <th class="text-center">پروژه</th>
+                    <th class="text-center">ساعت ورود</th>
+                    <th class="text-center">ساعت خروج</th>
+                    <th class="text-center">ساعت کارکرد</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {% for cnt, data in work_times.items %}
+                    <tr>
+                      <td class="text-center">
+                        <span class="badge badge-soft">#{{ cnt }}</span>
+                      </td>
+
+                      <td class="text-center">
+                        <span class="date-pill">{{ data.date|default:"—" }}</span>
+                      </td>
+
+                      <!-- ✅ Project column -->
+                      <td class="text-center">
+                        {% if data.project %}
+                          <span class="project-pill">
+                            <i class="fa-solid fa-tag ms-1"></i>
+                            {{ data.project }}
+                          </span>
+                        {% else %}
+                          <span class="text-muted">—</span>
+                        {% endif %}
+                      </td>
+
+                      <td class="text-center">
+                        <span class="time-pill">
+                          <i class="fa-regular fa-clock ms-1"></i>
+                          {{ data.jalali_time_in|default:"—" }}
+                        </span>
+                      </td>
+
+                      <td class="text-center">
+                        <span class="time-pill time-pill-muted">
+                          <i class="fa-regular fa-clock ms-1"></i>
+                          {{ data.jalali_time_out|default:"—" }}
+                        </span>
+                      </td>
+
+                      <td class="text-center fw-black">
+                        {{ data.total_work_time|default:"—" }}
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">
+                        رکوردی برای این کاربر ثبت نشده است.
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+
+              </table>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="card modern-card border-0">
+        <div class="card-body p-5 text-center">
+          <div class="empty-icon mb-3">
+            <i class="fa-regular fa-folder-open"></i>
+          </div>
+          <div class="fw-black mb-1">داده‌ای برای نمایش وجود ندارد</div>
+          <div class="text-muted small">اگر فکر می‌کنید خطاست، صفحه را رفرش کنید.</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Footer total (from manager) -->
+    <div class="text-center mt-4">
+      <div class="small text-muted">جمع کل (از سیستم):</div>
+      <div class="h5 fw-black mb-0">{{ total_work }}</div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+    --shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  .page-wrap{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      radial-gradient(900px 600px at 50% 110%, rgba(59,130,246,.14), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: .18s ease;
+  }
+
+  .fw-black{ font-weight: 900; }
+
+  .pill{
+    font-size: .72rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    background: rgba(15,23,42,.06);
+    border: 1px solid rgba(15,23,42,.10);
+    color: #0f172a;
+    white-space: nowrap;
+  }
+  .pill-soft{
+    background: rgba(99,102,241,.10);
+    border-color: rgba(99,102,241,.20);
+    color: #3730a3;
+  }
+  .pill-muted{ background: rgba(15,23,42,.04); }
+
+  /* Search + limit + project filter */
+  .search-wrap .input-group,
+  .limit-wrap .input-group,
+  .project-filter-wrap .input-group{
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(2,6,23,.06);
+    background: #fff;
+    min-width: 240px;
+  }
+  .limit-wrap .form-select:focus,
+  .project-filter-wrap .form-select:focus,
+  .search-wrap .form-control:focus{ box-shadow: none; }
+  @media (max-width: 575.98px){
+    .search-wrap .input-group,
+    .limit-wrap .input-group,
+    .project-filter-wrap .input-group{ min-width: 100%; }
+  }
+
+  .btn-modern{
+    border-radius: 16px;
+    font-weight: 900;
+    padding: 10px 16px;
+  }
+
+  .hint{
+    background: rgba(15,23,42,.04);
+    border: 1px dashed rgba(15,23,42,.14);
+    border-radius: 16px;
+    padding: 10px 12px;
+    color: #475569;
+    font-size: .85rem;
+  }
+
+  .avatar{
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.10);
+    border: 1px solid rgba(99,102,241,.20);
+    color: #4f46e5;
+    flex: 0 0 auto;
+  }
+
+  .kpi{
+    padding: 12px 12px;
+    border-radius: 18px;
+    background: rgba(2,6,23,.03);
+    border: 1px solid rgba(15,23,42,.08);
+    text-align: center;
+  }
+  .kpi-soft{
+    background: rgba(99,102,241,.08);
+    border-color: rgba(99,102,241,.16);
+  }
+  .kpi-blue{
+    background: rgba(59,130,246,.10);
+    border-color: rgba(59,130,246,.20);
+  }
+  .kpi-orange{
+    background: rgba(249,115,22,.10);
+    border-color: rgba(249,115,22,.20);
+  }
+  .kpi-label{
+    font-size: .78rem;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+  .kpi-value{
+    font-weight: 900;
+    color: #0f172a;
+    font-size: 1.05rem;
+  }
+
+  .table-modern thead th{
+    background: rgba(99,102,241,.10);
+    border-bottom: 1px solid rgba(99,102,241,.18) !important;
+    color: #3730a3;
+    font-weight: 900;
+    padding: 14px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .table-modern tbody td{
+    border-color: rgba(15,23,42,.08);
+    padding: 14px 12px;
+  }
+  .table-modern tbody tr:hover{
+    background: rgba(2,6,23,.02);
+  }
+
+  .badge-soft{
+    background: rgba(15,23,42,.06);
+    border: 1px solid rgba(15,23,42,.10);
+    color: #0f172a;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 900;
+  }
+
+  .time-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(34,197,94,.18);
+    background: rgba(34,197,94,.08);
+    color: #166534;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+  .time-pill-muted{
+    border-color: rgba(148,163,184,.28);
+    background: rgba(148,163,184,.12);
+    color: #475569;
+  }
+
+  .date-pill{
+    display:inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(15,23,42,.10);
+    background: rgba(15,23,42,.04);
+    color: #0f172a;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  /* ✅ Project pill */
+  .project-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:.35rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(99,102,241,.20);
+    background: rgba(99,102,241,.10);
+    color: #3730a3;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .empty-icon{
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.10);
+    border: 1px solid rgba(99,102,241,.18);
+    color: #4f46e5;
+    font-size: 26px;
+  }
+
+  [dir="rtl"] .ms-1{
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+  }
+
+  @media print{
+    .search-wrap, .limit-wrap, .project-filter-wrap, .btn-modern, .hint { display:none !important; }
+    .page-wrap{ background: #fff !important; }
+    .modern-card{ box-shadow:none !important; border: 1px solid #ddd !important; }
+  }
+</style>
+
+<script>
+  // "Last updated" text
+  (function(){
+    const el = document.getElementById("nowText");
+    if(!el) return;
+    el.textContent = new Date().toLocaleString("fa-IR");
+  })();
+
+  // Client-side search across all tables (includes project because it is in row)
+  (function(){
+    const input = document.getElementById("tableSearch");
+    if(!input) return;
+
+    input.addEventListener("input", function(){
+      const q = (this.value || "").trim().toLowerCase();
+      document.querySelectorAll(".work-table tbody tr").forEach(tr => {
+        tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
+      });
+    });
+  })();
+</script>
+
+{% endblock %}

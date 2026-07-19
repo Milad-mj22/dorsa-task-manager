@@ -1,0 +1,743 @@
+{% extends "users/base.html" %}
+{% block title %}صفحه اصلی{% endblock title %}
+{% block content %}
+{% load static %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --gold-main: #F4B41A;
+    --gold-light: #F7D141;
+    --gold-soft: #FFF7CC;
+    --gold-deep: #B38408;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --card-radius: 18px;
+    --shadow-soft: 0 16px 40px rgba(148, 120, 52, 0.16);
+  }
+
+  body {
+    font-family: "Vazir", "Tahoma", sans-serif;
+    background: radial-gradient(circle at top left, #fff7e6, #fdfdfd 40%, #fff5cc 100%);
+    font-size: 15px;
+  }
+
+  .orders-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  @media (min-width: 768px) {
+    .orders-page {
+      padding-top: 32px;
+    }
+  }
+
+  .page-header-box {
+    background: radial-gradient(circle at 20% 0, #ffe58a, #f7d041);
+    color: #3f3f46;
+    padding: 20px 16px 16px;
+    border-radius: 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(244, 180, 26, 0.5);
+  }
+
+  .page-header-top {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  @media (min-width: 768px) {
+    .page-header-top {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  .page-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-title-pill {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 20%, #F7D141, #F4B41A);
+    box-shadow: 0 12px 30px rgba(180, 137, 12, 0.7);
+    font-size: 20px;
+  }
+
+  .page-header-box h2 {
+    font-weight: 800;
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .chip-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    background: var(--gold-soft);
+    color: #6b4b02;
+    border: 1px solid rgba(244, 180, 26, 0.7);
+  }
+
+  .chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--gold-main);
+  }
+
+  /* Summary bar */
+  .summary-row {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 576px) {
+    .summary-row {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+  }
+
+  .summary-card {
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: 999px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+  }
+
+  .summary-icon {
+    font-size: 16px;
+  }
+
+  .summary-label {
+    color: var(--text-muted);
+  }
+
+  .summary-value {
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    margin: 16px 0 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .filter-bar .form-control,
+  .filter-bar .form-select {
+    font-size: 14px;
+    border-radius: 999px;
+  }
+
+  .filter-bar label {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* Order cards */
+  .order-card {
+    border: none;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    border: 1px solid rgba(229, 231, 235, 0.9);
+  }
+
+  .order-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(148, 120, 52, 0.24);
+  }
+
+  .order-header {
+    background: linear-gradient(135deg, #fffdf3, #fff9e6);
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .order-header-top {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .order-title {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .order-title span.icon {
+    font-size: 18px;
+  }
+
+  .order-status-badge {
+    margin-inline-start: auto;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .status-ok {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+  }
+
+  .status-shortage {
+    background: rgba(248, 113, 113, 0.15);
+    color: #b91c1c;
+  }
+
+  .status-pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background-color: currentColor;
+  }
+
+  .order-info {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  .order-info span.label {
+    font-weight: 500;
+    color: #4b5563;
+  }
+
+  .order-body {
+    padding: 14px 14px 10px;
+  }
+
+  .accordion-button {
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 12px !important;
+    padding: 8px 12px;
+  }
+
+  .accordion-item {
+    border: none;
+    margin-bottom: 6px;
+  }
+
+  .accordion-button::after {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .accordion-body {
+    font-size: 14px;
+  }
+
+  .food-row {
+    padding: 4px 2px;
+    border-bottom: 1px dashed #e5e7eb;
+    font-size: 14px;
+  }
+
+  .food-row:last-child {
+    border-bottom: none;
+  }
+
+  .item-available,
+  .item-unavailable {
+    padding: 8px 10px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .item-available {
+    background-color: rgba(16, 185, 129, 0.08);
+    border-right: 4px solid #10b981;
+    color: #065f46;
+  }
+
+  .item-unavailable {
+    background-color: rgba(248, 113, 113, 0.08);
+    border-right: 4px solid #ef4444;
+    color: #991b1b;
+  }
+
+  .item-name {
+    flex: 1;
+  }
+
+  .item-amount {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .item-status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background-color: currentColor;
+    margin-left: 4px;
+  }
+
+  .card-footer {
+    background: #ffffff;
+    border-top: 1px solid #f3f4f6;
+    padding: 10px 14px 14px;
+  }
+
+  .action-btns a {
+    border-radius: 999px;
+    font-size: 13px;
+    padding: 8px 16px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    border: none;
+  }
+
+  .action-btns a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.18);
+  }
+
+  .btn-warning {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1f2937;
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #22c55e, #15803d);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  }
+
+  .btn-outline-gold {
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: rgba(180, 137, 12, 0.6);
+    font-size: 13px;
+    padding: 7px 14px;
+    color: #92400e;
+    background-color: #fffbeb;
+  }
+
+  .btn-outline-gold:hover {
+    background-color: #fef3c7;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-muted);
+  }
+
+  .empty-state-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+
+  .empty-state-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-main);
+  }
+
+  .empty-state-text {
+    font-size: 14px;
+  }
+</style>
+
+<div class="orders-page">
+  <div class="page-header-box">
+    <div class="page-header-top">
+      <div class="page-title-wrapper">
+        <div class="page-title-pill">📦</div>
+        <div>
+          <h2 class="fw-bold mb-0">سفارش‌ها</h2>
+          <div class="page-header-subtitle">
+            مشاهده و مدیریت سفارش‌های ثبت‌شده، همراه با مواد اولیه و وضعیت موجودی
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="chip-small">
+          <span class="chip-dot"></span>
+          نمای کلی وضعیت سفارش‌ها 
+        </span>
+      </div>
+    </div>
+
+    <!-- Summary bar -->
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-icon">📦</span>
+        <span class="summary-label">تعداد سفارش‌ها:</span>
+        <span class="summary-value" id="summary-total">0</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-icon">🟢</span>
+        <span class="summary-label">سفارش کامل:</span>
+        <span class="summary-value" id="summary-complete">0</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-icon">🔴</span>
+        <span class="summary-label">دارای کسری:</span>
+        <span class="summary-value" id="summary-shortage">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & search bar -->
+  <div class="filter-bar">
+    <div class="flex-grow-1">
+      <input type="text"
+             id="searchInput"
+             class="form-control"
+             placeholder="جستجو بر اساس عنوان سفارش یا نام کاربر...">
+    </div>
+    <div>
+      <select id="statusFilter" class="form-select">
+        <option value="all">همه وضعیت‌ها</option>
+        <option value="ok">فقط سفارش‌های کامل</option>
+        <option value="shortage">فقط دارای کسری مواد</option>
+      </select>
+    </div>
+  </div>
+
+  {% if orders %}
+    <div class="row g-4" id="ordersGrid">
+      {% for order in orders %}
+      <div class="col-lg-4 col-md-6 col-sm-12 order-card-wrapper">
+        <div class="card order-card h-100" id="order-card-{{ order.id }}" data-order-id="{{ order.id }}">
+          <div class="order-header">
+            <div class="order-header-top">
+              <div>
+                <div class="order-title">
+                  <span class="icon">🧾</span>
+                  <span class="order-title-text">{{ order.title }}</span>
+                </div>
+                <div class="order-info">
+                  <span class="label">👤 نام کاربر:</span>
+                  <span class="order-author-text">{{ order.author }}</span>
+                </div>
+                <div class="order-info">
+                  <span class="label">🕒 تاریخ بروزرسانی:</span>
+                  {{ order.updated_at }}
+                </div>
+              </div>
+              <div class="order-status-badge" data-status-badge>
+                <!-- JS will fill status -->
+              </div>
+            </div>
+          </div>
+
+          <div class="order-body card-body">
+            <div class="accordion" id="accordion-{{ order.id }}">
+
+              <!-- Foods -->
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-foods-{{ order.id }}">
+                  <button class="accordion-button collapsed" type="button"
+                          data-bs-toggle="collapse" data-bs-target="#foods-{{ order.id }}"
+                          aria-expanded="false" aria-controls="foods-{{ order.id }}">
+                    🍔 نام غذاها
+                  </button>
+                </h2>
+                <div id="foods-{{ order.id }}" class="accordion-collapse collapse"
+                     aria-labelledby="heading-foods-{{ order.id }}">
+                  <div class="accordion-body" data-section="foods">
+                    {% for food_name, quantity in order.night_order.items %}
+                      {% if quantity != 0 %}
+                        <div class="food-row">
+                          {{ food_name }} :
+                          <strong>{{ quantity }}</strong>
+                        </div>
+                      {% endif %}
+                    {% empty %}
+                      <div class="text-muted" style="font-size: 13px;">غذایی ثبت نشده است.</div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Materials -->
+              <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-materials-{{ order.id }}">
+                  <button class="accordion-button collapsed" type="button"
+                          data-bs-toggle="collapse" data-bs-target="#materials-{{ order.id }}"
+                          aria-expanded="false" aria-controls="materials-{{ order.id }}">
+                    🥗 مواد اولیه
+                  </button>
+                </h2>
+                <div id="materials-{{ order.id }}" class="accordion-collapse collapse"
+                     aria-labelledby="heading-materials-{{ order.id }}">
+                  <div class="accordion-body" data-section="materials">
+                    {% for material, data in order.content.items %}
+                      {% if data.amount is not None and data.exist is not None %}
+                        <div class="{% if data.exist %}item-available{% else %}item-unavailable{% endif %}">
+                          <div class="item-name">
+                            <span class="item-status-dot"></span>
+                            {{ material }}
+                          </div>
+                          <div class="item-amount">
+                            {{ data.amount|default_if_none:"" }}
+                          </div>
+                        </div>
+                      {% endif %}
+                    {% empty %}
+                      <div class="text-muted" style="font-size: 13px;">ماده اولیه‌ای ثبت نشده است.</div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card-footer text-center">
+            <div class="d-flex justify-content-center gap-2 action-btns flex-wrap">
+              <!-- <button type="button"
+                      class="btn btn-outline-gold"
+                      onclick="openQuickView({{ order.id }})">
+                👁 مشاهده سریع
+              </button> -->
+
+
+
+              {% if order.created_at %}
+                <a href="/orders/edit_order/{{ order.id }}" class="btn btn-warning">
+                  ✏️ ویرایش
+                </a>
+              {% endif %}
+              <a href="/orders/print_order/{{ order.id }}" class="btn btn-success text-white">
+                🖨 چاپ
+              </a>
+              
+              <a href="{% url 'order_items' order.id %}" class="btn btn-success text-white">
+                  <i class="fas fa-shopping-cart"></i> لیست خرید
+              </a>
+
+              <a href="/order_flow/orders/show_flow/{{ order.id }}" class="btn btn-primary text-white">
+                🔄 چرخه
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon">📭</div>
+      <div class="empty-state-title">هیچ سفارشی ثبت نشده است</div>
+      <div class="empty-state-text">
+        در حال حاضر سفارشی برای نمایش وجود ندارد. به‌محض ثبت سفارش، لیست در اینجا نمایش داده می‌شود.
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="direction: rtl; text-align: right; border-radius: 20px;">
+      <div class="modal-header" style="background: linear-gradient(135deg,#fff7d6,#ffe08a); border-bottom: 1px solid #f3f4f6;">
+        <div>
+          <h5 class="modal-title" id="quickViewModalLabel" style="font-weight: 700;">جزئیات سفارش</h5>
+          <div style="font-size: 12px; color: #6b4b02;">نمای خلاصه سفارش به‌صورت سریع</div>
+        </div>
+        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="بستن"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2" style="font-size: 14px;">
+          <strong>عنوان سفارش:</strong> <span id="quickViewTitle"></span>
+        </div>
+        <div class="mb-2" style="font-size: 14px;">
+          <strong>کاربر:</strong> <span id="quickViewAuthor"></span>
+        </div>
+        <hr>
+        <h6 class="fw-bold mb-2">🍔 نام غذاها</h6>
+        <div id="quickViewFoods" class="mb-3" style="font-size: 14px;"></div>
+        <h6 class="fw-bold mb-2">🥗 مواد اولیه</h6>
+        <div id="quickViewMaterials" style="font-size: 14px;"></div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">بستن</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function initOrderStatuses() {
+    const cards = document.querySelectorAll('.order-card');
+
+    cards.forEach(card => {
+      const hasShortage = card.querySelector('.item-unavailable') !== null;
+      const badge = card.querySelector('[data-status-badge]');
+
+      if (!badge) return;
+
+      badge.innerHTML = ''; // reset
+
+      const dot = document.createElement('span');
+      dot.classList.add('status-pill-dot');
+
+      const text = document.createElement('span');
+
+      if (hasShortage) {
+        card.dataset.status = 'shortage';
+        badge.classList.add('status-shortage');
+        text.textContent = 'دارای کسری';
+      } else {
+        card.dataset.status = 'ok';
+        badge.classList.add('status-ok');
+        text.textContent = 'کامل';
+      }
+
+      badge.appendChild(dot);
+      badge.appendChild(text);
+    });
+  }
+
+  function updateSummary() {
+    const cards = document.querySelectorAll('.order-card');
+    const total = cards.length;
+    let shortage = 0;
+
+    cards.forEach(card => {
+      if (card.dataset.status === 'shortage') {
+        shortage++;
+      }
+    });
+
+    const complete = total - shortage;
+
+    document.getElementById('summary-total').textContent = total;
+    document.getElementById('summary-shortage').textContent = shortage;
+    document.getElementById('summary-complete').textContent = complete;
+  }
+
+  function applyFilters() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase().trim();
+    const statusFilter = document.getElementById('statusFilter').value;
+
+    const wrappers = document.querySelectorAll('.order-card-wrapper');
+
+    wrappers.forEach(wrapper => {
+      const card = wrapper.querySelector('.order-card');
+      if (!card) return;
+
+      const titleEl = card.querySelector('.order-title-text');
+      const authorEl = card.querySelector('.order-author-text');
+
+      const titleText = titleEl ? titleEl.textContent.toLowerCase() : '';
+      const authorText = authorEl ? authorEl.textContent.toLowerCase() : '';
+
+      let matchesSearch = true;
+      if (searchValue) {
+        matchesSearch = titleText.includes(searchValue) || authorText.includes(searchValue);
+      }
+
+      let matchesStatus = true;
+      if (statusFilter === 'ok') {
+        matchesStatus = card.dataset.status === 'ok';
+      } else if (statusFilter === 'shortage') {
+        matchesStatus = card.dataset.status === 'shortage';
+      }
+
+      if (matchesSearch && matchesStatus) {
+        wrapper.style.display = '';
+      } else {
+        wrapper.style.display = 'none';
+      }
+    });
+  }
+
+  function openQuickView(orderId) {
+    const card = document.getElementById(`order-card-${orderId}`);
+    if (!card) return;
+
+    const titleEl = card.querySelector('.order-title-text');
+    const authorEl = card.querySelector('.order-author-text');
+    const foodsBody = card.querySelector('[data-section="foods"]');
+    const materialsBody = card.querySelector('[data-section="materials"]');
+
+    document.getElementById('quickViewTitle').textContent = titleEl ? titleEl.textContent : '';
+    document.getElementById('quickViewAuthor').textContent = authorEl ? authorEl.textContent : '';
+
+    document.getElementById('quickViewFoods').innerHTML = foodsBody ? foodsBody.innerHTML : '<div class="text-muted" style="font-size:13px;">غذایی ثبت نشده است.</div>';
+    document.getElementById('quickViewMaterials').innerHTML = materialsBody ? materialsBody.innerHTML : '<div class="text-muted" style="font-size:13px;">ماده اولیه‌ای ثبت نشده است.</div>';
+
+    const modalEl = document.getElementById('quickViewModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    initOrderStatuses();
+    updateSummary();
+    applyFilters();
+
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+
+    searchInput.addEventListener('input', function () {
+      applyFilters();
+    });
+
+    statusFilter.addEventListener('change', function () {
+      applyFilters();
+    });
+  });
+</script>
+{% endblock %}

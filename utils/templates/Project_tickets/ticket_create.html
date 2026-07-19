@@ -1,0 +1,650 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+
+  <style>
+    :root{
+      --bg1:#eef2ff;
+      --bg2:#f8fafc;
+      --card: rgba(255,255,255,.86);
+      --stroke: rgba(148,163,184,.35);
+      --text:#0f172a;
+      --muted:#64748b;
+      --primary:#4f46e5;
+      --primary2:#6366f1;
+      --danger:#ef4444;
+      --radius-xl:24px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --shadow: 0 26px 80px rgba(15, 23, 42, .18);
+    }
+
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background:
+        radial-gradient(900px 400px at 90% 5%, rgba(99,102,241,.25), transparent 60%),
+        radial-gradient(700px 360px at 10% 15%, rgba(79,70,229,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+      -webkit-text-size-adjust: 100%;
+      color:var(--text);
+    }
+
+    .page-wrap{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px 12px 34px;
+    }
+
+    /* ✅ همیشه تک ستونه => کارت نکات همیشه پایین */
+    .shell{
+      width: min(980px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap: 18px;
+    }
+
+    .cardx{
+      background: var(--card);
+      border:1px solid var(--stroke);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      overflow:hidden;
+      position:relative;
+    }
+    .cardx::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(420px 220px at 90% 5%, rgba(99,102,241,.22), transparent 60%),
+        radial-gradient(360px 200px at 10% 0%, rgba(79,70,229,.16), transparent 65%);
+      opacity:.9;
+    }
+    .cardx > *{ position:relative; }
+
+    .header{
+      padding: 18px 18px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom: 1px solid rgba(226,232,240,.75);
+      flex-wrap:wrap;
+    }
+
+    .title-row{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width:0;
+      flex: 1 1 520px;
+    }
+
+    .logo-badge{
+      width:48px;height:48px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      box-shadow: 0 16px 40px rgba(79,70,229,.45);
+      flex:0 0 auto;
+    }
+
+    .h1{ margin:0; font-size: 1.15rem; font-weight: 900; line-height: 1.25; }
+    .sub{ margin-top:6px; color: var(--muted); font-size: .92rem; line-height: 1.7; }
+
+    .pill{
+      font-size:.82rem;
+      color:#4338ca;
+      background: rgba(79,70,229,.10);
+      border:1px solid rgba(129,140,248,.55);
+      padding: 7px 10px;
+      border-radius: 999px;
+      white-space:nowrap;
+      align-self:flex-start;
+    }
+
+    .body{ padding: 16px 18px 18px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field{ margin-bottom: 12px; }
+    .label{
+      font-weight: 700;
+      font-size: .9rem;
+      margin-bottom: 6px;
+      color:#334155;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .req{ color: var(--danger); font-weight:900; }
+
+    .ctrl, .sel{
+      width:100%;
+      border-radius: var(--radius-md);
+      border:1px solid rgba(148,163,184,.55);
+      background: rgba(255,255,255,.92);
+      padding: 10px 12px;
+      outline:none;
+      transition:.15s;
+      text-align:right;
+    }
+    .ctrl:focus, .sel:focus{
+      border-color: rgba(79,70,229,.75);
+      box-shadow: 0 0 0 .2rem rgba(79,70,229,.12);
+    }
+
+    .help{ font-size:.82rem; color: var(--muted); line-height: 1.6; margin-top: 6px; }
+    .err{ font-size:.82rem; color: var(--danger); margin-top: 6px; line-height: 1.6; }
+
+    .divider{
+      height:1px;
+      background: linear-gradient(to left, transparent, rgba(226,232,240,.9), transparent);
+      margin: 12px 0 14px;
+    }
+
+    /* Upload */
+    .uploader{
+      border: 1.5px dashed rgba(79,70,229,.35);
+      background: rgba(79,70,229,.05);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      transition:.15s;
+      user-select:none;
+    }
+    .uploader.dragover{
+      border-color: rgba(79,70,229,.75);
+      background: rgba(79,70,229,.08);
+      box-shadow: 0 0 0 .2rem rgba(79,70,229,.10);
+    }
+    .upl-ic{
+      width:44px;height:44px;
+      border-radius: 14px;
+      background: rgba(79,70,229,.14);
+      color:#3730a3;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+    }
+    .upl-main{ flex:1; min-width:0; }
+    .upl-title{ font-weight: 800; font-size:.95rem; margin:0; }
+    .upl-sub{ margin-top:6px; color:var(--muted); font-size:.82rem; line-height:1.6; }
+
+    .upl-actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+
+    .btnx{
+      border:none;
+      border-radius: 999px;
+      padding: .55rem .95rem;
+      font-weight: 800;
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      cursor:pointer;
+      transition:.15s;
+      white-space:nowrap;
+    }
+    .btn-primaryx{
+      color:white;
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      box-shadow: 0 16px 40px rgba(79,70,229,.42);
+    }
+    .btn-primaryx:hover{ transform: translateY(-1px); filter: brightness(1.03); }
+    .btn-ghostx{
+      background: rgba(15,23,42,.06);
+      color:#0f172a;
+    }
+    .btn-ghostx:hover{ background: rgba(15,23,42,.09); }
+
+    .preview{
+      margin-top: 12px;
+      display:none;
+      gap: 12px;
+      align-items:center;
+      padding: 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(255,255,255,.72);
+    }
+    .preview.show{ display:flex; }
+
+    .thumb{
+      width:64px;height:64px;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.35);
+      overflow:hidden;
+      background: rgba(15,23,42,.04);
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .thumb img{ width:100%; height:100%; object-fit:cover; }
+
+    .filemeta{ min-width:0; flex:1; }
+    .fname{
+      font-weight: 800;
+      font-size: .9rem;
+      margin:0;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .finfo{ margin-top:6px; font-size:.82rem; color: var(--muted); }
+
+    .remove-link{ color: var(--danger); font-weight: 800; cursor:pointer; user-select:none; white-space:nowrap; }
+
+    .footer{
+      padding-top: 6px;
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .note{
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.7;
+      flex: 1 1 320px;
+      min-width:0;
+    }
+
+    .is-invalid{
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 .2rem rgba(239,68,68,.12) !important;
+    }
+
+    /* ✅ کارت نکات */
+    .side{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .side h3{ margin:0; font-size: 1rem; font-weight: 900; }
+    .tips{
+      margin:0;
+      padding:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .tip{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      padding: 10px;
+      border-radius: 16px;
+      border:1px solid rgba(148,163,184,.30);
+      background: rgba(255,255,255,.70);
+    }
+    .tip i{
+      width:34px;height:34px;
+      border-radius: 12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(79,70,229,.12);
+      color:#3730a3;
+      flex:0 0 auto;
+      margin-top:1px;
+    }
+    .tip div{ color: var(--muted); font-size:.86rem; line-height:1.65; }
+
+    /* ✅ Toast بدون Bootstrap */
+    .toastx{
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 1080;
+      display:none;
+      background: rgba(15,23,42,.92);
+      color:#fff;
+      border: 1px solid rgba(148,163,184,.25);
+      border-radius: 16px;
+      box-shadow: 0 18px 55px rgba(15,23,42,.25);
+      padding: 12px 14px;
+      direction: rtl;
+      text-align: right;
+      line-height: 1.7;
+      font-weight: 800;
+    }
+    .toastx.show{ display:block; animation: pop .18s ease-out; }
+    @keyframes pop{ from{ transform: translateY(10px); opacity:.0 } to{ transform: translateY(0); opacity:1 } }
+
+    @media (max-width: 576px){
+      .page-wrap{ padding: 16px 10px 26px; }
+      .header{ padding: 16px 14px 10px; }
+      .body{ padding: 14px; }
+      .grid{ grid-template-columns: 1fr; }
+      .pill{ width:100%; white-space:normal; line-height:1.6; }
+      .btn-primaryx{ width:100%; justify-content:center; padding:.85rem 1rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap" style="text-align: right;">
+    <div class="shell">
+
+      <!-- Main Card -->
+      <div class="cardx">
+        <div class="header">
+          <div class="title-row">
+            <div class="logo-badge"><i class="fas fa-bug"></i></div>
+            <div style="min-width:0">
+              <p class="h1">گزارش خطا / درخواست ویژگی</p>
+              <p class="sub">اطلاعات را کامل وارد کنید و اگر تصویر خطا دارید، ضمیمه کنید تا سریع‌تر بررسی کنیم.</p>
+            </div>
+          </div>
+          <div class="pill">⏱ زمان پاسخ: حداکثر ۲۴ ساعت کاری</div>
+        </div>
+
+        <div class="body">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert" style="text-align:right;">
+              {% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}
+            </div>
+          {% endif %}
+
+          <form id="ticketForm" method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="grid">
+              <div class="field">
+                <div class="label">نام پروژه <span class="req">*</span></div>
+                <input type="text" name="project_name" id="id_project_name" class="ctrl"
+                       placeholder="مثال: سنس اسیدشویی"
+                       value="{{ project.name|default_if_none:'' }}" required>
+                {% if form.project_name.errors %}<div class="err">{{ form.project_name.errors.0 }}</div>{% endif %}
+              </div>
+
+              <div class="field">
+                <div class="label">شماره تلفن <span class="req">*</span></div>
+                <input type="tel" name="phone_number" id="id_phone_number" class="ctrl"
+                       placeholder="مثال: 09123456789" pattern="[0-9]{11}"
+                       value="{{ form.phone_number.value|default_if_none:'' }}"
+                       required inputmode="numeric" autocomplete="tel">
+                <div class="help">فقط اعداد، ۱۱ رقم.</div>
+                {% if form.phone_number.errors %}<div class="err">{{ form.phone_number.errors.0 }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="label">دسته‌بندی <span class="req">*</span></div>
+              <select name="category" id="id_category" class="sel" required>
+                <option value="">انتخاب دسته‌بندی</option>
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}" {% if form.category.value == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+              {% if form.category.errors %}<div class="err">{{ form.category.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="field">
+              <div class="label">عنوان تیکت <span class="req">*</span></div>
+              <input type="text" name="title" id="id_title" class="ctrl"
+                     placeholder="مثلاً: خطا در تشخیص عیب / قطع ارتباط / کرش نرم‌افزار"
+                     value="{{ form.title.value|default_if_none:'' }}" required>
+              {% if form.title.errors %}<div class="err">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="field">
+              <div class="label">شرح خطا <span class="req">*</span></div>
+              <textarea name="message" id="id_message" class="ctrl" rows="5"
+                        placeholder="زمان وقوع، گام‌های تکرار خطا، پیام خطا، و هر نکته‌ای که کمک کند..." required>{{ form.message.value|default_if_none:'' }}</textarea>
+              <div class="help">هرچه دقیق‌تر بنویسید، سریع‌تر حل می‌کنیم.</div>
+              {% if form.message.errors %}<div class="err">{{ form.message.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Upload -->
+            <div class="field">
+              <div class="label">تصویر خطا (اختیاری)</div>
+
+              <div id="uploader" class="uploader">
+                <div class="upl-ic"><i class="fas fa-image"></i></div>
+                <div class="upl-main">
+                  <p class="upl-title">تصویر را اینجا رها کنید یا انتخاب کنید</p>
+                  <p class="upl-sub">فرمت‌های مجاز: JPG / PNG / WEBP — پیشنهاد: حداکثر 10MB</p>
+
+                  <div class="upl-actions">
+                    <button type="button" class="btnx btn-primaryx" id="pickFileBtn">
+                      <i class="fas fa-upload"></i> انتخاب تصویر
+                    </button>
+                    <button type="button" class="btnx btn-ghostx" id="clearFileBtn" style="display:none;">
+                      <i class="fas fa-trash"></i> حذف تصویر
+                    </button>
+                  </div>
+
+                  <input type="file" name="image" id="id_image" accept="image/*" class="d-none">
+
+                  <div id="preview" class="preview">
+                    <div class="thumb" id="thumb">
+                      <i class="fas fa-image" style="color:rgba(15,23,42,.35)"></i>
+                    </div>
+                    <div class="filemeta">
+                      <p class="fname" id="fname">—</p>
+                      <div class="finfo" id="finfo">—</div>
+                    </div>
+                    <div class="remove-link" id="removeLink">حذف</div>
+                  </div>
+
+                  {% if form.image.errors %}<div class="err">{{ form.image.errors.0 }}</div>{% endif %}
+                </div>
+              </div>
+              <div class="help mt-2">اگر خطا مربوط به UI است، اسکرین‌شات ارسال کنید.</div>
+            </div>
+
+            <div class="footer">
+              <div class="note">پس از ثبت، می‌توانید وضعیت تیکت را از بخش «لیست تیکت‌ها» پیگیری کنید.</div>
+              <button type="submit" class="btnx btn-primaryx">
+                <i class="fas fa-paper-plane"></i> ارسال تیکت
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ✅ همیشه پایین -->
+      <div class="cardx">
+        <div class="side">
+        <h3>چطور خطای پیش آمده را دقیق توضیح دهیم؟</h3>
+          <ul class="tips">
+            <li class="tip"><i class="fas fa-list-check"></i><div>مراحل تکرار خطا را مرحله‌به‌مرحله بنویسید.</div></li>
+            <li class="tip"><i class="fas fa-triangle-exclamation"></i><div>اگر پیام خطا دارید، متن دقیق یا عکس آن را ضمیمه کنید.</div></li>
+            <li class="tip"><i class="fas fa-clock"></i><div>زمان وقوع و شرایط (مثلاً بعد از اتصال/بعد از ریفرش) را ذکر کنید.</div></li>
+            <li class="tip"><i class="fas fa-shield-halved"></i><div>اطلاعات حساس مثل رمز عبور را داخل تیکت ننویسید.</div></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast (no bootstrap) -->
+  <div id="toastx" class="toastx">—</div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // ===== Toast (بدون Bootstrap) =====
+      const toastEl = document.getElementById("toastx");
+      let toastTimer = null;
+
+      function showToast(msg, ms=2600){
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
+      }
+
+      // ===== Validation =====
+      const form = document.getElementById("ticketForm");
+
+      function scrollToFirstInvalid() {
+        const first = form.querySelector(".is-invalid");
+        if (!first) return;
+        const y = first.getBoundingClientRect().top + window.scrollY - 120;
+        window.scrollTo({ top: y, behavior: "smooth" });
+        setTimeout(() => {
+          try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); }
+        }, 250);
+      }
+
+      form.addEventListener("submit", function (event) {
+        const required = form.querySelectorAll("input[required], select[required], textarea[required]");
+        let ok = true;
+
+        required.forEach((el) => {
+          const val = (el.value || "").trim();
+          if (!val) { ok = false; el.classList.add("is-invalid"); }
+          else { el.classList.remove("is-invalid"); }
+        });
+
+        if (!ok) {
+          event.preventDefault();
+          showToast("لطفاً فیلدهای الزامی را کامل کنید.");
+          scrollToFirstInvalid();
+        }
+      });
+
+      form.addEventListener("input", (e) => {
+        const el = e.target;
+        if (el && el.matches("input[required], textarea[required]")) {
+          if ((el.value || "").trim()) el.classList.remove("is-invalid");
+        }
+      });
+      form.addEventListener("change", (e) => {
+        const el = e.target;
+        if (el && el.matches("select[required]")) {
+          if ((el.value || "").trim()) el.classList.remove("is-invalid");
+        }
+      });
+
+      // ===== Upload (pick + drag/drop + preview) =====
+      const uploader = document.getElementById("uploader");
+      const pickBtn = document.getElementById("pickFileBtn");
+      const clearBtn = document.getElementById("clearFileBtn");
+      const removeLink = document.getElementById("removeLink");
+      const fileInput = document.getElementById("id_image");
+
+      const preview = document.getElementById("preview");
+      const thumb = document.getElementById("thumb");
+      const fname = document.getElementById("fname");
+      const finfo = document.getElementById("finfo");
+
+      const MAX_MB = 3;
+
+      function bytesToSize(bytes){
+        const sizes = ["B","KB","MB","GB"];
+        let i = 0, v = bytes || 0;
+        while (v >= 1024 && i < sizes.length - 1) { v /= 1024; i++; }
+        return `${v.toFixed(i === 0 ? 0 : 1)} ${sizes[i]}`;
+      }
+
+      function clearFile(){
+        fileInput.value = "";
+        preview.classList.remove("show");
+        thumb.innerHTML = `<i class="fas fa-image" style="color:rgba(15,23,42,.35)"></i>`;
+        fname.textContent = "—";
+        finfo.textContent = "—";
+        clearBtn.style.display = "none";
+      }
+
+      function setPreview(file){
+        fname.textContent = file.name;
+        finfo.textContent = `${bytesToSize(file.size)} • ${file.type || "image"}`;
+        clearBtn.style.display = "inline-flex";
+
+        const url = URL.createObjectURL(file);
+        thumb.innerHTML = `<img src="${url}" alt="preview">`;
+        preview.classList.add("show");
+      }
+
+      function acceptFile(file){
+        if (!file) return;
+
+        if (!file.type || !file.type.startsWith("image/")){
+          showToast("فقط فایل تصویری مجاز است.");
+          return;
+        }
+
+        const sizeMb = file.size / (1024*1024);
+        if (sizeMb > MAX_MB){
+          showToast(`حجم تصویر زیاد است (بیشتر از ${MAX_MB}MB). لطفاً تصویر را کوچک‌تر کنید.`);
+          return;
+        }
+
+        // set input files (برای drop)
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+
+        setPreview(file);
+      }
+
+      // ✅ اینجا خطا شما حل میشه: اگر قبلاً اسکریپت کرش می‌کرد، این وصل نمی‌شد.
+      pickBtn.addEventListener("click", () => fileInput.click());
+      clearBtn.addEventListener("click", clearFile);
+      removeLink.addEventListener("click", clearFile);
+
+      fileInput.addEventListener("change", () => {
+        const f = fileInput.files && fileInput.files[0];
+        if (!f) return clearFile();
+        acceptFile(f);
+      });
+
+      ["dragenter","dragover"].forEach(evt => {
+        uploader.addEventListener(evt, (e) => {
+          e.preventDefault(); e.stopPropagation();
+          uploader.classList.add("dragover");
+        });
+      });
+      ["dragleave","drop"].forEach(evt => {
+        uploader.addEventListener(evt, (e) => {
+          e.preventDefault(); e.stopPropagation();
+          uploader.classList.remove("dragover");
+        });
+      });
+      uploader.addEventListener("drop", (e) => {
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) acceptFile(f);
+      });
+
+    });
+  </script>
+</body>
+</html>

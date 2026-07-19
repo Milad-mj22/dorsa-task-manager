@@ -1,0 +1,638 @@
+{% extends "users/base.html" %}
+{% block title %} Home Page {% endblock title %}
+{% block content %}
+
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/store.css' %}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-soft: rgba(79, 70, 229, 0.08);
+        --accent: #f97316;
+        --bg-soft: #f4f5fb;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
+    body {
+        background: radial-gradient(circle at top left, #eef2ff, #f9fafb 40%, #f5f3ff 100%);
+    }
+
+    .order-page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 20px 16px 80px;
+        direction: rtl;
+        text-align: right;
+        position: relative;
+    }
+
+    @media (min-width: 768px) {
+        .order-page {
+            padding-top: 32px;
+        }
+    }
+
+    .page-shell {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(18px);
+        border-radius: 28px;
+        padding: 22px 18px 26px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    @media (min-width: 992px) {
+        .page-shell {
+            padding: 26px 22px 30px;
+        }
+    }
+
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 18px;
+        text-align: right;
+    }
+
+    @media (min-width: 768px) {
+        .page-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .page-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-title-pill {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 20%, #6366f1, #4f46e5);
+        box-shadow: 0 12px 28px rgba(79, 70, 229, 0.55);
+    }
+
+    .page-title-pill i {
+        color: #fff;
+        font-size: 17px;
+    }
+
+    .page-title {
+        margin: 0;
+        font-weight: 800;
+        font-size: 21px;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+    }
+
+    .page-subtitle {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        background: var(--primary-soft);
+        color: #4f46e5;
+        border: 1px solid rgba(129, 140, 248, 0.35);
+    }
+
+    .chip i {
+        font-size: 13px;
+    }
+
+    /* Search row */
+    .search-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        margin-bottom: 14px;
+        flex-wrap: nowrap;
+    }
+
+    .search-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-input {
+        padding-inline-start: 12px;
+        padding-inline-end: 32px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        background: #f9fafb;
+        transition: all 0.2s ease;
+        direction: rtl;
+        text-align: right;
+    }
+
+    .search-input:focus {
+        outline: none;
+        background: #ffffff;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.18);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
+    .reset-btn {
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        font-size: 14px;
+        padding-inline: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .reset-btn:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    /* Materials list */
+    .materials-scroll {
+        max-height: 60vh;
+        overflow-y: auto;
+        padding-right: 4px;
+        padding-left: 4px;
+    }
+
+    @media (max-width: 767px) {
+        .materials-scroll {
+            max-height: none;
+        }
+    }
+
+    .materials-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .materials-scroll::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.7);
+        border-radius: 999px;
+    }
+
+    .mother-card {
+        border-radius: var(--radius-md);
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(209, 213, 219, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f9fafb);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        cursor: pointer;
+        transition: all 0.18s ease-out;
+        text-align: right;
+    }
+
+    .mother-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(129, 140, 248, 0.65);
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+        background: linear-gradient(135deg, #f9fafb, #eef2ff);
+    }
+
+    .mother-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .mother-card-thumb {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #e5e7eb;
+    }
+
+    .mother-card-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mother-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .chevron {
+        margin-inline-start: auto;
+        font-size: 15px;
+        color: #9ca3af;
+    }
+
+    .submaterials {
+        margin-top: 8px;
+        border-radius: var(--radius-md);
+        padding: 8px 6px 6px;
+        background: rgba(249, 250, 251, 0.9);
+        border: 1px dashed rgba(209, 213, 219, 0.85);
+    }
+
+    .sub-card {
+        border-radius: var(--radius-md);
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        margin-bottom: 8px;
+        text-align: right;
+    }
+
+    .sub-card-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sub-card-thumb {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #e5e7eb;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .sub-card-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .sub-card-content-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .sub-card-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-stepper {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        border: none;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        color: #111827;
+        transition: all 0.15s ease;
+    }
+
+    .btn-stepper:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .digit-input {
+        width: 80px;
+        text-align: center;
+        border-radius: 999px !important;
+        border: 1px solid #e5e7eb;
+        font-size: 13px;
+        padding-inline: 10px;
+        height: 34px;
+        background: #f9fafb;
+        direction: rtl;
+    }
+
+    .digit-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.12);
+        background: #ffffff;
+    }
+
+    .unit-pill {
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    /* Additional details */
+    .details-card {
+        border-radius: var(--radius-md);
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 10px 12px 12px;
+        margin-top: 12px;
+        text-align: right;
+    }
+
+    .details-label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #4b5563;
+        margin-bottom: 6px;
+    }
+
+    .details-textarea {
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        font-size: 13px;
+        padding: 8px 10px;
+        resize: vertical;
+        min-height: 80px;
+        direction: rtl;
+        text-align: right;
+        background: #ffffff;
+    }
+
+    .details-textarea:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.12);
+    }
+
+    /* Fixed send button */
+    .Send_btn {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(420px, 90%);
+        padding: 0;
+        background-color: transparent;
+        text-align: center;
+        z-index: 9999;
+        border: none;
+    }
+
+    .Send_btn button {
+        width: 100%;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        border: none;
+        color: #fff;
+        box-shadow: 0 16px 30px rgba(79, 70, 229, 0.55);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.16s ease;
+    }
+
+    .Send_btn button:hover {
+        transform: translateX(0) translateY(-1px);
+    }
+
+    @media (min-width: 992px) {
+        .Send_btn {
+            bottom: 24px;
+        }
+    }
+</style>
+
+<script>
+    function toggleSubmaterials(id) {
+        const submaterials = document.getElementById(id);
+        if (submaterials.style.display === "none" || submaterials.style.display === "") {
+            submaterials.style.display = "block";
+        } else {
+            submaterials.style.display = "none";
+        }
+    }
+
+    function filterMaterials() {
+        const input = document.getElementById('search-bar');
+        const filter = input.value.toLowerCase();
+        const cards = document.querySelectorAll('.mother-card');
+
+        cards.forEach(card => {
+            const cardText = card.innerText.toLowerCase();
+            const subId = card.getAttribute('data-sub-id');
+            const submaterials = subId ? document.getElementById(subId) : null;
+
+            if (cardText.includes(filter)) {
+                card.style.display = "";
+                if (submaterials && filter) {
+                    submaterials.style.display = "block";
+                }
+            } else {
+                card.style.display = "none";
+                if (submaterials) {
+                    submaterials.style.display = "none";
+                }
+            }
+        });
+    }
+
+    function handleSearchInput() {
+        const input = document.getElementById('search-bar');
+        const value = input.value.trim();
+
+        if (value === "") {
+            const allSubmaterials = document.querySelectorAll('.submaterials');
+            allSubmaterials.forEach(submaterials => {
+                submaterials.style.display = "none";
+            });
+
+            const allCards = document.querySelectorAll('.mother-card');
+            allCards.forEach(card => {
+                card.style.display = "";
+            });
+        }
+
+        filterMaterials();
+    }
+
+    function closeAllTabs() {
+        const allSubmaterials = document.querySelectorAll('.submaterials');
+        allSubmaterials.forEach(submaterials => {
+            submaterials.style.display = "none";
+        });
+    }
+
+    function changeValue(inputId, increment) {
+        const input = document.getElementById(inputId);
+        let value = parseFloat(input.value) || 0;
+        value += increment;
+        if (value < 0) {
+            value = 0;
+        }
+        input.value = value.toFixed(1);
+    }
+</script>
+
+<div class="order-page">
+    <div class="page-shell">
+        <div class="page-header">
+            <div class="page-title-wrapper">
+                <div class="page-title-pill">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <h1 class="page-title">ایجاد سفارش</h1>
+                    <div class="page-subtitle">
+                        انتخاب مواد و ثبت سفارش شما با رابط کاربری مدرن و مناسب موبایل
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span class="chip">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    بهینه‌شده برای موبایل
+                </span>
+            </div>
+        </div>
+
+        <!-- Search Bar with Close All Tabs Button -->
+        <div class="search-row">
+            <div class="search-wrapper">
+                <input type="text"
+                       id="search-bar"
+                       oninput="handleSearchInput()"
+                       class="form-control search-input"
+                       placeholder="جستجو بر اساس نام یا توضیحات...">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            </div>
+            <button type="button"
+                    onclick="closeAllTabs()"
+                    class="reset-btn">
+                <i class="fa-solid fa-rotate"></i>
+                بستن همه
+            </button>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="materials-scroll">
+                {% for mother_material in mother_materials %}
+                    <div class="mother-card" data-sub-id="submaterials-{{ mother_material.id }}">
+                        <a href="javascript:void(0);"
+                           onclick="toggleSubmaterials('submaterials-{{ mother_material.id }}')"
+                           style="text-decoration: none; color: inherit;">
+                            <div class="mother-card-header">
+                                {% if mother_material.image %}
+                                    <div class="mother-card-thumb">
+                                        <img src="{{ mother_material.image.url }}" alt="{{ mother_material.name }}">
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="mother-card-title">
+                                        <strong>{{ mother_material.describe }}</strong> : {{ mother_material.name }}
+                                    </div>
+                                </div>
+                                <span class="chevron">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </div>
+                        </a>
+
+                        <div id="submaterials-{{ mother_material.id }}" class="submaterials" style="display: none;">
+                            {% for field in mother_material.allowed_materials.all %}
+                                <div class="sub-card">
+                                    <div class="sub-card-main">
+                                        {% if field.image %}
+                                            <div class="sub-card-thumb">
+                                                <img src="{{ field.image.url }}" alt="{{ field.name }}">
+                                            </div>
+                                        {% endif %}
+                                        <div class="sub-card-content-row">
+                                            <div>
+                                                <div class="sub-card-title">
+                                                    {{ mother_material.describe }} | {{ field.describe }}: {{ field.name }}
+                                                </div>
+                                            </div>
+                                            <div class="input-wrapper">
+                                                <button type="button"
+                                                        class="btn-stepper"
+                                                        onclick="changeValue('{{ field.id }}_input', -1)">-</button>
+                                                <input class="form-control digit-input"
+                                                       type="text" step="1"
+                                                       id="{{ field.id }}_input"
+                                                       name="{{ field.name }}"
+                                                       value="0">
+                                                <button type="button"
+                                                        class="btn-stepper"
+                                                        onclick="changeValue('{{ field.id }}_input', 1)">+</button>
+                                                <span class="unit-pill">{{ field.unit }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Additional details field -->
+            <div class="details-card">
+                <label for="additional_details" class="details-label">
+                    توضیحات اضافه در صورت نیاز
+                </label>
+                <textarea id="additional_details"
+                          name="additional_details"
+                          class="details-textarea"
+                          rows="4"
+                          placeholder="متن را وارد کنید ..."></textarea>
+            </div>
+
+            <!-- Fixed send button -->
+            <div class="Send_btn">
+                <button type="submit">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    ارسال سفارش
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,350 @@
+{% extends "users/base.html" %}
+{% load widget_tweaks %}
+{% load custom_tags %}
+
+{% block content %}
+
+<style>
+  /* ----- Page polish ----- */
+  .page-header {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+  }
+  .meta-card, .desc-card, .items-card, .comments-card, .flow-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+  }
+  .card-shadow {
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  }
+  .dl-grid {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    row-gap: .5rem;
+    column-gap: 1rem;
+  }
+  .dl-grid dt { color: #64748b; font-weight: 600; }
+  .dl-grid dd { margin: 0; color: #0f172a; }
+  .badge-soft {
+    background: #eef2ff; color: #3730a3;
+    border: 1px solid #e0e7ff;
+  }
+  /* Timeline look (for comments) */
+  .timeline {
+    position: relative;
+    padding-right: 1rem;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    top: .25rem;
+    bottom: .25rem;
+    right: 10px;
+    width: 2px;
+    background: #e5e7eb;
+  }
+  .timeline-item {
+    position: relative;
+    padding-right: 2rem;
+    margin-bottom: 1rem;
+  }
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    right: 2px;
+    top: .35rem;
+    width: 10px; height: 10px;
+    background: #3b82f6;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px #eff6ff;
+  }
+  /* Flow list visuals */
+  .flow-step .approver-badge {
+    border: 1px solid #e5e7eb;
+  }
+  .flow-step .approver-badge.approved {
+    color: #0f5132;
+    background: #d1e7dd;
+    border-color: #badbcc;
+  }
+  .flow-step .approver-badge.pending {
+    background: #f8fafc;
+  }
+  .progress {
+    height: 10px;
+  }
+  /* RTL */
+  [dir="rtl"] .dl-grid {
+    grid-template-columns: 160px 1fr;
+  }
+</style>
+
+<div class="container mt-4" dir="rtl">
+
+  <!-- Header -->
+  <div class="page-header mb-4 card-shadow">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h3 class="mb-1">{{ mission.project.name }} — {{ mission.location }}</h3>
+        <div class="text-muted small">
+          شناسه مأموریت: #{{ mission.id }}
+          {% if mission.type %} • نوع: {{ mission.type.name }}{% endif %}
+        </div>
+      </div>
+
+      <div class="d-flex flex-column align-items-end gap-2" style="min-width:260px;">
+        <div class="d-flex align-items-center gap-2">
+          {% if mission.status == "approved" %}
+            <span class="badge text-bg-success px-3 py-2 rounded-pill">تأیید شده</span>
+          {% elif mission.status == "rejected" %}
+            <span class="badge text-bg-danger px-3 py-2 rounded-pill">رد شده</span>
+          {% else %}
+            <span class="badge text-bg-warning px-3 py-2 rounded-pill">در انتظار تأیید</span>
+          {% endif %}
+        </div>
+
+        <!-- Progress -->
+        <div class="w-100">
+          <div class="progress" role="progressbar" aria-valuenow="{{ progress_percent|default:mission.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ progress_percent|default:mission.progress_percent }}%"></div>
+          </div>
+          <small class="text-muted">{{ progress_percent|default:mission.progress_percent }}٪ پیشرفت تأیید</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left: meta + description -->
+    <div class="col-12 col-lg-7">
+
+      <!-- Metadata -->
+      <div class="card meta-card card-shadow mb-4">
+        <div class="card-header bg-white border-0">
+          <h5 class="m-0 " style="text-align: center">اطلاعات مأموریت</h5>
+        </div>
+        <div class="card-body">
+          <dl class="dl-grid" style="text-align: right">
+            <dt>ایجادکننده</dt>
+            <dd>{{ mission.created_by.get_full_name|default:mission.created_by.username }}</dd>
+
+            <dt>افراد حاضر در مأموریت</dt>
+            <dd>
+              {% for person in mission.persons.all %}
+                {{ person.get_full_name|default:person.username }}{% if not forloop.last %}, {% endif %}
+              {% empty %}
+                {{ mission.created_by.get_full_name|default:mission.created_by.username }}
+              {% endfor %}
+            </dd>
+
+            <dt>مرحله جاری</dt>
+            <dd>
+              {% with current=mission.get_current_step %}
+                {% if current %}
+                  مرحله {{ current.position }}: {{ current.step_name }}
+                {% else %}
+                  —
+                {% endif %}
+              {% endwith %}
+            </dd>
+
+            <dt>تاریخ شروع</dt>
+            <dd>{{ mission.start_date|to_jalali }}</dd>
+
+            <dt>تاریخ پایان</dt>
+            <dd>{{ mission.end_date|to_jalali }}</dd>
+
+            <dt>بودجه</dt>
+            <dd>{{ mission.price }} <span class="text-muted">ریال</span></dd>
+
+            <dt>وضعیت</dt>
+            <dd>
+              {% if mission.status == "approved" %}تأیید شده{% elif mission.status == "rejected" %}رد شده{% else %}در انتظار تأیید{% endif %}
+            </dd>
+          </dl>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="card desc-card card-shadow mb-4">
+        <div class="card-header bg-white border-0">
+          <h5 class="m-0">توضیحات</h5>
+        </div>
+        <div class="card-body">
+          <div class="text-body">{{ mission.description|linebreaks }}</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: flow + items + comments -->
+    <div class="col-12 col-lg-5">
+
+      <!-- Flow / Approvals -->
+      <div class="card flow-card card-shadow mb-4">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+          <h5 class="m-0">جریان تأیید مأموریت</h5>
+          <span class="badge badge-soft rounded-pill">{{ flows|length }} مرحله</span>
+        </div>
+
+        <div class="card-body">
+          {% if flows %}
+            <ul class="list-group list-group-flush">
+              {% for step in flows %}
+                <li class="list-group-item flow-step">
+                  <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="flex-grow-1">
+                      <div class="fw-semibold">
+                        مرحله {{ step.position }}: {{ step.step_name }}
+                        {% if step.is_current and not step.approved %}
+                          <span class="badge text-bg-info ms-1">در حال تأیید</span>
+                        {% endif %}
+                        {% if step.approved %}
+                          <span class="badge text-bg-success ms-1">تأیید شد</span>
+                        {% endif %}
+                      </div>
+
+                      {% if step.description %}
+                        <div class="text-muted small mt-1">{{ step.description }}</div>
+                      {% endif %}
+
+                      <!-- Approvers -->
+                      <div class="mt-2">
+                        <div class="small text-muted mb-1">تأییدکنندگان:</div>
+                        <div class="d-flex flex-wrap gap-2">
+                          {% for approver in step.approvers.all %}
+                            {% with approved_rec=None %}
+                              {% for a in step.approvals.all %}
+                                {% if a.user_id == approver.id and a.approved %}
+                                  {% with approved_rec=a %}{% endwith %}
+                                {% endif %}
+                              {% endfor %}
+                              <span class="badge rounded-pill approver-badge {% if approved_rec %}approved{% else %}pending{% endif %}">
+                                {% if approver.get_full_name %}
+                                  {{ approver.get_full_name }}
+                                {% else %}
+                                  {{ approver.username }}
+                                {% endif %}
+                                {% if approved_rec %}
+                                  • {{ approved_rec.approved_at|to_jalali }}
+                                {% endif %}
+                              </span>
+                            {% endwith %}
+                          {% empty %}
+                            <span class="text-muted small">— بدون تأییدکننده —</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+
+                      <!-- Times -->
+                      <div class="mt-2 small text-muted">
+                        {% if step.started_at %}شروع: {{ step.started_at|to_jalali }}{% endif %}
+                        {% if step.finished_at %} • پایان: {{ step.finished_at|to_jalali }}{% endif %}
+                      </div>
+                    </div>
+
+                    <!-- Action column -->
+                    <div class="text-nowrap">
+                      {% if step.is_current and not step.approved and user in step.approvers.all %}
+                        {% comment %}Check if current user already approved{% endcomment %}
+                        {% with i_approved=False %}
+                          {% for a in step.approvals.all %}
+                            {% if a.user_id == user.id and a.approved %}
+                              {% with i_approved=True %}{% endwith %}
+                            {% endif %}
+                          {% endfor %}
+                          {% if not i_approved %}
+                            <form method="post" action="{% url 'approve_flow' step.id %}">
+                              {% csrf_token %}
+                              <button class="btn btn-sm btn-primary">تأیید این مرحله</button>
+                            </form>
+                          {% else %}
+                            <span class="badge text-bg-success">توسط شما تأیید شد</span>
+                          {% endif %}
+                        {% endwith %}
+                      {% endif %}
+                    </div>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="alert alert-light border">برای این مأموریت مرحله‌ای تعریف نشده است.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Items (optional, only if you have mission.items relation) -->
+      {% with mission_items=mission.items.all %}
+      {% if mission_items|length %}
+      <div class="card items-card card-shadow mb-4">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+          <h5 class="m-0">اقلام مربوط به مأموریت</h5>
+          <span class="badge badge-soft rounded-pill">{{ mission_items|length }} قلم</span>
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for item in mission_items %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-semibold">{{ item.name }}</span>
+                  {% if item.note %}
+                    <span class="text-muted small">— {{ item.note }}</span>
+                  {% endif %}
+                </div>
+                <span class="badge text-bg-primary rounded-pill">{{ item.quantity }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <!-- Comments -->
+      <div class="card comments-card card-shadow">
+        <div class="card-header bg-white border-0">
+          <h5 class="m-0">نظرات</h5>
+        </div>
+        <div class="card-body">
+          {% if comments %}
+            <div class="timeline mb-3">
+              {% for comment in comments %}
+                <div class="timeline-item">
+                  <div class="d-flex justify-content-between">
+                    <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                    <small class="text-muted">{{ comment.created_at|to_jalali }}</small>
+                  </div>
+                  <div class="mt-1 text-body">{{ comment.text }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="alert alert-light border d-flex align-items-center" role="alert">
+              هیچ نظری ثبت نشده است.
+            </div>
+          {% endif %}
+
+          <form method="post" class="mt-3">
+            {% csrf_token %}
+            <div class="mb-3">
+              {{ form.text.label_tag }}
+              {{ form.text|add_class:"form-control" }}
+            </div>
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary w-100">ارسال نظر</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

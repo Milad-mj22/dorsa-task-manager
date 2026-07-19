@@ -1,0 +1,230 @@
+{% extends "users/base.html" %}
+{% block title %}Sprints{% endblock %}
+{% block content %}
+
+<style>
+  .sprint-page {
+    min-height: calc(100vh - 80px);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  }
+
+  .card-center {
+    width: 100%;
+    max-width: 960px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.92);
+    border-radius: 1.5rem;
+    padding: 1.75rem 2rem;
+    box-shadow:
+      0 20px 45px rgba(15, 23, 42, 0.65),
+      0 0 0 1px rgba(148, 163, 184, 0.18);
+    color: #e5e7eb;
+    backdrop-filter: blur(24px);
+  }
+
+  .card h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #f9fafb;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #f9fafb;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.45);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    white-space: nowrap;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 35px rgba(79, 70, 229, 0.6);
+    filter: brightness(1.05);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(79, 70, 229, 0.4);
+  }
+
+  .sprint-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sprint-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 1rem;
+    background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.2), rgba(15, 23, 42, 0.7));
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    cursor: pointer;
+    transition:
+      background 0.14s ease,
+      box-shadow 0.14s ease,
+      transform 0.12s ease,
+      border-color 0.14s ease;
+  }
+
+  .sprint-item:hover {
+    background: radial-gradient(circle at top left, rgba(129, 140, 248, 0.3), rgba(15, 23, 42, 0.9));
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.6);
+    transform: translateY(-1px);
+    border-color: rgba(129, 140, 248, 0.6);
+  }
+
+  .sprint-item strong {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #e5e7eb;
+  }
+
+  .sprint-meta {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .sprint-meta .chip-label {
+    padding: 0.08rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.85);
+    color: #cbd5f5;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sprint-meta .chip-date {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(30, 64, 175, 0.6);
+    color: #e5e7eb;
+    font-size: 0.78rem;
+  }
+
+  .btn-outline-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    border-radius: 999px;
+    border: 1px solid rgba(129, 140, 248, 0.9);
+    color: #c7d2fe;
+    background: transparent;
+    text-decoration: none;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease,
+      box-shadow 0.12s ease,
+      transform 0.1s ease;
+    white-space: nowrap;
+  }
+
+  .btn-outline-primary:hover {
+    background: rgba(79, 70, 229, 0.2);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.8);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.7);
+  }
+
+  .empty-state {
+    margin-top: 1rem;
+    padding: 1.2rem 1.4rem;
+    border-radius: 1rem;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px dashed rgba(148, 163, 184, 0.5);
+    font-size: 0.9rem;
+    color: #9ca3af;
+  }
+
+  @media (max-width: 640px) {
+    .card {
+      padding: 1.4rem 1.2rem;
+    }
+
+    .sprint-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+    }
+  }
+</style>
+
+<div class="sprint-page">
+  <div class="card-center">
+    <div class="card">
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; gap: 1rem;">
+        <h2>Sprints</h2>
+        <a href="{% url 'sprint_create' %}" class="btn-primary">+ New Sprint</a>
+      </div>
+
+      {% if sprints %}
+        <ul class="sprint-list">
+          {% for sprint in sprints %}
+            <li class="sprint-item">
+              <div>
+                <strong>{{ sprint.name }}</strong>
+                <div class="sprint-meta">
+                  <span class="chip-label">Dates</span>
+                  <span class="chip-date">{{ sprint.start_date }} → {{ sprint.end_date }}</span>
+                </div>
+              </div>
+              <a href="{% url 'sprint_edit' sprint.id %}" class="btn-outline-primary">
+                Edit
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty-state">
+          No sprints found. Click <strong>+ New Sprint</strong> to create your first one.
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

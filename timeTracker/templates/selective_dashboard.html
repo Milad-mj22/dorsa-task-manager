@@ -1,0 +1,120 @@
+{% load static %}
+{% load custom_tags %}
+<!-- Tailwind CDN (Dev use only, use PostCSS in prod) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Team Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold mb-6">📊 Time Tracking Dashboard – <span class="text-blue-500">{{ selected_sprint.name }}</span></h1>
+
+  <form method="get" class="mb-8">
+    <label for="sprint" class="block mb-1 text-sm font-semibold text-gray-600">Select Sprint:</label>
+    <select name="sprint" id="sprint" class="p-2 rounded border border-gray-300 w-64" onchange="this.form.submit()">
+      {% for sprint in sprints %}
+        <option value="{{ sprint.id }}" {% if sprint.id == selected_sprint.id %}selected{% endif %}>{{ sprint.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% for team, tasks in stacked_data.items %}
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-10">
+      <h2 class="text-2xl font-semibold mb-4 text-indigo-600">{{ team }}</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Stacked Chart -->
+        <div>
+          <h3 class="text-lg font-bold mb-2">⏱️ Task Time by Users</h3>
+          <canvas id="stacked_{{ forloop.counter }}"></canvas>
+        </div>
+
+        <!-- Goal vs Actual -->
+        <div>
+          <h3 class="text-lg font-bold mb-2">🎯 Goal vs Actual Time</h3>
+          <canvas id="goal_{{ forloop.counter }}"></canvas>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+  const stackedData = JSON.parse('{{ stacked_data_json|escapejs }}');
+  const goalData = JSON.parse('{{ goal_data_json|escapejs }}');
+
+  Object.keys(stackedData).forEach((team, i) => {
+    const tasks = Object.keys(stackedData[team]);
+    const allUsers = Array.from(new Set(
+      tasks.flatMap(t => Object.keys(stackedData[team][t]))
+    ));
+
+    const datasets = allUsers.map(user => ({
+      label: user,
+      data: tasks.map(task => stackedData[team][task][user] || 0),
+      stack: 'users',
+      backgroundColor: `hsl(${Math.random() * 360}, 70%, 70%)`
+    }));
+
+    new Chart(document.getElementById("stacked_" + (i + 1)), {
+      type: 'bar',
+      data: {
+        labels: tasks,
+        datasets: datasets
+      },
+      options: {
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: false }
+        },
+        responsive: true,
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        }
+      }
+    });
+
+    // Goal vs Actual
+    const goal = tasks.map(t => goalData[team]?.[t] || 0);
+    const actual = tasks.map(t => Object.values(stackedData[team][t]).reduce((a, b) => a + b, 0));
+
+    new Chart(document.getElementById("goal_" + (i + 1)), {
+      type: 'bar',
+      data: {
+        labels: tasks,
+        datasets: [
+          {
+            label: 'Goal',
+            data: goal,
+            backgroundColor: 'rgba(59,130,246,0.5)'
+          },
+          {
+            label: 'Actual',
+            data: actual,
+            backgroundColor: 'rgba(239,68,68,0.6)'
+          }
+        ]
+      },
+      options: {
+        plugins: {
+          legend: { position: 'bottom' },
+        },
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

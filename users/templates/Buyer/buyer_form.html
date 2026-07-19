@@ -1,0 +1,304 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}{{ title }}{% endblock title %}
+{% block content %}
+{% load widget_tweaks %}
+{% load custom_filters %}
+
+<link rel="stylesheet" href="{% static 'css/store.css' %}">
+
+<style>
+    :root {
+        --primary: #c9f700;
+        --primary-soft: rgba(80, 112, 5, 0.08);
+        --accent: #f97316;
+        --bg-soft: #f4f5fb;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+
+    body {
+        background: radial-gradient(circle at top left, #eef2ff, #f9fafb 40%, #f5f3ff 100%);
+    }
+
+    .buyer-page {
+        max-width: 960px;
+        margin: 48px auto;
+        padding: 0 16px;
+    }
+
+    .buyer-card {
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-soft);
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        overflow: hidden;
+    }
+
+    .buyer-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+        background: linear-gradient(135deg, #e5f748a2, #f5f24f);
+        color: #363636;
+    }
+
+    .buyer-card-header h4 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+
+    .buyer-card-body {
+        padding: 24px 24px 20px;
+        background: linear-gradient(145deg, rgba(248, 250, 252, 0.9), rgba(239, 246, 255, 0.8));
+    }
+
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .form-control {
+        border-radius: 10px !important;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.95rem;
+        background-color: #f9fafb;
+        border: 1px solid #e5e7eb;
+        transition: all 0.22s ease;
+    }
+
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: rgba(79, 70, 229, 0.8);
+        box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.2);
+    }
+
+    .field-wrapper {
+        margin-bottom: 16px;
+    }
+
+    .buyer-extra-wrapper {
+        margin-top: 12px;
+        padding: 16px 18px;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px dashed rgba(148, 163, 184, 0.6);
+    }
+
+    .buyer-extra-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #0f172a;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .buyer-extra-title span {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #64748b;
+    }
+
+    .attr-row {
+        margin-bottom: 12px;
+    }
+
+    .attr-row input[type="file"] {
+        font-size: 0.85rem;
+    }
+
+    .attr-image-preview {
+        margin-top: 8px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .form-check-input {
+        cursor: pointer;
+    }
+
+    .form-check-label {
+        font-size: 0.9rem;
+        margin-right: 4px;
+        cursor: pointer;
+    }
+
+    .btn {
+        padding: 0.6rem 1.4rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        border-radius: 999px;
+        border: none;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 12px 30px rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 35px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #e5e7eb, #cbd5f5);
+        color: #111827;
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(148, 163, 184, 0.45);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    .form-footer {
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        margin-top: 16px;
+        padding-top: 16px;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .text-danger {
+        font-size: 0.8rem;
+    }
+
+    @media (min-width: 768px) {
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px 20px;
+        }
+        .field-wrapper {
+            margin-bottom: 0;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .buyer-page {
+            margin-top: 24px;
+        }
+        .buyer-card-body {
+            padding: 18px 16px;
+        }
+        .btn {
+            width: 100%;
+        }
+        .form-footer {
+            flex-direction: column-reverse;
+        }
+    }
+</style>
+
+<div class="buyer-page" dir="rtl">
+    <div class="buyer-card">
+        <div class="buyer-card-header d-flex align-items-center justify-content-between">
+            <h4 class="mb-0">{{ title }}</h4>
+            <!-- <span class="badge bg-light text-dark fw-normal" style="font-size: 0.78rem;">
+                فرم افزودن خریدار
+            </span> -->
+        </div>
+
+        <div class="buyer-card-body">
+            <form method="post" novalidate enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- فیلدهای اصلی فرم -->
+                <div class="form-grid">
+                    {% for field in form %}
+                        <div class="field-wrapper">
+                            <label for="{{ field.id_for_label }}" class="form-label d-block text-end">
+                                {{ field.label }}
+                            </label>
+                            {{ field|add_class:"form-control text-end" }}
+                            {% if field.errors %}
+                                <div class="text-danger mt-1">
+                                    {{ field.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if buyer_attributes %}
+                    <div class="buyer-extra-wrapper mt-3">
+                        <div class="buyer-extra-title">
+                            <div>اطلاعات تکمیلی خریدار</div>
+                            <span>پر کردن موارد ستاره‌دار الزامی است</span>
+                        </div>
+
+                        {% for attr in buyer_attributes %}
+                            <div class="attr-row">
+                                <label for="attr_{{ attr.id }}" class="form-label text-end d-block">
+                                    {{ attr.label }}
+                                    {% if attr.required %}
+                                        <span class="text-danger">*</span>
+                                    {% endif %}
+                                </label>
+
+                                {% if attr.field_type == 'image' %}
+                                    <input type="file" name="attr_{{ attr.id }}">
+                                    {% if value %}
+                                        <img src="{{ value }}" height="80" class="attr-image-preview">
+                                    {% endif %}
+
+                                {% elif attr.field_type == 'int' or attr.field_type == 'float' %}
+                                    <input type="number"
+                                           class="form-control text-end"
+                                           name="attr_{{ attr.id }}"
+                                           id="attr_{{ attr.id }}"
+                                           step="any"
+                                           value="{{ value }}"
+                                           {% if attr.required %}required{% endif %}>
+
+                                {% elif attr.field_type == 'bool' %}
+                                    <div class="form-check text-end">
+                                        <input type="checkbox"
+                                               class="form-check-input"
+                                               name="attr_{{ attr.id }}"
+                                               id="attr_{{ attr.id }}"
+                                               {% if value == 'on' %}checked{% endif %}>
+                                        <label class="form-check-label" for="attr_{{ attr.id }}">تأیید</label>
+                                    </div>
+
+                                {% else %}
+                                    <input type="text"
+                                           class="form-control text-end"
+                                           name="attr_{{ attr.id }}"
+                                           value="{{ attr.value }}"
+                                           {% if attr.required %}required{% endif %}>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="form-footer">
+                    <a href="{% url 'buyer_list' %}" class="btn btn-secondary">
+                        بازگشت
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        ثبت اطلاعات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

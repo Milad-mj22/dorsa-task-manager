@@ -1,0 +1,47 @@
+<!-- templates/error_page.html -->
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/all.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/base.css' %}">
+<link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+
+
+<div class="container py-5" style="direction: rtl; text-align: right;">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-12">
+            <!-- Main Error Card -->
+            <div class="card shadow-lg rounded-3 p-5 mb-5" style="background: linear-gradient(135deg, #f9f9f9, #f1f1f1); border: none;">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-danger" style="font-size: 2rem; letter-spacing: 1px;">{{ title }}</h2>
+                    <p class="text-muted" style="font-size: 1.1rem; line-height: 1.6;">{{ message }}</p>
+                </div>
+
+
+            </div>
+
+            <!-- New Card with Items -->
+            <div class="card shadow-sm mb-5" style="border-radius: 15px;">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">جزئیات خطا</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>خطا شماره 1:</strong>
+                            <span>اطلاعات ناقص</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>خطا شماره 2:</strong>
+                            <span>عدم اتصال به پایگاه داده</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>خطا شماره 3:</strong>
+                            <span>زمان انتظار تمام شده است</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

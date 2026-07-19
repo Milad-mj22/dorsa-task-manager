@@ -1,0 +1,128 @@
+{% extends "users/base.html" %}
+{% block title %}ویرایش اسپرینت{% endblock %}
+{% block content %}
+
+<style>
+
+  .edit-page {
+    min-height: calc(100vh - 80px);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Vazirmatn", "IRANSans", sans-serif;
+    direction: rtl;
+    text-align: right; /* ⬅ همه چیز راست چین شد */
+  }
+
+  .card {
+    width: 100%;
+    max-width: 650px;
+    background: rgba(15, 23, 42, 0.92);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 25px 55px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05);
+    color: #e5e7eb;
+    backdrop-filter: blur(26px);
+  }
+
+  /* --- تیتر صفحه --- */
+  .card h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin-bottom: 1.6rem;
+    color: #fff;
+  }
+
+  /* --- استایل دهی تمیز به فرم راست چین --- */
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  form p {
+    margin: 0;
+  }
+
+  form label {
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+    color: #d1d5db;
+    display: block;
+  }
+
+  form input,
+  form select,
+  form textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.7rem;
+    border: 1px solid rgba(255,255,255,0.28);
+    background: rgba(15, 23, 42, 0.78);
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: right;  /* ⬅ ورودی‌ها هم راست چین */
+  }
+
+  form input:focus,
+  form select:focus,
+  form textarea:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 7px rgba(129, 140, 248, 0.8);
+    background: rgba(15, 23, 42, 0.92);
+  }
+
+  /* --- دکمه ذخیره --- */
+  .btn-primary {
+    margin-top: .6rem;
+    padding: .65rem 1.5rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 15px 35px rgba(79,70,229,0.45);
+    border: none;
+    cursor: pointer;
+    float: left; /* دکمه در انتهای فرم از سمت راست شروع می‌شود */
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+  }
+
+  /* لینک بازگشت */
+  .back-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.88rem;
+  }
+
+  .back-link:hover {
+    color: #fff;
+  }
+
+</style>
+
+
+<div class="edit-page">
+  <div class="card">
+
+      <h2>ویرایش اسپرینت</h2>
+
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-primary">ثبت تغییرات</button>
+      </form>
+
+      <a href="{% url 'sprint_list' %}" class="back-link">بازگشت به لیست اسپرینت‌ها</a>
+
+  </div>
+</div>
+
+{% endblock %}

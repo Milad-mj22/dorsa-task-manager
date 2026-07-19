@@ -1,0 +1,156 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}تأیید حذف مشتری{% endblock title %}
+{% block content %}
+
+<style>
+    /* ------------------------------------------------------------------- */
+    /* 1. Variables (For consistency) */
+    /* ------------------------------------------------------------------- */
+    :root {
+        --danger: #ef4444;
+        --danger-soft: rgba(239, 68, 68, 0.1);
+        --primary: #4f46e5;
+        --radius-lg: 16px;
+        --radius-md: 10px;
+        --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.1);
+    }
+    
+    body {
+        /* Assuming the base gradient background from buyers_list.html */
+        background: radial-gradient(circle at top left, #eef2ff, #f9fafb 40%, #f5f3ff 100%);
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 2. Layout and Card Styling */
+    /* ------------------------------------------------------------------- */
+    .confirmation-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 20px;
+    }
+
+    .confirmation-card {
+        max-width: 450px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        padding: 30px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(239, 68, 68, 0.2); /* Red border for urgency */
+        direction: rtl; 
+        text-align: center;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 3. Content Styling */
+    /* ------------------------------------------------------------------- */
+    .confirmation-card h3 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--danger);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        line-height: 1.4;
+    }
+    
+    .confirmation-card h3::before {
+        content: "⚠️"; /* Adding a warning icon */
+        font-size: 1.5rem;
+    }
+
+    .confirmation-card p {
+        font-size: 1rem;
+        color: #475569;
+        margin-bottom: 24px;
+        line-height: 1.6;
+    }
+
+    .confirmation-card strong {
+        color: #0f172a;
+        font-weight: 700;
+        display: block;
+        margin-top: 8px;
+        font-size: 1.1rem;
+        background-color: #fef2f2; /* Light red background for emphasis */
+        border-radius: var(--radius-md);
+        padding: 8px;
+        border: 1px dashed #fca5a5;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 4. Button Styling */
+    /* ------------------------------------------------------------------- */
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn-custom-danger {
+        /* Styling for "Yes, delete" button */
+        border-radius: 999px;
+        padding: 0.65rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        color: white;
+        box-shadow: 0 8px 15px rgba(239, 68, 68, 0.4);
+        transition: all 0.2s ease;
+    }
+
+    .btn-custom-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba(239, 68, 68, 0.5);
+        opacity: 0.9;
+    }
+
+    .btn-custom-secondary {
+        /* Styling for "Cancel" button */
+        border-radius: 999px;
+        padding: 0.65rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        background-color: #e5e7eb;
+        color: #4b5563;
+        border: 1px solid #d1d5db;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-custom-secondary:hover {
+        background-color: #d1d5db;
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="confirmation-container">
+    <div class="confirmation-card">
+        <h3>آیا مطمئن هستید که می‌خواهید این مشتری را حذف کنید؟</h3>
+        
+        <p>
+            شما در حال حذف دائمی مشتری زیر هستید. این اقدام قابل بازگشت نیست.
+            <br>
+            نام مشتری: <strong>{{ buyer.first_name }} {{ buyer.last_name }}</strong>
+        </p>
+        
+        <form method="post" class="form-actions">
+            {% csrf_token %}
+            <!-- Using custom styled buttons -->
+            <button type="submit" class="btn-custom-danger">
+                بله، حذف شود
+            </button>
+            <a href="{% url 'buyer_list' %}" class="btn-custom-secondary">
+                انصراف
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock content %}

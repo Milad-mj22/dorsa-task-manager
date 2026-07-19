@@ -1,0 +1,18 @@
+{% for task in tasks %}
+  {% if task.status == "doing" %}
+    <li class="task-item priority-{{ task.priority }}" data-task-id="{{ task.id }}">
+      <strong>{{ task.title }}</strong>
+      <strong>Priority: {{ task.priority }}</strong>
+      <small><b>Team:</b> {{ task.story.team.name }}</small>
+      <small><b>Sprint:</b> {{ task.story.sprint.name }}</small>
+      <small><b>Story:</b> {{ task.story.title }}</small>
+      <small><b>Assigned to:</b>
+        {% if task.assigned_to %}
+          {{ task.assigned_to.username }}
+        {% else %}
+          Unassigned
+        {% endif %}
+      </small>
+    </li>
+  {% endif %}
+{% endfor %}

@@ -1,0 +1,122 @@
+{% load custom_tags %}
+
+
+
+<div class="task-modal-body" style="direction: rtl; font-family: Vazirmatn, sans-serif; text-align: right;">
+<!-- Header -->
+<div style="text-align:center; margin-bottom:1rem;">
+  <h3 style="margin-top:0; margin-bottom:0.5rem;">{{ task.title }}</h3>
+
+  <p style="margin:0.25rem 0; direction: rtl;"><b>زمان تخمینی:</b> {{ task.goal_time }} ساعت</p>
+  <p style="margin:0.25rem 0; direction: rtl;"><b>تیم:</b> {{ task.story.team.name }}</p>
+  <p style="margin:0.25rem 0; direction: rtl;"><b>Story:</b> {{ task.story.title }}</p>
+
+  <p style="margin:0.25rem 0; direction: ltr;">
+    <b>Assigned to:</b>
+      {% if task.assigned_to %}
+          {% with fname=task.assigned_to.profile.first_name lname=task.assigned_to.profile.last_name %}
+              {{ task.assigned_to.username }}
+              {% if fname or lname %}
+                  ({{ fname }} {{ lname }})
+              {% endif %}
+          {% endwith %}
+      {% else %}
+          Unassigned
+      {% endif %}
+
+  </p>
+</div>
+
+<hr>
+
+<h4 style="margin-top:0.5rem;">ثبت زمان</h4>
+<form id="log-time-form" method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+
+  <div class="mb-3">
+    <label class="form-label fw-bold">تاریخ انجام (Doing Date)</label>
+    <input id="doing_date"
+           name="doing_date"
+           class="form-control"
+           placeholder="انتخاب تاریخ"
+           autocomplete="off">
+  </div>
+
+  <button type="submit" class="btn btn-primary">
+    ذخیره زمان
+  </button>
+</form>
+
+
+  <hr>
+
+  <!-- Time logs -->
+  <h4 style="margin-top:0.5rem;">گزارش زمان‌ها</h4>
+
+  {% if entries %}
+    <ul style="list-style:none; padding:0; margin:0;">
+      {% for entry in entries %}
+        <li style="margin-bottom:0.5rem; padding:0.4rem 0.6rem; border-radius:8px; background:rgba(15,23,42,0.25); display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+          <div>
+            <div>
+              <strong>{{ entry.user.username }}</strong>
+              | {{ entry.datetime|to_jalali }}
+            </div>
+            <div style="font-size:0.9rem; color:#e5e7eb;">
+              {{ entry.hours_spent }} ساعت
+            </div>
+          </div>
+
+          {% comment %}
+            فقط صاحب لاگ یا سوپریوزر/استاف بتوانند حذف کنند
+          {% endcomment %}
+          {% if entry.user == user or user.is_superuser or user.is_staff %}
+            <form method="post"
+                  action="{% url 'delete_time_entry' entry.id %}"
+                  style="margin:0;"
+                  onsubmit="return confirm('آیا از حذف این ساعت مطمئن هستید؟');">
+              {% csrf_token %}
+              <button type="submit"
+                      class="btn btn-danger"
+                      style="background-color:#dc3545; color:white; padding:4px 10px; border:none; border-radius:6px; font-size:0.85rem;">
+                🗑️ حذف
+              </button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p style="margin-top:0.25rem; color:#9ca3af;">هنوز زمانی برای این تسک ثبت نشده است.</p>
+  {% endif %}
+
+  <!-- Delete task (only for admin/staff/superuser) -->
+  {% if user.is_superuser or user.is_staff %}
+    <hr>
+    <form method="post"
+          action="{% url 'delete_task' task.id %}"
+          onsubmit="return confirm('آیا از حذف این تسک مطمئن هستید؟');"
+          style="margin-top:0.75rem;">
+      {% csrf_token %}
+      <button type="submit"
+              class="btn btn-danger"
+              style="background-color:#dc3545; color:white; padding:8px 16px; border:none; border-radius:6px;">
+        🗑️ حذف تسک
+      </button>
+    </form>
+  {% endif %}
+
+</div>
+
+
+<script>
+  document.addEventListener("input", function(e) {
+    const input = document.querySelector("#id_hours_spent"); // field name in form
+    if (input && input.value > 32) {
+        input.value = 32;
+        alert("حداکثر زمان قابل ثبت ۳۲ ساعت می‌باشد.");
+    }
+});
+
+</script>

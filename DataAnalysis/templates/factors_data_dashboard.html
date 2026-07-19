@@ -1,0 +1,268 @@
+
+
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+
+<head>
+  <meta charset="utf-8" />
+
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js/dist/jalaali.min.js"></script>
+
+  <!-- Chart.js (v3) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <!-- Hammer.js (for pinch gestures) -->
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+  <!-- Chart.js zoom plugin -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.1.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+  <style>
+    /* ensure chart container provides height */
+    #chartCard { min-height: 340px; }
+    #salesChart { width: 100% !important; height: 100% !important; display:block; }
+    /* ensure touch gestures are captured properly on some browsers */
+    #salesChart, #chartCard { touch-action: none; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-200 text-gray-800 min-h-screen">
+
+
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left column -->
+    <div class="space-y-6 lg:col-span-1">
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">🏆 Top Customers</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-indigo-50">
+              <tr>
+                <th class="p-3">Customer</th>
+                <th class="p-3 text-right">Total Spent</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in top_customers %}
+              <tr class="border-b hover:bg-gray-50">
+                <td class="p-3">{{ c.kname }}</td>
+                <td class="p-3 text-right font-medium text-indigo-600">{{ c.total_spent|floatformat:0 }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="2" class="p-3 text-center text-gray-400">No data available</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- summary stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="p-4 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-xl shadow-md">
+          <p class="text-sm opacity-75">Total Revenue</p>
+          <p class="text-2xl font-bold">{{ total_revenue|floatformat:0 }} ₮</p>
+        </div>
+
+        <div class="p-4 bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl shadow-md">
+          <p class="text-sm opacity-75">Top Customer</p>
+          <p class="text-xl font-bold">
+            {% if top_customers %}
+              {{ top_customers.0.kname }}
+            {% else %}
+              -
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="p-4 bg-gradient-to-br from-pink-500 to-pink-700 text-white rounded-xl shadow-md">
+          <p class="text-sm opacity-75">Days Recorded</p>
+          <p class="text-2xl font-bold">{{ days_count }}</p>
+        </div>
+
+        <div class="p-4 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-xl shadow-md">
+          <p class="text-sm opacity-75">Customers Count</p>
+          <p class="text-2xl font-bold">{{ customers_count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle: Chart -->
+    <div id="chartCard" class="bg-white rounded-2xl shadow-lg p-6 lg:col-span-2 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold flex items-center gap-2">📅 Sales per Day</h2>
+        <div class="flex items-center gap-2">
+          <button id="resetZoom" class="px-3 py-1 bg-gray-100 rounded-md hover:bg-gray-200">Reset zoom</button>
+        </div>
+      </div>
+
+      <div class="flex-1">
+        <canvas id="salesChart"></canvas>
+      </div>
+
+      <p class="text-sm text-gray-500 mt-2">Use mouse wheel / pinch to zoom, drag to pan. Click a top/bottom day to center it.</p>
+    </div>
+
+    <!-- Right column: Top/Bottom lists -->
+    <div class="space-y-6 lg:col-span-1">
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-3">🔥 Top 10 Days</h3>
+        <ul id="top10List" class="space-y-1 text-sm text-gray-700"></ul>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-3">❄️ Bottom 10 Days</h3>
+        <ul id="bottom10List" class="space-y-1 text-sm text-gray-700"></ul>
+      </div>
+    </div>
+  </main>
+
+  <!-- Inject JSON (make sure your view provides daily_sales_json) -->
+  <script id="daily-sales-data" type="application/json">{{ daily_sales_json|safe }}</script>
+
+<script>
+(function() {
+
+  // Convert Gregorian date string (YYYY-MM-DD) to Jalali
+  function toJalaliDate(isoDateStr) {
+    try {
+      const [y, m, d] = isoDateStr.split('-').map(Number);
+      const j = jalaali.toJalaali(y, m, d);
+      return `${j.jy}/${String(j.jm).padStart(2, '0')}/${String(j.jd).padStart(2, '0')}`;
+    } catch (e) {
+      return isoDateStr;
+    }
+  }
+
+  function formatToISODate(dateStr) {
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return String(dateStr);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    } catch (e) {
+      return String(dateStr);
+    }
+  }
+
+  // Parse JSON injected by Django
+  let rawDaily = [];
+  try {
+    rawDaily = JSON.parse(document.getElementById('daily-sales-data').textContent || '[]');
+  } catch (e) {
+    rawDaily = [];
+  }
+
+  if (!rawDaily || rawDaily.length === 0) {
+    document.getElementById('top10List').innerHTML = '<li class="text-gray-400">No data</li>';
+    document.getElementById('bottom10List').innerHTML = '<li class="text-gray-400">No data</li>';
+    return;
+  }
+
+  // Prepare labels (Gregorian + Jalali)
+  const labels = rawDaily.map(r => formatToISODate(r.dat));
+  const jalaliLabels = labels.map(toJalaliDate);
+  const totals = rawDaily.map(r => Number(r.total_day || 0));
+
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 400);
+  grad.addColorStop(0, 'rgba(99,102,241,0.18)');
+  grad.addColorStop(1, 'rgba(99,102,241,0.04)');
+
+  const moneyFmt = new Intl.NumberFormat('en-US');
+
+  const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: jalaliLabels, // show Jalali on axis
+      datasets: [{
+        label: 'Daily Sales',
+        data: totals,
+        fill: true,
+        backgroundColor: grad,
+        borderColor: 'rgb(99,102,241)',
+        borderWidth: 2,
+        tension: 0.35,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: 'white',
+        pointBorderWidth: 2,
+        pointBorderColor: 'rgb(99,102,241)'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              const idx = items[0].dataIndex;
+              return `${jalaliLabels[idx]} (${labels[idx]})`;
+            },
+            label: function(context) {
+              return 'Sales: ' + moneyFmt.format(context.parsed.y);
+            }
+          }
+        },
+        zoom: {
+          zoom: { wheel: { enabled: true, speed: 0.1 }, pinch: { enabled: true }, mode: 'x' },
+          pan: { enabled: true, mode: 'x' }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'تاریخ (جلالی)' },
+          ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+        },
+        y: {
+          title: { display: true, text: 'فروش کل' },
+          ticks: { callback: v => moneyFmt.format(v) }
+        }
+      }
+    }
+  });
+
+  document.getElementById('resetZoom').addEventListener('click', () => {
+    if (typeof salesChart.resetZoom === 'function') salesChart.resetZoom();
+  });
+
+  // -----------------------
+  // Top / Bottom 10 Days
+  // -----------------------
+  const arr = rawDaily.map(r => ({ dat: r.dat, total: Number(r.total_day || 0) }));
+  const sortedDesc = arr.slice().sort((a,b) => b.total - a.total);
+  const sortedAsc = arr.slice().sort((a,b) => a.total - b.total);
+  const top10 = sortedDesc.slice(0, 10);
+  const bottom10 = sortedAsc.slice(0, 10);
+
+  function makeLi(item, rank) {
+    const greg = formatToISODate(item.dat);
+    const jalali = toJalaliDate(greg);
+    return `<li class="flex justify-between items-center cursor-pointer hover:bg-gray-50 p-2 rounded" data-date="${item.dat}" data-total="${item.total}">
+              <div>
+                <div class="font-medium">${rank}. ${jalali}</div>
+                <div class="text-xs text-gray-500">${greg}</div>
+              </div>
+              <div class="font-semibold text-indigo-600">${moneyFmt.format(item.total)}</div>
+            </li>`;
+  }
+
+  document.getElementById('top10List').innerHTML = top10.map((it,i) => makeLi(it, i+1)).join('');
+  document.getElementById('bottom10List').innerHTML = bottom10.map((it,i) => makeLi(it, i+1)).join('');
+
+})();
+</script>
+
+
+</body>
+</html>
+
+
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "users/base.html" %}
+{% block title %}لیست مواد مورد نیاز برای سفارش{% endblock %}
+{% block content %}
+
+<!-- Container with RTL layout -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4" style="font-size: 2rem; font-weight: 600; color: #333;">موارد مورد نیاز برای سفارش: {{ order.name }}</h1>
+
+            <!-- Table with custom styles -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover text-right rounded-lg shadow-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="font-weight: 600; color: #444; background: linear-gradient(135deg, #f7d041, #ffe680);">نام ماده اولیه</th>
+                            <th style="font-weight: 600; color: #444; background: linear-gradient(135deg, #f7d041, #ffe680);">مقدار مورد نیاز</th>
+                            <th style="font-weight: 600; color: #444; background: linear-gradient(135deg, #f7d041, #ffe680);">تأیید شده</th>
+                            <th style="font-weight: 600; color: #444; background: linear-gradient(135deg, #f7d041, #ffe680);">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                            <tr class="align-middle">
+                                <td style="font-size: 1.1rem; color: #333; padding: 16px 12px;">{{ item.material.name }}</td>  
+                                <td style="font-size: 1.1rem; color: #333; padding: 16px 12px;">{{ item.count }}</td>  
+                                <td style="font-size: 1.1rem; color: #333; padding: 16px 12px;">
+                                    {% if item.is_confirmed %}
+                                        <span class="text-success" style="font-weight: 600;">تأیید شده</span>
+                                    {% else %}
+                                        <span class="text-danger" style="font-weight: 600;">تأیید نشده</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size: 1.1rem; padding: 16px 12px;">
+                                    <a href="{% url 'confirm_item' order.id item.id %}" class="btn btn-primary rounded-pill px-4 py-2" style="font-size: 1rem; background-color: #F4B41A; border-radius: 30px; color: #fff; transition: background-color 0.3s ease, transform 0.2s ease;">
+                                        تأیید
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Confirm All Button -->
+            <div class="text-center">
+                <form method="post" action="{% url 'confirm_all_items' order.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2" style="font-size: 1rem; background-color: #F4B41A; border-radius: 30px; color: #fff; transition: background-color 0.3s ease, transform 0.2s ease;">
+                        تأیید تمام موارد
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

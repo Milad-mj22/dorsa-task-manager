@@ -1,0 +1,297 @@
+{% extends "users/base.html" %}
+{% block title %} Home Page {% endblock title %}
+{% block content %}
+
+{% load static %}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="{% static 'css/store.css' %}">
+
+<style>
+  :root {
+    --gold-main: #F4B41A;
+    --gold-light: #F7D141;
+    --gold-soft: #FFF7CC;
+    --gold-deep: #B38408;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --card-radius: 18px;
+    --shadow-soft: 0 16px 40px rgba(148, 120, 52, 0.16);
+  }
+
+  body {
+    font-family: "Vazir", "Tahoma", sans-serif;
+    background: radial-gradient(circle at top left, #fff7e6, #fdfdfd 40%, #fff5cc 100%);
+    font-size: 15px;
+  }
+
+  .shortage-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 40px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  @media (min-width: 768px) {
+    .shortage-page {
+      padding-top: 32px;
+    }
+  }
+
+  .page-header-box {
+    background: radial-gradient(circle at 20% 0, #ffe58a, #f7d041);
+    color: #3f3f46;
+    padding: 18px 16px;
+    border-radius: 24px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(244, 180, 26, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  @media (min-width: 768px) {
+    .page-header-box {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  .page-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .page-title-pill {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 20%, #F7D141, #F4B41A);
+    box-shadow: 0 12px 30px rgba(180, 137, 12, 0.7);
+    font-size: 20px;
+  }
+
+  .page-title-text {
+    font-weight: 800;
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header-subtitle {
+    margin-top: 3px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .chip-small {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    background: var(--gold-soft);
+    color: #6b4b02;
+    border: 1px solid rgba(244, 180, 26, 0.7);
+  }
+
+  .chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--gold-main);
+  }
+
+  .card-shortage {
+    border: none;
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    background: #ffffff;
+    border: 1px solid rgba(229, 231, 235, 0.9);
+    padding: 18px 16px 20px;
+  }
+
+  .messages-wrapper .alert {
+    border-radius: 999px;
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 6px;
+  }
+
+  table.shortage-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .shortage-table thead {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #111827;
+  }
+
+  .shortage-table thead th {
+    border: none;
+    padding: 10px 8px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .shortage-table tbody tr {
+    background: #ffffff;
+    transition: background-color 0.15s ease;
+  }
+
+  .shortage-table tbody tr:nth-child(even) {
+    background: #f9fafb;
+  }
+
+  .shortage-table tbody tr:hover {
+    background: #fff7d6;
+  }
+
+  .shortage-table td {
+    padding: 8px 10px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .shortage-name {
+    text-align: right;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px 8px 8px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .empty-state-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .empty-state-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+  }
+
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .custom-btn {
+    padding: 10px 22px;
+    font-size: 0.95rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #F4B41A, #D97706);
+    border: none;
+    color: #111827;
+    text-transform: none;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    display: inline-block;
+    text-align: center;
+    min-width: 160px;
+  }
+
+  .custom-btn:hover {
+    background: linear-gradient(135deg, #fbbf24, #b45309);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #111827;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.18);
+  }
+
+  .custom-btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+</style>
+
+<div class="shortage-page">
+  <!-- Header -->
+  <div class="page-header-box">
+    <div class="page-title-wrapper">
+      <div class="page-title-pill">⚠️</div>
+      <div>
+        <h1 class="page-title-text">مواد اولیه کسری</h1>
+        <div class="page-header-subtitle">
+          لیست مواد اولیه‌ای که برای انجام سفارش، کمتر از مقدار موردنیاز موجود هستند
+        </div>
+      </div>
+    </div>
+    <div>
+      <span class="chip-small">
+        <span class="chip-dot"></span>
+        ارسال برای مسئول خرید:
+        <strong>{{ buyer_name|default:"نامشخص" }}</strong>
+      </span>
+    </div>
+  </div>
+
+  <div class="card-shortage">
+    <div class="table-wrap">
+      <form method="post" action="{% url 'update_shortage' order.id %}">
+        {% csrf_token %}
+        <table class="table shortage-table">
+          <thead>
+            <tr>
+              <th>ماده اولیه</th>
+              <th>مقدار مورد نیاز</th>
+              <th>مقدار جدید</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if required_items %}
+              {% for material, info in required_items.items %}
+                <tr>
+                  <td class="shortage-name">{{ material }}</td>
+                  <td>{{ info }}</td>
+                  <td>
+                    <input type="number" name="{{ material }}" value="{{ info }}" class="form-control" min="0" step="1" />
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <div class="empty-state-title">هیچ کسری‌ای ثبت نشده است</div>
+                    <div>تمام مواد اولیه موردنیاز برای این سفارش در انبار موجود است.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        <div class="text-center">
+          <div class="button-group">
+            <button type="submit" class="btn custom-btn">ارسال به مسئول خرید</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

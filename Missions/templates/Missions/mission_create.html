@@ -1,0 +1,261 @@
+{% extends "users/base.html" %}
+{% load custom_tags %}
+{% load static %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+
+<link rel="stylesheet" href="{% static 'css/persian.datepicker.css' %}">
+
+
+<!-- jQuery -->
+
+<!-- Persian Date and Datepicker (Local versions) -->
+
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+
+<script src="{% static 'js/persian.date.js' %}"></script>
+<script src="{% static 'js/persian.datepicker.js' %}"></script>
+<script>
+  $(document).ready(function () {
+        // روی تمام inputهایی که id با "datepicker_" شروع می‌شه، تقویم اعمال کن
+        $("input[id^='start_date']").each(function () {
+            $(this).persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false
+            });
+        });
+
+        // هنگام ارسال فرم، همه تاریخ‌ها را به میلادی تبدیل کن
+        $('form').on('submit', function () {
+            $("input[id^='start_date]").each(function () {
+                let jalaliDate = $(this).val();
+                if (jalaliDate) {
+                    let pd = new persianDate(jalaliDate).toGregorian();
+                    let gregorian = `${pd.year}-${String(pd.month).padStart(2, '0')}-${String(pd.day).padStart(2, '0')}`;
+                    $(this).val(gregorian);
+                }
+            });
+        });
+        // روی تمام inputهایی که id با "datepicker_" شروع می‌شه، تقویم اعمال کن
+        $("input[id^='end_date']").each(function () {
+            $(this).persianDatepicker({
+                format: 'YYYY/MM/DD',
+                autoClose: true,
+                initialValue: false
+            });
+        });
+
+        // هنگام ارسال فرم، همه تاریخ‌ها را به میلادی تبدیل کن
+        $('form').on('submit', function () {
+            $("input[id^='end_date]").each(function () {
+                let jalaliDate = $(this).val();
+                if (jalaliDate) {
+                    let pd = new persianDate(jalaliDate).toGregorian();
+                    let gregorian = `${pd.year}-${String(pd.month).padStart(2, '0')}-${String(pd.day).padStart(2, '0')}`;
+                    $(this).val(gregorian);
+                }
+            });
+        });
+    });
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+<div class="container mt-5" style="max-width: 700px;">
+  <h3>ایجاد ماموریت جدید</h3>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <div class="mb-3">
+      <label for="{{ form.project.id_for_label }}" class="form-label">پروژه</label>
+      {{ form.project|as_widget:"form-control" }}
+      {{ form.project.errors }}
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.type.id_for_label }}" class="form-label">نوع ماموریت</label>
+      {{ form.type|as_widget:"form-control" }}
+      {{ form.type.errors }}
+    </div>
+
+
+
+    <div class="mb-3">
+      <label for="{{ form.location.id_for_label }}" class="form-label">مکان</label>
+      {{ form.location|as_widget:"form-control" }}
+      {{ form.location.errors }}
+    </div>
+
+    <div class="mb-3">
+    <label for="start_date" class="form-label">تاریخ شروع</label>
+    <input type="text"
+            id="start_date"
+            name="start_date"
+            class="form-control"
+            placeholder="تاریخ شروع را انتخاب کنید"
+            value="{% if form.start_date.value %}{{ form.start_date.value|to_jalali }}{% endif %}"
+            autocomplete="off" 
+            required/>
+    {{ form.start_date.errors }}
+    </div>
+
+    <div class="mb-3">
+    <label for="end_date" class="form-label">تاریخ پایان</label>
+    <input type="text"
+            id="end_date"
+            name="end_date"
+            class="form-control"
+            placeholder="تاریخ پایان را انتخاب کنید"
+            autocomplete="off"
+            value="{% if form.end_date.value %}{{ form.end_date.value|to_jalali }}{% endif %}" />
+    {{ form.end_date.errors }}
+    </div>
+
+    <label class="form-label">افراد حاضر در ماموریت (در صورت حضور خود تیک مربوط را بزنید)</label>
+    <div class="mb-3" style="max-height: 150px; overflow-y: auto; border: 1px solid #ced4da; padding: 8px; border-radius: 4px;">
+    
+    {{ form.persons }}
+    {{ form.persons.errors }}
+    </div>
+
+
+    <div class="mb-3">
+      <label for="{{ form.price.id_for_label }}" class="form-label">بودجه (ریال)</label>
+
+        <input type="text" id="attr_price" name="attr_price" class="form-control price-field" autocomplete="off"  value="{{ value }}" >
+
+        <!-- نمایش قیمت به حروف -->
+        <div id="price_text_price" class="text-muted mt-1" style="direction: rtl; text-align: right;"></div>
+
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.description.id_for_label }}" class="form-label">اهداف ماموریت</label>
+      {{ form.description|as_widget:"form-control" }}
+      {{ form.description.errors }}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.description.id_for_label }}" class="form-label">توضیحات</label>
+      {{ form.description|as_widget:"form-control" }}
+      {{ form.description.errors }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">ایجاد ماموریت</button>
+  </form>
+</div>
+
+
+
+
+
+
+
+
+
+
+<script>
+
+
+// تابع اضافه کردن جداکننده هزارگان
+function formatPriceWithCommas(value) {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+
+
+
+function numberToPersianWords(num) {
+    if (num === 0) return 'صفر';
+
+    var ones = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+    var teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+    var tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+    var hundreds = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+    var thousands = ['', 'هزار', 'میلیون', 'میلیارد'];
+
+    function threeDigitToWords(n) {
+        var word = '';
+        var h = Math.floor(n / 100);
+        var t = Math.floor((n % 100) / 10);
+        var o = n % 10;
+
+        if (h > 0) {
+            word += hundreds[h];
+        }
+        if (t === 1) {
+            if (word !== '') word += ' و ';
+            word += teens[o];
+        } else {
+            if (t > 1) {
+                if (word !== '') word += ' و ';
+                word += tens[t];
+            }
+            if (o > 0) {
+                if (word !== '') word += ' و ';
+                word += ones[o];
+            }
+        }
+        return word;
+    }
+
+    var parts = [];
+    var i = 0;
+
+    while (num > 0) {
+        var threeDigits = num % 1000;
+        if (threeDigits !== 0) {
+            var segment = threeDigitToWords(threeDigits);
+            if (thousands[i] !== '') {
+                segment += ' ' + thousands[i];
+            }
+            parts.push(segment);
+        }
+        num = Math.floor(num / 1000);
+        i++;
+    }
+
+    return parts.reverse().join(' و ');
+}
+
+
+document.querySelectorAll('.price-field').forEach(function(input) {
+    input.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/,/g, '').replace(/[^\d]/g, '');
+
+        if (value === '') {
+            document.getElementById('price_text_' + e.target.id.split('_')[1]).textContent = '';
+            e.target.value = '';
+            return;
+        }
+
+        let intValue = parseInt(value);
+        if (isNaN(intValue)) intValue = 0;
+
+        e.target.value = formatPriceWithCommas(intValue);
+
+        // نمایش معادل حروف
+        let persianWords = numberToPersianWords(intValue);
+        document.getElementById('price_text_' + e.target.id.split('_')[1]).textContent = persianWords + ' تومان';
+    });
+});
+
+
+
+</script>
+
+
+{% endblock %}

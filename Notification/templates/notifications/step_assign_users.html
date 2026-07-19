@@ -1,0 +1,302 @@
+{% extends "users/base.html" %}
+{% block content %}
+<style>
+  .notif-page {
+    direction: rtl;
+    font-family: "IRANSans", "Vazirmatn", system-ui;
+  }
+
+  .notif-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+  }
+
+  .notif-header-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .notif-header-subtitle {
+    color: #64748b;
+    font-size: .9rem;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .notif-summary-box {
+    margin-top: 18px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    text-align: center;
+    font-size: .9rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .notif-summary-item span {
+    font-weight: bold;
+    color: #0f172a;
+  }
+
+  /* Toolbar */
+  .notif-toolbar {
+    margin-top: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .notif-search input {
+    border-radius: 999px !important;
+    text-align: right;
+  }
+
+  .btn-pill {
+    border-radius: 999px;
+    padding: 8px 24px;
+    font-size: .85rem;
+  }
+
+  .btn-soft-primary {
+    background: rgba(59, 130, 246, 0.15);
+    border: none;
+    color: #1d4ed8;
+  }
+
+  .btn-soft-danger {
+    background: rgba(248,113,113,0.18);
+    border: none;
+    color: #b91c1c;
+  }
+
+  /* Table */
+  .notif-table-wrapper {
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .notif-table thead {
+    background: #f8fafc;
+  }
+
+  .notif-user-disabled {
+    opacity: 0.45;
+    background: #f1f5f9;
+  }
+
+  .notif-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 22px;
+    gap: 15px;
+  }
+
+  .btn-primary-pill {
+    border-radius: 999px;
+    padding: 10px 30px;
+    font-weight: 600;
+  }
+
+  .channel-badge {
+    border-radius: 999px;
+    padding: 2px 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .channel-push { background:#dbeafe; color:#1e40af; }
+  .channel-message { background:#dcfce7; color:#166534; }
+  .channel-both { background:#ede9fe; color:#5b21b6; }
+  .channel-none { background:#e5e7eb; color:#374151; }
+
+</style>
+
+<div class="notif-page container my-4">
+  <div class="notif-card">
+
+    <!-- Header -->
+    <div>
+      <div class="notif-header-title">تنظیم اعلان‌های مرحله</div>
+      <div class="notif-header-subtitle">
+        تعیین کنید چه کاربرانی برای این مرحله اعلان دریافت کنند.
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="notif-summary-box" id="notif-summary">
+      <div class="notif-summary-item">
+        کاربران فعال: <span id="sum-enabled">0</span>
+      </div>
+      <div class="notif-summary-item">
+        کاربران غیرفعال: <span id="sum-disabled">0</span>
+      </div>
+      <div class="notif-summary-item">
+        کل کاربران: <span id="sum-total">0</span>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <!-- Toolbar: centered buttons -->
+      <div class="notif-toolbar">
+        <button type="button" id="enable-all-btn" class="btn btn-soft-primary btn-pill">
+          فعال‌سازی همه
+        </button>
+        <button type="button" id="disable-all-btn" class="btn btn-soft-danger btn-pill">
+          غیرفعال‌سازی همه
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="notif-table-wrapper">
+        <table class="table notif-table table-hover mb-0">
+          <thead class="text-center">
+            <tr>
+              <th>کاربر</th>
+              <th>ایمیل</th>
+              <th>فعال؟</th>
+              <th>کانال اعلان</th>
+            </tr>
+          </thead>
+
+          <tbody id="user-table-body">
+            {% for form in formset %}
+              {% with u=form.instance.user %}
+              <tr class="user-row {% if not form.enabled.value %}notif-user-disabled{% endif %}">
+
+                {{ form.id }}
+
+                <td class="text-center">
+                  {% if u %}
+                    <div>{{ u.get_full_name|default:u.username }}</div>
+                  {% else %}
+                    <div class="text-muted">(کاربر نامشخص)</div>
+                  {% endif %}
+                </td>
+
+                <td class="text-center">
+                  {% if u and u.email %}
+                    {{ u.email }}
+                  {% else %}
+                    <span class="text-muted">ایمیل ندارد</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-center">
+                  <input type="checkbox"
+                         class="enable-checkbox"
+                         name="{{ form.enabled.html_name }}"
+                         id="{{ form.enabled.id_for_label }}"
+                         {% if form.enabled.value %}checked{% endif %}>
+                </td>
+
+                <td class="text-center">
+                  <div class="d-inline-flex gap-2 align-items-center">
+                    {{ form.channel }}
+                    <span class="channel-badge" data-initial="{{ form.channel.value }}"></span>
+                  </div>
+                </td>
+              </tr>
+              {% endwith %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer Center -->
+      <div class="notif-footer">
+        <a href="{% url 'notification_step_list' %}"
+           class="btn btn-outline-secondary btn-primary-pill">
+          بازگشت
+        </a>
+        <button type="submit" class="btn btn-primary btn-primary-pill">
+          ذخیره تغییرات
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+(function() {
+  const rows = document.querySelectorAll("#user-table-body .user-row");
+  const checkboxes = document.querySelectorAll(".enable-checkbox");
+
+  // Update summary
+  function updateSummary() {
+    let enabled = 0;
+    let disabled = 0;
+    rows.forEach(row => {
+      const cb = row.querySelector(".enable-checkbox");
+      if (cb.checked) enabled++;
+      else disabled++;
+    });
+    document.getElementById("sum-enabled").textContent = enabled;
+    document.getElementById("sum-disabled").textContent = disabled;
+    document.getElementById("sum-total").textContent = rows.length;
+  }
+
+  // Update row styling
+  function updateRowStyles() {
+    rows.forEach(row => {
+      const cb = row.querySelector(".enable-checkbox");
+      if (cb.checked) row.classList.remove("notif-user-disabled");
+      else row.classList.add("notif-user-disabled");
+    });
+  }
+
+  // Enable/disable all
+  document.getElementById("enable-all-btn").onclick = () => {
+    checkboxes.forEach(cb => cb.checked = true);
+    updateRowStyles();
+    updateSummary();
+  };
+
+  document.getElementById("disable-all-btn").onclick = () => {
+    checkboxes.forEach(cb => cb.checked = false);
+    updateRowStyles();
+    updateSummary();
+  };
+
+  // Recalculate summary + styles on checkbox change
+  checkboxes.forEach(cb => cb.addEventListener("change", () => {
+    updateRowStyles();
+    updateSummary();
+  }));
+
+  // Channel badge handler
+  function updateBadge(select) {
+    const badge = select.closest("td").querySelector(".channel-badge");
+    const val = select.value;
+    badge.className = "channel-badge"; // reset
+    if (val === "push") { badge.classList.add("channel-push"); badge.textContent = "پوش"; }
+    else if (val === "message") { badge.classList.add("channel-message"); badge.textContent = "پیام"; }
+    else if (val === "both") { badge.classList.add("channel-both"); badge.textContent = "هردو"; }
+    else { badge.classList.add("channel-none"); badge.textContent = "هیچ‌کدام"; }
+  }
+
+  document.querySelectorAll(".notif-channel-select select").forEach(sel => {
+    updateBadge(sel);
+    sel.onchange = () => updateBadge(sel);
+  });
+
+  // Init summary
+  updateSummary();
+})();
+</script>
+
+{% endblock %}

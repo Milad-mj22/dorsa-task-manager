@@ -1,0 +1,60 @@
+{% extends "users/base.html" %}
+{% block content %}
+<h2>ماموریت‌هایی که نیاز به تایید شما دارند</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>شناسه</th>
+      <th>پروژه</th>
+      <th>ماموریت</th>
+      <th>مرحله</th>
+      <th>افراد حاضر</th>
+      <th>وضعیت</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for flow in flows %}
+      {% with mission=flow.mission %}
+      <tr>
+        <!-- Clickable mission ID -->
+        <td>
+          <a href="{% url 'mission_detail' mission.pk %}">#{{ mission.id }}</a>
+        </td>
+
+        <td>{{ mission.project.name }}</td>
+
+        <!-- Make mission title clickable as well (optional) -->
+        <td>
+          <a href="{% url 'mission_detail' mission.pk %}">{{ mission.location }}</a>
+        </td>
+
+        <td>مرحله {{ flow.position }}: {{ flow.step_name }}</td>
+
+        <td>
+          {% for person in mission.persons.all %}
+            {{ person.get_full_name|default:person.username }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            {{ mission.created_by.get_full_name|default:mission.created_by.username }}
+          {% endfor %}
+        </td>
+
+        <td>
+          {% if flow.is_current %}در حال تایید{% else %}—{% endif %}
+        </td>
+
+        <td>
+          <form method="post" action="{% url 'approve_flow' flow.id %}">
+            {% csrf_token %}
+            <button class="btn btn-primary btn-sm" type="submit">تایید</button>
+          </form>
+        </td>
+      </tr>
+      {% endwith %}
+    {% empty %}
+      <tr><td colspan="7">ماموریتی برای تایید شما وجود ندارد.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

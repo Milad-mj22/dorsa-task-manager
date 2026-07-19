@@ -1,0 +1,180 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrap py-5" dir="rtl" lang="fa">
+  <div class="container">
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+
+        <!-- Card -->
+        <div class="card modern-card border-0">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+              <div class="icon-circle mb-3">
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </div>
+              <h2 class="h4 fw-bold text-dark mb-1">افزودن مواد به دسته</h2>
+              <div class="text-muted small">
+                مواد موردنظر را انتخاب کرده و تغییرات را ذخیره کنید
+              </div>
+            </div>
+
+            <!-- Top actions -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="fw-semibold text-muted">لیست مواد</span>
+              <button id="selectAll" type="button" class="btn btn-primary btn-modern btn-soft">
+                <i class="fa-regular fa-square-check ms-1"></i>
+                انتخاب همه
+              </button>
+            </div>
+
+            <!-- Form -->
+            <form method="post">
+              {% csrf_token %}
+
+              <!-- Material list -->
+              <div class="material-list mb-4">
+                {% for material in materials %}
+                  <label class="material-row d-flex align-items-center gap-3">
+                    <input
+                      type="checkbox"
+                      name="materials"
+                      value="{{ material.id }}"
+                      class="form-check-input material-check"
+                    />
+                    <span class="text-dark">{{ material.name }}</span>
+                  </label>
+                {% empty %}
+                  <div class="text-center text-muted py-4">
+                    هیچ ماده‌ای وجود ندارد
+                  </div>
+                {% endfor %}
+              </div>
+
+              <!-- Actions -->
+              <div class="d-flex justify-content-center gap-2">
+                <button type="submit" class="btn btn-success btn-modern px-4">
+                  <i class="fa-solid fa-check ms-1"></i>
+                  ذخیره تغییرات
+                </button>
+                <a href="javascript:history.back()" class="btn btn-light btn-modern btn-soft px-4">
+                  انصراف
+                </a>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+        <!-- /Card -->
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+  }
+
+  /* Page bg */
+  .page-wrap{
+    background:
+      radial-gradient(1000px 500px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  /* Card */
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  /* Header icon */
+  .icon-circle{
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(79,70,229,.12);
+    border: 1px solid rgba(79,70,229,.20);
+    color: #4338ca;
+    font-size: 26px;
+  }
+
+  /* Buttons */
+  .btn-modern{
+    border-radius: 14px;
+    font-weight: 700;
+    box-shadow: 0 10px 18px rgba(2,6,23,.08);
+  }
+  .btn-soft{
+    background: rgba(255,255,255,.75);
+    border: 1px solid var(--stroke);
+    box-shadow: none;
+  }
+
+  /* Material list */
+  .material-list{
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    padding: 10px;
+    background: #fff;
+  }
+
+  .material-row{
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: .15s ease;
+  }
+  .material-row:hover{
+    background: rgba(2,6,23,.04);
+  }
+
+  .material-check{
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  /* RTL icon spacing fix */
+  [dir="rtl"] .ms-1{
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+  }
+</style>
+
+<script>
+  // Select all toggle
+  (function(){
+    const selectAllBtn = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.material-check');
+    let allSelected = false;
+
+    selectAllBtn.addEventListener('click', () => {
+      allSelected = !allSelected;
+      checkboxes.forEach(cb => cb.checked = allSelected);
+      selectAllBtn.innerHTML = allSelected
+        ? '<i class="fa-solid fa-xmark ms-1"></i> لغو انتخاب همه'
+        : '<i class="fa-regular fa-square-check ms-1"></i> انتخاب همه';
+    });
+  })();
+</script>
+
+{% endblock %}

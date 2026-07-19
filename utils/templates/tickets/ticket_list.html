@@ -1,0 +1,363 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="page-wrap py-5" dir="rtl" lang="fa">
+  <div class="container" style="text-align: right;">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+      <div class="min-w-0">
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+          <span class="pill">تیکت</span>
+          <span class="pill pill-soft">پشتیبانی</span>
+          <span class="pill pill-muted">تعداد: {{ tickets|length }}</span>
+        </div>
+
+        <h1 class="h3 fw-bold mb-1 text-dark">لیست تیکت‌های من</h1>
+        <div class="text-muted">وضعیت درخواست‌ها و پیام‌های پشتیبانی را یک‌جا ببینید</div>
+      </div>
+
+      <div class="d-flex flex-column flex-sm-row gap-2 align-items-stretch align-items-sm-center">
+
+        <!-- Search -->
+        <div class="search-wrap">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input id="ticketSearch" type="text" class="form-control border-0" placeholder="جستجو در تیکت‌ها…">
+          </div>
+        </div>
+
+        <!-- Category Filter (client-side) -->
+        <div class="filter-wrap">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-0">
+              <i class="fa-solid fa-filter"></i>
+            </span>
+            <select id="categoryFilter" class="form-select border-0">
+              <option value="__all__">همه دسته‌ها</option>
+              {% for c in categories %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <a href="{% url 'ticket_create' %}" class="btn btn-primary btn-modern">
+          <i class="fa-solid fa-plus ms-1"></i>
+          ارسال تیکت جدید
+        </a>
+      </div>
+    </div>
+
+    {% if tickets %}
+      <div class="row g-4" id="ticketsGrid">
+        {% for ticket in tickets %}
+          <div class="col-12 col-md-6 col-xl-4 ticket-card"
+               data-title="{{ ticket.title|default:''|lower }}"
+               data-category-id="{% if ticket.category %}{{ ticket.category.id }}{% else %}0{% endif %}">
+            <a href="{% url 'ticket_detail' ticket.id %}" class="text-decoration-none">
+              <div class="card modern-card border-0 h-100">
+                <div class="card-body p-4 d-flex flex-column">
+
+                  <!-- Title -->
+                  <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div class="min-w-0">
+                      <div class="ticket-title text-dark fw-bold">
+                        {{ ticket.title }}
+                      </div>
+
+                      <div class="d-flex flex-wrap gap-2 mt-2">
+                        <span class="status-pill
+                          {% if ticket.status == 'open' %}status-open{% elif ticket.status == 'pending' %}status-pending{% elif ticket.status == 'closed' %}status-closed{% endif %}
+                        ">
+                          <i class="fa-solid fa-circle-dot ms-1"></i>
+                          {{ ticket.get_status_display }}
+                        </span>
+
+                        {% if ticket.category %}
+                          <span class="chip">
+                            <i class="fa-solid fa-tag ms-1"></i>
+                            {{ ticket.category }}
+                          </span>
+                        {% endif %}
+                      </div>
+                    </div>
+
+                    <div class="meta-pill">
+                      <div class="small text-muted">شناسه</div>
+                      <div class="fw-black">#{{ ticket.id }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Dates -->
+                  <div class="dates-box mt-auto">
+                    <div class="d-flex justify-content-between gap-2">
+                      <div class="text-muted small">ساخته‌شده</div>
+                      <div class="date-val">
+                        {% if ticket.created_at %}
+                          {{ ticket.created_at|date:"Y/m/d H:i" }}
+                        {% else %}—{% endif %}
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2 mt-2">
+                      <div class="text-muted small">آخرین تغییر</div>
+                      <div class="date-val">
+                        {% if ticket.updated_at %}
+                          {{ ticket.updated_at|date:"Y/m/d H:i" }}
+                        {% else %}—{% endif %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- CTA -->
+                  <div class="mt-3 d-flex justify-content-end">
+                    <span class="cta">
+                      مشاهده جزئیات
+                      <i class="fa-solid fa-arrow-left ms-1"></i>
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card modern-card border-0">
+        <div class="card-body p-5 text-center">
+          <div class="empty-icon mb-3">
+            <i class="fa-regular fa-envelope-open"></i>
+          </div>
+          <div class="fw-bold mb-1">هنوز هیچ تیکتی ثبت نکرده‌اید</div>
+          <div class="text-muted small mb-3">برای گزارش مشکل یا درخواست جدید، یک تیکت بسازید.</div>
+          <a href="{% url 'ticket_create' %}" class="btn btn-primary btn-modern">
+            <i class="fa-solid fa-plus ms-1"></i>
+            ارسال تیکت جدید
+          </a>
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+    --shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  .page-wrap{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      radial-gradient(900px 600px at 50% 110%, rgba(59,130,246,.14), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: .18s ease;
+  }
+  .modern-card:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 26px 60px rgba(2,6,23,.18);
+  }
+
+  /* Pills */
+  .pill{
+    font-size: .72rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    background: rgba(15,23,42,.06);
+    border: 1px solid rgba(15,23,42,.10);
+    color: #0f172a;
+    white-space: nowrap;
+  }
+  .pill-soft{
+    background: rgba(99,102,241,.10);
+    border-color: rgba(99,102,241,.20);
+    color: #3730a3;
+  }
+  .pill-muted{ background: rgba(15,23,42,.04); }
+
+  /* Search + Filter */
+  .search-wrap .input-group,
+  .filter-wrap .input-group{
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(2,6,23,.06);
+    background: #fff;
+    min-width: 260px;
+  }
+  .filter-wrap .form-select:focus,
+  .search-wrap .form-control:focus{ box-shadow: none; }
+  .filter-wrap .form-select{ cursor: pointer; }
+  @media (max-width: 575.98px){
+    .search-wrap .input-group,
+    .filter-wrap .input-group{ min-width: 100%; }
+  }
+
+  /* Ticket title */
+  .ticket-title{
+    font-size: 1.02rem;
+    line-height: 1.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Status */
+  .status-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 900;
+    border: 1px solid rgba(15,23,42,.10);
+    background: rgba(15,23,42,.04);
+    color: #0f172a;
+    white-space: nowrap;
+  }
+  .status-open{
+    background: rgba(34,197,94,.10);
+    border-color: rgba(34,197,94,.22);
+    color: #166534;
+  }
+  .status-pending{
+    background: rgba(249,115,22,.10);
+    border-color: rgba(249,115,22,.22);
+    color: #9a3412;
+  }
+  .status-closed{
+    background: rgba(148,163,184,.16);
+    border-color: rgba(148,163,184,.30);
+    color: #475569;
+  }
+
+  /* Chip */
+  .chip{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    background: rgba(15,23,42,.05);
+    border: 1px solid rgba(15,23,42,.08);
+    color: #0f172a;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* Meta pill */
+  .meta-pill{
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(2,6,23,.03);
+    border: 1px solid rgba(15,23,42,.08);
+    min-width: 90px;
+    text-align: center;
+  }
+  .fw-black{ font-weight: 900; color:#0f172a; }
+
+  /* Dates */
+  .dates-box{
+    padding: 12px 12px;
+    border-radius: 18px;
+    background: rgba(15,23,42,.03);
+    border: 1px solid rgba(15,23,42,.08);
+  }
+  .date-val{
+    font-weight: 800;
+    color: #0f172a;
+    direction: ltr;
+    text-align: left;
+    font-size: .88rem;
+  }
+
+  /* CTA */
+  .cta{
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .35rem .6rem;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 900;
+    background: rgba(99,102,241,.10);
+    border: 1px solid rgba(99,102,241,.18);
+    color: #3730a3;
+    white-space: nowrap;
+  }
+
+  /* Empty */
+  .empty-icon{
+    width: 72px;
+    height: 72px;
+    border-radius: 22px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.10);
+    border: 1px solid rgba(99,102,241,.18);
+    color: #4f46e5;
+    font-size: 26px;
+  }
+
+  .btn-modern{
+    border-radius: 14px;
+    font-weight: 800;
+    box-shadow: 0 10px 18px rgba(2,6,23,.08);
+    white-space: nowrap;
+  }
+
+  /* RTL icon spacing fix */
+  [dir="rtl"] .ms-1{ margin-right: .25rem !important; margin-left: 0 !important; }
+</style>
+
+<script>
+  (function(){
+    const searchInput = document.getElementById("ticketSearch");
+    const categorySelect = document.getElementById("categoryFilter");
+    const cards = Array.from(document.querySelectorAll(".ticket-card"));
+
+    function applyFilters(){
+      const q = (searchInput?.value || "").trim().toLowerCase();
+      const cat = (categorySelect?.value || "__all__");
+
+      cards.forEach(card => {
+        const title = (card.getAttribute("data-title") || "").toLowerCase();
+        const cardCat = card.getAttribute("data-category-id") || "0";
+
+        const okSearch = !q || title.includes(q) || card.innerText.toLowerCase().includes(q);
+        const okCat = (cat === "__all__") || (cardCat === cat);
+
+        card.style.display = (okSearch && okCat) ? "" : "none";
+      });
+    }
+
+    if(searchInput) searchInput.addEventListener("input", applyFilters);
+    if(categorySelect) categorySelect.addEventListener("change", applyFilters);
+
+    // initial
+    applyFilters();
+  })();
+</script>
+
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends "users/base.html" %}
+{% block content %}
+
+<style>
+  .rtl-report { direction: rtl; text-align: right; }
+  .report-card { border: 0; border-radius: 18px; overflow: hidden; }
+  .report-card .card-header {
+    background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(32,201,151,.08));
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 14px 16px;
+  }
+  .report-card .card-body { padding: 16px; }
+
+  .status-pill {
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-weight: 900;
+    font-size: .8rem;
+    border: 1px solid rgba(0,0,0,.06);
+    background: rgba(0,0,0,.02);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .filter-card{
+    border: 0;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .filter-card .card-header{
+    background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(111,66,193,.08));
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding: 14px 16px;
+  }
+  .filter-card .card-body{ padding: 14px 16px; }
+
+  .filter-select{
+    border-radius: 14px !important;
+    border: 1px solid rgba(0,0,0,.08) !important;
+    padding: 10px 12px !important;
+    font-weight: 800;
+    background-color: rgba(248,249,250,.9);
+  }
+
+  .report-table { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; overflow: hidden; }
+  .report-table thead th {
+    background: rgba(13,110,253,.06);
+    font-weight: 900;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .text-num { font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="rtl-report container-fluid py-3">
+
+  <!-- Filter -->
+  <div class="card mb-4 shadow-sm filter-card">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="fw-bold">🗓️ گزارش ساعات پروژه: {{ project.name }}</div>
+
+      <span class="status-pill">
+        {% if selected_sprint == "all" %}
+          همه اسپرینت‌ها
+        {% elif selected_sprint_obj %}
+          {{ selected_sprint_obj.title }}
+        {% else %}
+          اسپرینت انتخاب‌شده
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="card-body">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-12 col-md-7 col-lg-6">
+          <label class="form-label fw-bold mb-2">اسپرینت</label>
+          <select name="sprint" class="form-select filter-select" onchange="this.form.submit()">
+            <option value="all" {% if selected_sprint == "all" %}selected{% endif %}>
+              ✅ همه اسپرینت‌ها
+            </option>
+            {% for sp in sprints %}
+              <option value="{{ sp.id }}" {% if selected_sprint == sp.id|stringformat:"s" %}selected{% endif %}>
+                🏁 {{ sp.title|default:"Sprint" }}
+                {% if sp.start_date %} — {{ sp.start_date }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-md-5 col-lg-3">
+          <a href="?" class="btn btn-light w-100"
+             style="border-radius: 14px; font-weight: 900; border: 1px solid rgba(0,0,0,.08);">
+            ریست
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div class="card mb-4 shadow-sm report-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="fw-bold">📌 جمع کل ساعات ثبت‌شده</div>
+      <span class="status-pill">Total</span>
+    </div>
+    <div class="card-body">
+      <div class="fs-5 fw-bold text-num">
+        {{ total_spent|floatformat:2 }} <span style="font-size:.9rem; opacity:.7;">ساعت</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per user -->
+  <div class="card mb-4 shadow-sm report-card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="fw-bold">👥 ساعات ثبت‌شده به تفکیک نفرات</div>
+      <span class="status-pill">Users</span>
+    </div>
+
+    <div class="card-body">
+      <div class="table-responsive report-table">
+        <table class="table table-hover table-striped align-middle m-0">
+          <thead>
+            <tr>
+              <th style="width: 10%">ردیف</th>
+              <th style="width: 60%">کاربر</th>
+              <th style="width: 30%">ساعات ثبت‌شده</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in per_user %}
+              <tr>
+                <td class="fw-bold">{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ row.user__username }}</td>
+                <td class="text-num fw-bold">{{ row.spent|floatformat:2 }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="3" class="py-3" style="opacity:.7;">موردی برای نمایش وجود ندارد.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

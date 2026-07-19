@@ -1,0 +1,155 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+
+
+  .upload-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+  }
+
+  .upload-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 780px;
+    direction: rtl;
+  }
+
+  .upload-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    text-align: center;
+    color: #0d6efd;
+    margin-bottom: 30px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+  }
+
+  .form-control {
+    border-radius: 12px;
+    padding: 10px 16px;
+  }
+
+  .btn-upload {
+    background-color: #0d6efd;
+    border: none;
+    padding: 12px 40px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    transition: background 0.3s ease;
+  }
+
+  .btn-upload:hover {
+    background-color: #0b5ed7;
+  }
+
+  .alert {
+    font-size: 0.95rem;
+    border-radius: 12px;
+  }
+
+  .form-section hr {
+    margin: 30px 0;
+    border-top: 1px solid #ddd;
+  }
+</style>
+
+<div class="container upload-wrapper" dir="rtl">
+  <div class="upload-card">
+    <h3 class="upload-title">📤 بارگذاری فایل Tasks</h3>
+
+    {% if error %}
+      <div class="alert alert-danger text-center">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="mb-4">
+        <label for="file" class="form-label"  style="text-align: right; display: block;">فایل Tasks</label>
+        <input type="file" name="file" accept=".csv" class="form-control" required>
+      </div>
+
+
+
+
+<div class="row">
+  <!-- Team Dropdown -->
+  <div class="col-md-6 mb-4">
+    <label for="team_name" class="form-label" style="text-align: right; display: block;">نام تیم</label>
+    <select name="team_name" class="form-control" required>
+      <option value="">انتخاب کنید</option>
+      {% for team in teams %}
+        <option value="{{ team.name }}" {% if team.name == selected_team %}selected{% endif %}>
+          {{ team.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Sprint Dropdown -->
+  <div class="col-md-6 mb-4">
+    <label for="sprint_name" class="form-label" style="text-align: right; display: block;">نام اسپرینت</label>
+    <select name="sprint_name" class="form-control" required>
+      <option value="">انتخاب کنید</option>
+      {% for sprint in sprints %}
+        <option value="{{ sprint.name }}" {% if sprint.name == selected_sprint %}selected{% endif %}>
+          {{ sprint.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+
+
+
+      <div class="form-section">
+        <hr>
+
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <label for="col_task_name" class="form-label"  style="text-align: right; display: block;">نام ستون برای عنوان تسک</label>
+            <input type="text" name="col_task_name" class="form-control" placeholder="مثلاً: عنوان داستان / تسک" required value="عنوان داستان / تسک">
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <label for="col_order" class="form-label"  style="text-align: right; display: block;">نام ستون برای اولویت</label>
+            <input type="text" name="col_order" class="form-control" placeholder="مثلاً: اولویت" required value="اولویت">
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <label for="col_user" class="form-label"  style="text-align: right; display: block;">نام ستون برای مجری</label>
+            <input type="text" name="col_user" class="form-control" placeholder="مثلاً: مجری" required value="مجری">
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <label for="col_hour" class="form-label"  style="text-align: right; display: block;">نام ستون برای تخمین</label>
+            <input type="text" name="col_hour" class="form-control" placeholder="مثلاً: تخمین" required value="تخمین">
+          </div>
+
+
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button type="submit" class="btn btn-upload"> بارگذاری و ذخیره</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

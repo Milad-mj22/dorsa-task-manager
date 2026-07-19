@@ -1,0 +1,329 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<style>
+  :root {
+    --primary: #4f46e5;
+    --primary-soft: rgba(79, 70, 229, 0.08);
+    --accent: #f97316;
+    --danger: #ef4444;
+    --radius-xl: 22px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --shadow-soft: 0 20px 50px rgba(15, 23, 42, 0.16);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top right, #e5edff, #f3f4f6 40%, #eef2ff 100%);
+  }
+
+  .ticket-page {
+    max-width: 960px;
+    margin: 32px auto 48px;
+    padding: 0 16px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  .ticket-card {
+    backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+  }
+
+  .ticket-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 26px 70px rgba(15, 23, 42, 0.22);
+    border-color: rgba(79, 70, 229, 0.5);
+  }
+
+  .ticket-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 18px 22px 6px;
+    flex-wrap: wrap;
+  }
+
+  .ticket-header-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .icon-circle {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    padding: 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.6);
+  }
+
+  .ticket-title-text {
+    font-weight: 800;
+    color: #111827;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .ticket-subtitle-text {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .ticket-meta-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    background: var(--primary-soft);
+    color: #4338ca;
+    border: 1px solid rgba(129, 140, 248, 0.7);
+    white-space: nowrap;
+  }
+
+  .ticket-body {
+    padding: 10px 22px 22px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+  }
+
+  .form-control,
+  .form-select {
+    border-radius: var(--radius-md);
+    text-align: right;
+  }
+
+  .form-control::placeholder,
+  textarea::placeholder {
+    font-size: 0.85rem;
+    color: #9ca3af;
+  }
+
+  .form-control:focus,
+  .form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.2rem var(--primary-soft);
+  }
+
+  .field-error {
+    font-size: 0.8rem;
+    color: var(--danger);
+    margin-top: 3px;
+  }
+
+  .non-field-errors {
+    margin-bottom: 0.75rem;
+  }
+
+  .helper-text {
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+
+  .divider-soft {
+    height: 1px;
+    background: linear-gradient(to left, transparent, #e5e7eb, transparent);
+    margin: 10px 0 14px;
+  }
+
+  .btn-submit {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    border: none;
+    color: white;
+    padding: 0.6rem 1.8rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    box-shadow: 0 14px 34px rgba(79, 70, 229, 0.5);
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+
+  .btn-submit:hover {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+
+  .btn-submit i {
+    font-size: 0.95rem;
+  }
+
+  .ticket-footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .ticket-foot-note {
+    font-size: 0.8rem;
+    color: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    .ticket-page {
+      margin-top: 20px;
+    }
+    .ticket-card {
+      padding-inline: 4px;
+    }
+    .ticket-header-bar {
+      padding-inline: 18px;
+    }
+    .ticket-body {
+      padding-inline: 18px;
+    }
+    .ticket-footer-row {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+    }
+  }
+</style>
+
+<div class="ticket-page">
+  <div class="ticket-card">
+    <div class="ticket-header-bar">
+      <div class="ticket-header-main">
+        <div class="ticket-title-text">
+          <span class="icon-circle">
+            <i class="fas fa-ticket-alt"></i>
+          </span>
+          <span>ارسال تیکت پشتیبانی</span>
+        </div>
+        <div class="ticket-subtitle-text">
+          مشکل، سؤال یا درخواست خود را دقیق توضیح دهید تا تیم پشتیبانی سریع‌تر راهنمایی‌تان کند.
+        </div>
+      </div>
+
+      <div class="ticket-meta-pill">
+        ⏱ زمان تقریبی پاسخ: حداکثر ۲۴ ساعت کاری
+      </div>
+    </div>
+
+    <div class="ticket-body">
+      {# اگر فرم خطای کلی داشته باشد #}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger non-field-errors rtl-right" role="alert" style="text-align:right;">
+          {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Category -->
+        <div class="mb-3">
+          <label for="id_category" class="form-label">دسته‌بندی <span style="color:#ef4444">*</span></label>
+          <select name="category" class="form-select" id="id_category" required>
+            <option value="">انتخاب دسته‌بندی</option>
+            {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if form.category.value == cat.id|stringformat:'s' %}selected{% endif %}>
+                {{ cat.name }}
+              </option>
+            {% endfor %}
+          </select>
+          {% if form.category.errors %}
+            <div class="field-error">{{ form.category.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Title -->
+        <div class="mb-3">
+          <label for="id_title" class="form-label">عنوان تیکت <span style="color:#ef4444">*</span></label>
+          <input
+            type="text"
+            name="title"
+            class="form-control"
+            id="id_title"
+            placeholder="مثلاً: مشکل در پرداخت، خطا در ورود، یا پیشنهاد جدید"
+            value="{{ form.title.value|default_if_none:'' }}"
+            required
+          >
+          {% if form.title.errors %}
+            <div class="field-error">{{ form.title.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Message -->
+        <div class="mb-3">
+          <label for="id_message" class="form-label">متن پیام <span style="color:#ef4444">*</span></label>
+          <textarea
+            name="message"
+            rows="5"
+            class="form-control"
+            id="id_message"
+            placeholder="جزئیات مشکل، زمان وقوع، پیام خطا (در صورت وجود) و هر اطلاعات مفید دیگری را بنویسید..."
+            required
+          >{{ form.message.value|default_if_none:'' }}</textarea>
+          {% if form.message.errors %}
+            <div class="field-error">{{ form.message.errors.0 }}</div>
+          {% endif %}
+          <div class="helper-text mt-1">
+            هر چه توضیحات شما کامل‌تر باشد، سریع‌تر می‌توانیم مشکل را پیدا و رفع کنیم.
+          </div>
+        </div>
+
+        <div class="divider-soft"></div>
+
+        {# فیلدهای دیگر فرم (مثلاً فایل ضمیمه) را به‌صورت خودکار رندر کن #}
+        {% for field in form.visible_fields %}
+          {% if field.name != "category" and field.name != "title" and field.name != "message" %}
+            <div class="mb-3">
+              <label for="{{ field.id_for_label }}" class="form-label">
+                {{ field.label }}{% if field.field.required %} <span style="color:#ef4444">*</span>{% endif %}
+              </label>
+              {% if field.field.widget.input_type == "file" %}
+                {{ field|add_class:"form-control" }}
+                <div class="helper-text mt-1">در صورت نیاز می‌توانید تصویر خطا یا فایل مرتبط را ضمیمه کنید.</div>
+              {% else %}
+                {{ field|add_class:"form-control" }}
+              {% endif %}
+              {% if field.errors %}
+                <div class="field-error">
+                  {% for error in field.errors %}
+                    <div>{{ error }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        <div class="ticket-footer-row mt-3">
+          <div class="ticket-foot-note">
+            پس از ثبت، وضعیت تیکت و پاسخ‌ها را می‌توانید در بخش «لیست تیکت‌های من» پیگیری کنید.
+          </div>
+          <button type="submit" class="btn btn-submit">
+            <i class="fas fa-paper-plane"></i>
+            <span>ارسال تیکت</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

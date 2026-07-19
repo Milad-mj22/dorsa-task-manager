@@ -1,0 +1,800 @@
+{% extends "users/base.html" %}
+{% block title %} Home Page {% endblock title %}
+{% block content %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/store.css' %}">
+
+<style>
+    :root {
+        --gold-main: #F4B41A;
+        --gold-light: #F7D141;
+        --gold-soft: #FFF7CC;
+        --gold-deep: #B38408;
+        --primary: #F4B41A;
+        --primary-soft: rgba(244, 180, 26, 0.12);
+        --radius-lg: 22px;
+        --radius-md: 16px;
+        --radius-sm: 10px;
+        --shadow-soft: 0 18px 45px rgba(148, 120, 52, 0.25);
+    }
+
+    body {
+        background: radial-gradient(circle at top left, #fff7e6, #fdfdfd 40%, #fff5cc 100%);
+        font-size: 15px;
+    }
+
+    .night-order-page {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+        direction: rtl;
+        text-align: right;
+    }
+
+    @media (min-width: 768px) {
+        .night-order-page {
+            padding-top: 32px;
+        }
+    }
+
+    .page-shell {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(18px);
+        border-radius: 30px;
+        padding: 24px 18px 28px;
+        box-shadow: var(--shadow-soft);
+        border: 1px solid rgba(212, 178, 88, 0.45);
+    }
+
+    @media (min-width: 992px) {
+        .page-shell {
+            padding: 28px 24px 32px;
+        }
+    }
+
+    .page-header {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+        text-align: right;
+    }
+
+    @media (min-width: 768px) {
+        .page-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .page-title-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title-pill {
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 20%, #F7D141, #F4B41A);
+        box-shadow: 0 12px 30px rgba(180, 137, 12, 0.7);
+    }
+
+    .page-title-pill span {
+        color: #fff;
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .page-title {
+        margin: 0;
+        font-weight: 800;
+        font-size: 23px;
+        letter-spacing: -0.02em;
+        color: #1f2937;
+    }
+
+    .page-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        background: var(--gold-soft);
+        color: #6b4b02;
+        border: 1px solid rgba(244, 180, 26, 0.7);
+    }
+
+    .chip-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+        background: var(--gold-main);
+    }
+
+    /* Alert existing materials */
+    .alert-box {
+        background: var(--gold-soft);
+        color: #7a5205;
+        font-size: 15px;
+        font-weight: 700;
+        text-align: center;
+        padding: 11px 12px;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(180, 137, 12, 0.35);
+        margin-bottom: 12px;
+    }
+
+    .materials-exist-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .material-card {
+        background: linear-gradient(135deg, #fff8dc, #ffefb3);
+        border-radius: 18px;
+        padding: 10px 13px;
+        box-shadow: 0 8px 18px rgba(180, 137, 12, 0.45);
+        width: 230px;
+        text-align: right;
+        border: 1px solid rgba(244, 180, 26, 0.4);
+    }
+
+    .material-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #5b3c02;
+        margin-bottom: 4px;
+    }
+
+    .material-quantity {
+        font-size: 14px;
+        color: #93620a;
+    }
+
+    /* Search bar */
+    .search-bar-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        margin-bottom: 14px;
+    }
+
+    .search-wrapper {
+        position: relative;
+        flex: 1;
+    }
+
+    .search-input {
+        padding-inline-start: 12px;
+        padding-inline-end: 34px;
+        border-radius: 999px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        background: #f9fafb;
+        transition: all 0.2s ease;
+        direction: rtl;
+        text-align: right;
+    }
+
+    .search-input:focus {
+        outline: none;
+        background: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 1px rgba(244, 180, 26, 0.25);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #a1a1aa;
+    }
+
+    /* Mother + fields */
+    .mother-material-card {
+        border-radius: var(--radius-md);
+        padding: 11px 13px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(209, 213, 219, 0.9);
+        background: linear-gradient(135deg, #ffffff, #fdf9ec);
+        box-shadow: 0 8px 22px rgba(148, 120, 52, 0.18);
+        text-align: right;
+    }
+
+    .mother-header-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mother-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .mother-limit {
+        font-size: 13px;
+        color: #9f7a0a;
+        margin-top: 2px;
+    }
+
+    .mother-chevron {
+        margin-inline-start: auto;
+        font-size: 16px;
+        color: #9ca3af;
+    }
+
+    .submaterials {
+        margin-top: 8px;
+        border-radius: var(--radius-md);
+        padding: 8px 6px 6px;
+        background: rgba(249, 250, 251, 0.96);
+        border: 1px dashed rgba(209, 213, 219, 0.85);
+    }
+
+    .field-card {
+        margin-bottom: 8px;
+    }
+
+    .field-card-inner {
+        border-radius: var(--radius-md);
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 12px rgba(148, 120, 52, 0.15);
+        padding: 8px 10px;
+        background: #ffffff;
+    }
+
+    .field-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-stepper {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        border: none;
+        font-size: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        color: #111827;
+        transition: all 0.15s ease;
+    }
+
+    .btn-stepper:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    .digit-input {
+        width: 85px;
+        text-align: center;
+        border-radius: 999px !important;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        padding-inline: 10px;
+        height: 36px;
+        background: #f9fafb;
+        direction: rtl;
+    }
+
+    .digit-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 1px rgba(244, 180, 26, 0.2);
+        background: #ffffff;
+    }
+
+    /* use_remaining checkbox */
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px 0 8px 0;
+        gap: 8px;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        accent-color: var(--gold-main);
+    }
+
+    .checkbox-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #5b3c02;
+    }
+
+    /* buttons row */
+    .actions-row {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn-show-items {
+        border-radius: 999px;
+        border: none;
+        padding: 9px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #fff9c4, #facc15);
+        color: #1f2937;
+        box-shadow: 0 10px 22px rgba(250, 204, 21, 0.55);
+    }
+
+    .btn-submit-final {
+        border-radius: 999px;
+        border: none;
+        padding: 9px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        background: linear-gradient(135deg, #F4B41A, #D89A0A);
+        color: #fff;
+        box-shadow: 0 10px 22px rgba(180, 137, 12, 0.6);
+    }
+
+    .btn-show-items:hover,
+    .btn-submit-final:hover {
+        transform: translateY(-1px);
+    }
+
+    /* modal tweaks RTL */
+    .modal-content {
+        direction: rtl;
+        text-align: right;
+        border-radius: 20px;
+        border: 1px solid rgba(244, 180, 26, 0.4);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .modal-gold-header {
+        background: linear-gradient(135deg, #fff7d6, #ffe08a);
+        border-bottom: none;
+    }
+
+    .modal-gold-header .modal-title {
+        color: #5b3c02;
+    }
+
+    .modal-gold-badge {
+        font-size: 12px;
+        color: #a16207;
+    }
+
+    table.modal-table th,
+    table.modal-table td {
+        font-size: 14px;
+    }
+</style>
+
+<script>
+    let selectedItemsCache = [];
+
+    function toggleSubmaterials(id) {
+        const submaterials = document.getElementById(id);
+        if (submaterials.style.display === "none" || submaterials.style.display === "") {
+            submaterials.style.display = "block";
+        } else {
+            submaterials.style.display = "none";
+        }
+    }
+
+    function changeValue(inputId, increment) {
+        const input = document.getElementById(inputId);
+        let value = parseFloat(input.value) || 0;
+        value += increment;
+        if (value < 0) {
+            value = 0;
+        }
+        input.value = value.toFixed(1);
+    }
+
+    function filterFields() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase();
+        const motherMaterials = document.getElementsByClassName('mother-material-card');
+
+        Array.from(motherMaterials).forEach(function(motherMaterial) {
+            let hasVisibleFields = false;
+            const fields = motherMaterial.getElementsByClassName('field-card');
+
+            Array.from(fields).forEach(function(field) {
+                const fieldName = field.querySelector('.field-title').innerText.toLowerCase();
+                if (fieldName.includes(searchInput)) {
+                    field.style.display = '';
+                    hasVisibleFields = true;
+                } else {
+                    field.style.display = 'none';
+                }
+            });
+
+            if (hasVisibleFields) {
+                motherMaterial.style.display = '';
+            } else {
+                motherMaterial.style.display = 'none';
+            }
+
+            if (searchInput === '') {
+                const submaterials = motherMaterial.getElementsByClassName('submaterials');
+                Array.from(submaterials).forEach(function(submaterial) {
+                    submaterial.style.display = 'none';
+                });
+            }
+        });
+    }
+
+    function collectItems() {
+        const inputs = document.querySelectorAll('.digit-input');
+        const items = [];
+        inputs.forEach(input => {
+            const value = parseFloat(input.value);
+            if (value > 0) {
+                const materialName = input.name;
+                items.push({ name: materialName, value: value });
+            }
+        });
+        const useRemainingCheckbox = document.getElementById('use_remaining');
+        const useRemaining = useRemainingCheckbox ? useRemainingCheckbox.checked : false;
+        return { items, useRemaining };
+    }
+
+    function renderItemsTable(tbodyId, items) {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        tbody.innerHTML = items
+            .map(m => `
+                <tr>
+                    <td>${m.name}</td>
+                    <td>${m.value} عدد</td>
+                </tr>
+            `)
+            .join('');
+    }
+
+    function showMessageModal(messageText) {
+        const bodyEl = document.getElementById('messageModalBody');
+        if (bodyEl) {
+            bodyEl.textContent = messageText;
+        }
+        const modalEl = document.getElementById('messageModal');
+        if (window.bootstrap && bootstrap.Modal && modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    }
+
+    function showItemsModal() {
+        const { items, useRemaining } = collectItems();
+
+        if (!items.length) {
+            showMessageModal("هیچ موردی با مقدار بزرگ‌تر از صفر انتخاب نشده است.");
+            return;
+        }
+
+        selectedItemsCache = items;
+        renderItemsTable('itemsModalTableBody', items);
+
+        const useRemainingSpan = document.getElementById('itemsModalUseRemaining');
+        if (useRemainingSpan) {
+            useRemainingSpan.textContent = useRemaining ? "بله" : "خیر";
+        }
+
+        const modalEl = document.getElementById('itemsModal');
+        if (window.bootstrap && bootstrap.Modal && modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    }
+
+    function openConfirmModal() {
+        const { items, useRemaining } = collectItems();
+
+        if (!items.length) {
+            showMessageModal("هیچ موردی با مقدار بزرگ‌تر از صفر انتخاب نشده است.");
+            return;
+        }
+
+        selectedItemsCache = items;
+        renderItemsTable('confirmModalTableBody', items);
+
+        const useRemainingSpan = document.getElementById('confirmModalUseRemaining');
+        if (useRemainingSpan) {
+            useRemainingSpan.textContent = useRemaining ? "بله" : "خیر";
+        }
+
+        const modalEl = document.getElementById('confirmModal');
+        if (window.bootstrap && bootstrap.Modal && modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    }
+
+    function submitFinal() {
+        const form = document.querySelector('form');
+        if (!form) return;
+        form.submit();
+    }
+</script>
+
+<div class="night-order-page">
+    <div class="page-shell">
+        <div class="page-header">
+            <div class="page-title-wrapper">
+                <div class="page-title-pill">
+                    <span>🌙</span>
+                </div>
+                <div>
+                    <h1 class="page-title">ثبت سفارش شب</h1>
+                    <div class="page-subtitle">
+                        مشاهده موجودی‌های قبلی و ثبت سفارش‌های جدید برای شیفت شب، با تم طلایی و تأییدهای مودالی.
+                    </div>
+                </div>
+            </div>
+
+            {% if exist_materials %}
+                <div>
+                    <span class="chip">
+                        <span class="chip-dot"></span>
+                        موجودی ثبت‌شده از قبل
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if exist_materials %}
+            <div class="alert-box">
+                ⚠️ موارد موجود از قبل در سیستم ثبت شده‌اند
+            </div>
+
+            <div class="materials-exist-container">
+                {% for material in exist_materials %}
+                    <div class="material-card">
+                        <div class="material-name">{{ material.material.name }}</div>
+                        <div class="material-quantity">
+                            {{ material.quantity }} {{ material.material.unit }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Search -->
+        <div class="search-bar-row">
+            <div class="search-wrapper">
+                <input type="text"
+                       id="searchInput"
+                       onkeyup="filterFields()"
+                       placeholder="جست‌وجوی غذا / آیتم ..."
+                       class="form-control search-input">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% for mother_material in mother_foods %}
+                <div class="mother-material-card">
+                    <a href="javascript:void(0);"
+                       onclick="toggleSubmaterials('submaterials-{{ mother_material.id }}')"
+                       class="mother-header-link">
+                        <div>
+                            <div class="mother-title">
+                                {{ mother_material.name }}
+                            </div>
+                            <div class="mother-limit">
+                                حد سفارش: {{ mother_material.producible_quantity }}
+                            </div>
+                        </div>
+                        <div class="mother-chevron">⌄</div>
+                    </a>
+
+                    <div id="submaterials-{{ mother_material.id }}" class="submaterials" style="display: none;">
+                        {% for field in mother_material.mother_food_id.all %}
+                            <div class="col field-card">
+                                <div class="field-card-inner">
+                                    <div class="field-title">
+                                        {{ field.name }} — حد سفارش: {{ field.producible_quantity }}
+                                    </div>
+                                    <div class="input-wrapper">
+                                        <button type="button"
+                                                class="btn-stepper"
+                                                onclick="changeValue('{{ field.id }}_input', -1)">-</button>
+                                        <input class="form-control digit-input"
+                                               type="text"
+                                               step="1"
+                                               id="{{ field.id }}_input"
+                                               name="{{ field.name }}"
+                                               value="0">
+                                        <button type="button"
+                                                class="btn-stepper"
+                                                onclick="changeValue('{{ field.id }}_input', 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if exist_materials %}
+                <div class="checkbox-container">
+                    <input type="checkbox"
+                           id="use_remaining"
+                           name="use_remaining"
+                           {% if last_usage %}checked{% endif %}>
+                    <label for="use_remaining" class="checkbox-label">
+                        استفاده از موارد موجود از قبل
+                    </label>
+                </div>
+            {% endif %}
+
+            <div class="actions-row">
+                <!-- نمایش اقلام در مودال -->
+                <button type="button"
+                        class="btn-show-items"
+                        onclick="showItemsModal()">
+                    نمایش اقلام انتخاب‌شده
+                </button>
+
+                <!-- ثبت نهایی با مودال تأیید -->
+                <button type="button"
+                        class="btn-submit-final"
+                        onclick="openConfirmModal()">
+                    ثبت نهایی سفارش
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: نمایش اقلام -->
+<div class="modal fade" id="itemsModal" tabindex="-1" aria-labelledby="itemsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-gold-header">
+        <div>
+            <h5 class="modal-title" id="itemsModalLabel">لیست اقلام انتخاب‌شده</h5>
+            <div class="modal-gold-badge">
+                این فهرست بر اساس مقادیر فعلی فرم ایجاد شده است.
+            </div>
+        </div>
+        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="بستن"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+            <strong>استفاده از موجودی قبلی:</strong>
+            <span id="itemsModalUseRemaining"></span>
+        </p>
+        <div class="table-responsive">
+          <table class="table table-sm modal-table align-middle">
+            <thead>
+              <tr>
+                <th>نام آیتم</th>
+                <th>مقدار</th>
+              </tr>
+            </thead>
+            <tbody id="itemsModalTableBody">
+              <!-- rows via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          بستن
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تأیید نهایی -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-gold-header">
+        <div>
+            <h5 class="modal-title" id="confirmModalLabel">تأیید نهایی سفارش شب</h5>
+            <div class="modal-gold-badge">
+                لطفاً اقلام و مقادیر را بررسی کنید. با تأیید، سفارش ثبت خواهد شد.
+            </div>
+        </div>
+        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="بستن"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+            <strong>استفاده از موجودی قبلی:</strong>
+            <span id="confirmModalUseRemaining"></span>
+        </p>
+        <div class="table-responsive">
+          <table class="table table-sm modal-table align-middle">
+            <thead>
+              <tr>
+                <th>نام آیتم</th>
+                <th>مقدار</th>
+              </tr>
+            </thead>
+            <tbody id="confirmModalTableBody">
+              <!-- rows via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          بازگشت و ویرایش
+        </button>
+        <button type="button" class="btn btn-warning" onclick="submitFinal()">
+          تأیید و ثبت سفارش
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: پیام ساده (خطا/اطلاع) -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-gold-header">
+        <h5 class="modal-title" id="messageModalLabel">پیام سیستم</h5>
+        <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="بستن"></button>
+      </div>
+      <div class="modal-body" id="messageModalBody">
+        <!-- message via JS -->
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          متوجه شدم
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

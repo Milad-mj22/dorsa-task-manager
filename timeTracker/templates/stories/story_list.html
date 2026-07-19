@@ -1,0 +1,218 @@
+{% extends "users/base.html" %}
+{% block title %}Stories{% endblock %}
+
+{% block content %}
+<style>
+    /* RTL support */
+    body, html {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .stories-card {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 7px 25px rgba(0,0,0,0.08);
+    }
+
+    .stories-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .stories-header h2 {
+        font-size: 1.6rem;
+        margin: 0;
+    }
+
+    .new-story-btn,
+    .assign-btn {
+        background: #2563eb;
+        padding: 8px 16px;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+
+    .new-story-btn:hover,
+    .assign-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .filter-box {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-box input,
+    .filter-box select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+    }
+
+    .story-list {
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .story-item {
+        background: #f8fafc;
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #e2e8f0;
+        transition: 0.2s;
+    }
+
+    .story-item:hover {
+        background: #eef2ff;
+    }
+
+    .story-title {
+        font-size: 1.15rem;
+        font-weight: bold;
+    }
+
+    .tag {
+        display: inline-block;
+        background: #e0e7ff;
+        color: #4338ca;
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-left: 5px;
+    }
+
+    .story-actions a {
+        margin-left: 10px;
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .story-actions a:hover {
+        text-decoration: underline;
+    }
+
+    /* Pagination */
+    .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .page-btn {
+        padding: 6px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #374151;
+        transition: 0.2s;
+    }
+
+    .page-btn:hover {
+        background: #e5e7eb;
+    }
+
+    .page-active {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+    }
+</style>
+
+<div class="stories-card">
+
+    <!-- Header with buttons -->
+    <div class="stories-header">
+        <h2> لیست استوری‌ها</h2>
+
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'select_sprint' %}" class="assign-btn">📌 اتصال استوری‌ها به پروژه</a>
+            <a href="{% url 'story_create' %}" class="new-story-btn">+ استوری جدید</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="filter-box">
+        <!-- Search -->
+        <input 
+            type="text" 
+            name="search" 
+            placeholder="جستجو در عنوان استوری..." 
+            value="{{ request.GET.search }}"
+            style="flex: 1;"
+        >
+
+        <!-- Team Filter -->
+        <select name="team" onchange="this.form.submit()">
+            <option value="">همه تیم‌ها</option>
+            {% for team in admin_teams %}
+                <option value="{{ team.id }}" {% if selected_team and selected_team.id == team.id %}selected{% endif %}>
+                    {{ team.name }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button style="display:none"></button>
+    </form>
+
+    <!-- Story List -->
+    <div class="story-list">
+        {% if stories %}
+            {% for story in stories %}
+                <div class="story-item">
+                    <div class="story-title">{{ story.title }}</div>
+
+                    <div style="margin-top: 5px;">
+                        <span class="tag">{{ story.team.name }}</span>
+                        <span class="tag">{{ story.sprint.name }}</span>
+                    </div>
+
+                    <div class="story-actions" style="margin-top: 8px;">
+                        <a href="{% url 'story_edit' story.pk %}">ویرایش</a>
+                        <a href="{% url 'story_delete' story.pk %}">حذف</a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>هیچ استوری‌ای یافت نشد.</p>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if stories.has_other_pages %}
+    <div class="pagination">
+        {% if stories.has_previous %}
+            <a class="page-btn" href="?page={{ stories.previous_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">قبلی</a>
+        {% endif %}
+
+        {% for i in stories.paginator.page_range %}
+            <a class="page-btn {% if stories.number == i %}page-active{% endif %}" 
+               href="?page={{ i }}&team={{ request.GET.team }}&search={{ request.GET.search }}">
+               {{ i }}
+            </a>
+        {% endfor %}
+
+        {% if stories.has_next %}
+            <a class="page-btn" href="?page={{ stories.next_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">بعدی</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

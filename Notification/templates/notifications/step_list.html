@@ -1,0 +1,185 @@
+{% extends "users/base.html" %}
+{% block content %}
+<style>
+  .notif-step-page {
+    direction: rtl;
+    font-family: "IRANSans", "Vazirmatn", system-ui;
+  }
+
+  .notif-step-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 24px 24px 18px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    margin-top: 20px;
+  }
+
+  .notif-step-header-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .notif-step-header-subtitle {
+    color: #64748b;
+    font-size: .9rem;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .notif-step-toolbar {
+    margin-top: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .btn-pill {
+    border-radius: 999px;
+    padding: 8px 24px;
+    font-size: .85rem;
+    font-weight: 500;
+  }
+
+  .btn-soft-success {
+    background: rgba(22,163,74,0.14);
+    border: none;
+    color: #15803d;
+  }
+
+  .notif-step-table-wrapper {
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .notif-step-table thead {
+    background: #f8fafc;
+  }
+
+  .notif-step-table th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .notif-step-code-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: .8rem;
+    font-family: "Fira Code", monospace;
+  }
+
+  .notif-step-desc {
+    font-size: .85rem;
+    color: #6b7280;
+    max-width: 320px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notif-step-actions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .btn-outline-primary-pill {
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: .8rem;
+  }
+</style>
+
+<div class="notif-step-page container my-4">
+  <div class="notif-step-card">
+
+    <div>
+      <div class="notif-step-header-title">
+        مراحل اعلان (Notification Steps)
+      </div>
+      <div class="notif-step-header-subtitle">
+        در این صفحه می‌توانید مراحل مختلف رویدادها را تعریف کرده و کاربران هر مرحله را تنظیم یا حذف کنید.
+      </div>
+    </div>
+
+    <div class="notif-step-toolbar">
+      <a href="{% url 'notification_step_create' %}"
+         class="btn btn-soft-success btn-pill">
+        + افزودن مرحله اعلان جدید
+      </a>
+    </div>
+
+    <div class="notif-step-table-wrapper">
+      <table class="table notif-step-table mb-0 text-center align-middle">
+        <thead>
+          <tr>
+            <th style="width: 20%;">کد</th>
+            <th style="width: 25%;">نام</th>
+            <th>توضیحات</th>
+            <th style="width: 25%;">عملیات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for step in steps %}
+            <tr>
+              <td>
+                <span class="notif-step-code-badge">{{ step.code }}</span>
+              </td>
+
+              <td>{{ step.name }}</td>
+
+              <td>
+                {% if step.description %}
+                  <div class="notif-step-desc" title="{{ step.description }}">
+                    {{ step.description }}
+                  </div>
+                {% else %}
+                  <span class="text-muted" style="font-size: .8rem;">بدون توضیح</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <div class="notif-step-actions">
+
+                  <a href="{% url 'notification_step_assign_users' step.id %}"
+                     class="btn btn-outline-primary btn-outline-primary-pill">
+                    کاربران و کانال‌ها
+                  </a>
+
+                  <form method="POST"
+                        action="{% url 'notification_step_delete' step.id %}"
+                        onsubmit="return confirm('برای حذف این مرحله مطمئن هستید؟');">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-outline-danger btn-outline-primary-pill"
+                            style="border-color:#dc2626; color:#dc2626;">
+                      حذف
+                    </button>
+                  </form>
+
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="notif-step-empty">
+                هیچ مرحله‌ای تعریف نشده است.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

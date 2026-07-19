@@ -1,0 +1,296 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+
+    .page-title {
+        font-size: 26px;
+        font-weight: bold;
+        margin-bottom: 25px;
+        direction: rtl;
+    }
+
+    .filter-box {
+        background: #fff;
+        padding: 18px;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        margin-bottom: 20px;
+    }
+
+    .story-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 18px;
+        border: 1px solid #eee;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
+        transition: 0.25s;
+        cursor: pointer;
+    }
+
+    .story-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0px 8px 18px rgba(0,0,0,0.08);
+    }
+
+    .story-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+
+    /* Team Badge */
+    .team-badge {
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        color: white;
+        display: inline-block;
+        margin-bottom: 6px;
+    }
+
+    /* Project Badge */
+    .project-badge {
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        display: inline-block;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .project-ok { background: #d1fae5; color: #065f46; }
+    .project-none { background: #fee2e2; color: #991b1b; }
+
+    .project-select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+
+    .save-btn {
+        background: #4f46e5;
+        padding: 14px;
+        border-radius: 12px;
+        width: 100%;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 600;
+        border: none;
+    }
+
+    .set-all-btn {
+        background: #10b981;
+        padding: 12px 20px;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        margin-bottom: 20px;
+        cursor: pointer;
+    }
+
+    /* Pagination Bar */
+    .pagination-bar {
+        display: flex;
+        justify-content: center;
+        margin-top: 25px;
+        gap: 10px;
+    }
+
+    .page-btn {
+        padding: 8px 16px;
+        border-radius: 10px;
+        background: #e5e7eb;
+        border: none;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .page-btn:hover {
+        background: #d1d5db;
+    }
+
+    .page-btn-active {
+        background: #4f46e5;
+        color: white;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 767px) {
+        .filter-box {
+            padding: 10px;
+        }
+
+        .story-card {
+            padding: 15px;
+        }
+
+        .page-title {
+            font-size: 22px;
+        }
+
+        .team-badge, .project-badge {
+            font-size: 12px;
+        }
+    }
+
+</style>
+
+<div class="container mt-4">
+    <h3 class="page-title" style="text-align: right;">اختصاص استوری‌ها به پروژه‌ها — {{ sprint.name }}</h3>
+
+    <!-- Filters -->
+    <div class="filter-box" style="text-align: right;">
+        <div class="row">
+            <div class="col-md-4 col-12 mb-3">
+                <label>جستجو:</label>
+                <input type="text" id="searchInput" class="form-control" placeholder="جستجو در عنوان و توضیحات...">
+            </div>
+            <div class="col-md-4 col-12 mb-3">
+                <label>فیلتر تیم:</label>
+                <select id="teamFilter" class="form-select">
+                    <option value="">همه تیم‌ها</option>
+                    {% for story in stories %}
+                        {% if story.team %}
+                            <option value="{{ story.team.id }}">{{ story.team.name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 col-12 mb-3">
+                <label>فیلتر پروژه:</label>
+                <select id="projectFilter" class="form-select">
+                    <option value="">همه پروژه‌ها</option>
+                    <option value="none">بدون پروژه</option>
+                    {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <form method="post">
+        {% csrf_token %}
+
+        <div id="storiesContainer" style="text-align: right;">
+            {% for story in stories %}
+            <div class="story-card"
+                 data-story-title="{{ story.title }}"
+                 data-story-desc="{{ story.description }}"
+                 data-team-id="{{ story.team.id }}"
+                 data-project-id="{% if story.project %}{{ story.project.id }}{% endif %}">
+                <div class="story-title">{{ story.title }}</div>
+
+                <!-- Team Badge -->
+                <div class="team-badge"
+                    style="background: hsl({{ story.team.id|add:40 }}, 70%, 45%);">
+                    تیم {{ story.team.name }}
+                </div>
+
+                <!-- Project Badge -->
+                {% if story.project %}
+                    <div class="project-badge project-ok">پروژه: {{ story.project.name }}</div>
+                {% else %}
+                    <div class="project-badge project-none">بدون پروژه</div>
+                {% endif %}
+
+                <label>اختصاص پروژه:</label>
+                <select name="project_{{ story.id }}" class="project-select">
+                    <option value="">-- انتخاب پروژه --</option>
+                    {% for project in projects %}
+                        <option value="{{ project.id }}"
+                            {% if story.project and story.project.id == project.id %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ project.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="save-btn">ذخیره تغییرات</button>
+    </form>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" id="pagination"></div>
+
+</div>
+
+<script>
+    const cards = [...document.querySelectorAll(".story-card")];
+    const search = document.getElementById("searchInput");
+    const teamFilter = document.getElementById("teamFilter");
+    const projectFilter = document.getElementById("projectFilter");
+    const container = document.getElementById("storiesContainer");
+    const paginationBox = document.getElementById("pagination");
+
+    let page = 1;
+    const perPage = 10;
+
+    function renderPagination(totalPages) {
+        paginationBox.innerHTML = "";
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.className = "page-btn " + (i === page ? "page-btn-active" : "");
+            btn.innerText = i;
+            btn.onclick = () => { page = i; filterStories(); };
+            paginationBox.appendChild(btn);
+        }
+    }
+
+    function filterStories() {
+        const s = search.value.toLowerCase();
+        const t = teamFilter.value;
+        const p = projectFilter.value;
+
+        let filtered = cards.filter(card => {
+            let ok = true;
+
+            if (s && !card.getAttribute("data-story-title").toLowerCase().includes(s)
+                && !card.getAttribute("data-story-desc").toLowerCase().includes(s))
+                ok = false;
+
+            if (t && card.getAttribute("data-team-id") !== t)
+                ok = false;
+
+            if (p) {
+                if (p === "none" && card.getAttribute("data-project-id") !== "") {
+                    ok = false;
+                } else if (p !== "none" && card.getAttribute("data-project-id") !== p) {
+                    ok = false;
+                }
+            }
+
+            return ok;
+        });
+
+        container.innerHTML = "";
+
+        let totalPages = Math.ceil(filtered.length / perPage);
+        renderPagination(totalPages);
+
+        let start = (page - 1) * perPage;
+        let slice = filtered.slice(start, start + perPage);
+
+        slice.forEach(c => container.appendChild(c));
+    }
+
+    search.addEventListener("input", filterStories);
+    teamFilter.addEventListener("change", filterStories);
+    projectFilter.addEventListener("change", filterStories);
+
+    filterStories();
+</script>
+
+{% endblock %}

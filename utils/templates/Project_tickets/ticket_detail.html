@@ -1,0 +1,368 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #020617, #020617 45%, #020617 100%);
+  }
+
+  .ticket-detail-card {
+    backdrop-filter: blur(14px);
+    background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.98));
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+    padding: 26px 26px 22px;
+    margin-top: 32px;
+    border: 1px solid rgba(55, 65, 81, 0.9);
+    position: relative;
+    overflow: hidden;
+    color: #e5e7eb;
+  }
+
+  .ticket-detail-card::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -100px;
+    inset-block-start: -60px;
+    width: 260px;
+    height: 260px;
+    background:
+      radial-gradient(circle at 40% 40%, rgba(34, 197, 94, 0.25), transparent 60%),
+      radial-gradient(circle at 60% 10%, rgba(56, 189, 248, 0.18), transparent 65%);
+    filter: blur(10px);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .ticket-detail-card::after {
+    content: "";
+    position: absolute;
+    inset-inline-end: -120px;
+    inset-block-end: -80px;
+    width: 260px;
+    height: 260px;
+    background:
+      radial-gradient(circle at 40% 40%, rgba(251, 191, 36, 0.25), transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(248, 113, 113, 0.18), transparent 70%);
+    filter: blur(12px);
+    opacity: 0.8;
+    pointer-events: none;
+  }
+
+  .ticket-header {
+    text-align: right;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ticket-header h2 {
+    color: #f9fafb;
+    font-weight: 800;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .ticket-status {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    text-align: right;
+    margin-bottom: 16px;
+  }
+
+  .ticket-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(75, 85, 99, 0.9);
+    background: rgba(15, 23, 42, 0.7);
+  }
+
+  .ticket-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+  }
+
+  /* ✅ Ticket image block */
+  .ticket-hero {
+    margin: 8px 0 18px;
+    border: 1px solid rgba(55, 65, 81, 0.9);
+    background: rgba(2, 6, 23, 0.55);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .ticket-hero img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 420px;
+    object-fit: cover;
+  }
+
+  .ticket-hero-footer {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .ticket-hero-meta {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Messages */
+  .message-stream {
+    margin-bottom: 18px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-inline: 4px;
+  }
+
+  .message-bubble {
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    position: relative;
+    font-size: 0.9rem;
+  }
+
+  .message-me {
+    background: rgba(22, 163, 74, 0.16);
+    border: 1px solid rgba(34, 197, 94, 0.7);
+    margin-inline-start: auto;
+    max-width: 80%;
+  }
+
+  .message-them {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(55, 65, 81, 0.9);
+    margin-inline-end: auto;
+    max-width: 80%;
+  }
+
+  .message-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    color: #9ca3af;
+    gap: 10px;
+  }
+
+  .message-sender {
+    font-weight: 700;
+    color: #e5e7eb;
+  }
+
+  .message-time {
+    font-family: monospace;
+    opacity: 0.85;
+    white-space: nowrap;
+  }
+
+  .message-text {
+    color: #e5e7eb;
+    line-height: 1.7;
+  }
+
+  .message-attachment {
+    margin-top: 10px;
+  }
+
+  /* ✅ Image preview for message attachments */
+  .attachment-preview-link{
+    display:block;
+    margin-top:8px;
+    border-radius: 14px;
+    overflow:hidden;
+    border: 1px solid rgba(148,163,184,.25);
+    background: rgba(2,6,23,.55);
+    max-width: 360px;
+  }
+  .attachment-preview-img{
+    width:100%;
+    height:auto;
+    display:block;
+    max-height: 320px;
+    object-fit: cover;
+  }
+
+  .reply-form {
+    border-top: 1px solid rgba(55, 65, 81, 0.8);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  .reply-form label {
+    color: #e5e7eb;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .reply-form .form-control,
+  .reply-form .form-select {
+    border-radius: 10px;
+    background: #020617;
+    border: 1px solid rgba(51, 65, 85, 0.9);
+    color: #e5e7eb;
+  }
+
+  .reply-form .form-control:focus,
+  .reply-form .form-select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 0.15rem rgba(34, 197, 94, 0.3);
+    background: #020617;
+  }
+
+  .reply-form .btn-primary {
+    background-color: #0d6efd;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+
+  .text-muted {
+    color: #9ca3af !important;
+  }
+
+  @media (max-width: 768px) {
+    .ticket-detail-card { padding: 18px 16px 16px; }
+    .message-me, .message-them { max-width: 100%; }
+    .attachment-preview-link { max-width: 100%; }
+  }
+</style>
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="ticket-detail-card" style="text-align: right;">
+
+        <div class="ticket-header">
+          <h2>{{ ticket.title }}</h2>
+          <div class="ticket-status">
+            <span class="ticket-status-badge">
+              <span class="ticket-status-dot"></span>
+              وضعیت: {{ ticket.get_status_display }}
+            </span>
+          </div>
+        </div>
+
+        {# ✅ Ticket image (اگر خود تیکت تصویر دارد) #}
+        {% if ticket.image %}
+          <div class="ticket-hero">
+            <a href="{{ ticket.image.url }}" target="_blank" title="مشاهده تصویر تیکت">
+              <img src="{{ ticket.image.url }}" alt="ticket image">
+            </a>
+            <div class="ticket-hero-footer">
+              <div class="ticket-hero-meta">
+                <i class="fas fa-image"></i>
+                <span>تصویر ضمیمه تیکت</span>
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{{ ticket.image.url }}" target="_blank" class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-up-right-from-square ms-1"></i> مشاهده
+                </a>
+                <a href="{{ ticket.image.url }}" download class="btn btn-sm btn-outline-light">
+                  <i class="fas fa-download ms-1"></i> دانلود
+                </a>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Messages -->
+        <div class="message-stream">
+          {% for msg in messages %}
+            <div class="message-bubble {% if request.user == msg.sender %}message-me{% else %}message-them{% endif %}">
+              <div class="message-meta">
+                <span class="message-sender">{{ msg.sender.username }}</span>
+                <span class="message-time">{{ msg.sent_at|date:"Y/m/d H:i" }}</span>
+              </div>
+
+              <div class="message-text">
+                {{ msg.message|linebreaksbr }}
+              </div>
+
+              {# ✅ Message attachment: if image show preview, else download #}
+              {% if msg.attachment %}
+                <div class="message-attachment">
+                  {% with url=msg.attachment.url name=msg.attachment.name %}
+                    {% if name|lower|slice:"-4:" == ".jpg" or name|lower|slice:"-4:" == ".png" or name|lower|slice:"-5:" == ".jpeg" or name|lower|slice:"-5:" == ".webp" or name|lower|slice:"-4:" == ".gif" %}
+                      <a href="{{ url }}" target="_blank" class="attachment-preview-link" title="نمایش تصویر">
+                        <img src="{{ url }}" alt="attachment" class="attachment-preview-img">
+                      </a>
+
+                      <div class="mt-2 d-flex gap-2 flex-wrap">
+                        <a href="{{ url }}" target="_blank" class="btn btn-sm btn-outline-light">
+                          <i class="fas fa-up-right-from-square ms-1"></i> مشاهده
+                        </a>
+                        <a href="{{ url }}" download class="btn btn-sm btn-outline-light">
+                          <i class="fas fa-download ms-1"></i> دانلود
+                        </a>
+                      </div>
+                    {% else %}
+                      <a href="{{ url }}" class="btn btn-sm btn-outline-light" download>
+                        <i class="fas fa-paperclip ms-1"></i> دانلود فایل
+                      </a>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p class="text-muted text-center mb-0">هنوز پیامی در این تیکت ثبت نشده است.</p>
+          {% endfor %}
+        </div>
+
+        <!-- Reply Form -->
+        <form method="post" enctype="multipart/form-data" class="reply-form" style="direction: rtl;">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.message.label }}</label>
+            {{ form.message|add_class:"form-control" }}
+            {% if form.message.errors %}
+              <small class="text-danger d-block mt-1">{{ form.message.errors.0 }}</small>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-bold">{{ form.attachment.label }}</label>
+            <div class="input-group">
+              {{ form.attachment|add_class:"form-control" }}
+              <span class="input-group-text">
+                <i class="fas fa-paperclip"></i>
+              </span>
+            </div>
+            {% if form.attachment.errors %}
+              <small class="text-danger d-block mt-1">{{ form.attachment.errors.0 }}</small>
+            {% endif %}
+          </div>
+
+          <div class="text-start text-md-end">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="fas fa-reply me-1"></i> ارسال پاسخ
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

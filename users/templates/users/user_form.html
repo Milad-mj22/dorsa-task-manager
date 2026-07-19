@@ -1,0 +1,150 @@
+{% extends "users/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+<div class="page-wrap py-5" dir="rtl" lang="fa">
+  <div class="container" style="text-align: right;">
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+
+        <div class="card modern-card border-0">
+          <div class="card-body p-4 p-md-5">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+              <div class="icon-circle mb-3">
+                <i class="fa-solid fa-user-pen"></i>
+              </div>
+              <h2 class="h4 fw-bold text-dark mb-1">{{ title }}</h2>
+              <div class="text-muted small">اطلاعات پروفایل را تکمیل کنید</div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+              {% csrf_token %}
+
+              <!-- Non-field errors -->
+              {% if profile_form.non_field_errors %}
+                <div class="alert alert-danger rounded-4">
+                  {% for err in profile_form.non_field_errors %}
+                    <div>{{ err }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <div class="form-grid">
+                {% for field in profile_form %}
+                  <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-bold text-dark">
+                      {{ field.label }}
+                      {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+
+                    {% if field.errors %}
+                      {{ field|add_class:"form-control is-invalid" }}
+                    {% else %}
+                      {{ field|add_class:"form-control" }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                      <div class="form-text">{{ field.help_text|safe }}</div>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                      <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
+
+              <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-stretch align-items-sm-center mt-4 pt-3 border-top">
+                <a href="{% url 'user_list' %}" class="btn btn-light btn-modern btn-soft">
+                  <i class="fa-solid fa-arrow-right ms-1"></i>
+                  بازگشت
+                </a>
+
+                <button type="submit" class="btn btn-success btn-modern px-4">
+                  <i class="fa-solid fa-floppy-disk ms-1"></i>
+                  ذخیره
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  :root{
+    --stroke: rgba(15, 23, 42, .10);
+    --radius: 22px;
+    --shadow: 0 18px 40px rgba(2,6,23,.12);
+  }
+
+  .page-wrap{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(99,102,241,.22), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(34,197,94,.16), transparent 55%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    min-height: calc(100vh - 80px);
+  }
+
+  .modern-card{
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfbff 100%);
+    box-shadow: var(--shadow);
+  }
+
+  .icon-circle{
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(99,102,241,.12);
+    border: 1px solid rgba(99,102,241,.20);
+    color: #4338ca;
+    font-size: 26px;
+  }
+
+  /* Inputs */
+  .form-control{
+    text-align: right;
+    border-radius: 14px;
+    border: 1px solid var(--stroke);
+    padding: .65rem .85rem;
+    transition: .15s ease;
+  }
+  .form-control:focus{
+    border-color: #6366f1;
+    box-shadow: 0 0 0 .15rem rgba(99,102,241,.15);
+  }
+
+  /* Buttons */
+  .btn-modern{
+    border-radius: 14px;
+    font-weight: 800;
+    box-shadow: 0 10px 18px rgba(2,6,23,.08);
+    white-space: nowrap;
+  }
+  .btn-soft{
+    background: rgba(255,255,255,.75);
+    border: 1px solid var(--stroke);
+    box-shadow: none;
+  }
+
+  /* RTL icon spacing fix */
+  [dir="rtl"] .ms-1{
+    margin-right: .25rem !important;
+    margin-left: 0 !important;
+  }
+</style>
+
+{% endblock %}

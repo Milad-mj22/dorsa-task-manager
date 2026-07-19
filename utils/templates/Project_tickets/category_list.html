@@ -1,0 +1,28 @@
+{% extends "users/base.html" %}
+{% block content %}
+<h2>دسته‌بندی‌ها</h2>
+
+<a href="{% url 'category_create' %}" class="btn btn-success mb-3">ایجاد دسته‌بندی جدید</a>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>نام</th>
+      <th>توضیحات</th>
+      <th>عملیات</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for category in categories %}
+    <tr>
+      <td>{{ category.name }}</td>
+      <td>{{ category.description }}</td>
+      <td>
+        <a href="{% url 'category_edit' category.pk %}" class="btn btn-primary btn-sm">ویرایش</a>
+        <a href="{% url 'category_delete' category.pk %}" class="btn btn-danger btn-sm">حذف</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

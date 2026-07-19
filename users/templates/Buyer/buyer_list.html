@@ -1,0 +1,775 @@
+{% extends "users/base.html" %}
+{% load static %}
+{% block title %}{{ title }}{% endblock title %}
+{% block content %}
+
+<style>
+    /* ------------------------------------------------------------------- */
+    /* 1. Global & Variables */
+    /* ------------------------------------------------------------------- */
+    :root {
+        --primary: #4f46e5;
+        --primary-soft: rgba(79, 70, 229, 0.08);
+        --accent: #f97316;
+        --danger: #ef4444;
+        --radius-xl: 24px;
+        --radius-lg: 20px;
+        --radius-md: 14px;
+        --radius-sm: 10px;
+        --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+        --shadow-md: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+        background:
+            radial-gradient(circle at top left, #eef2ff, #f9fafb 35%, #f5f3ff 100%);
+    }
+
+    /* Simple fade-in / float animation for cards */
+    @keyframes floatIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 2. Page Layout */
+    /* ------------------------------------------------------------------- */
+    .buyer-page {
+        max-width: 1100px;
+        margin: 32px auto;
+        padding: 0 16px 40px;
+    }
+
+    .buyer-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .buyer-page-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .buyer-page-title-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .buyer-page-title-main span.icon {
+        display: inline-flex;
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        background: radial-gradient(circle at 0% 0%, #a5b4fc, #6366f1);
+        color: #f9fafb;
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.35);
+    }
+
+    .buyer-page-title-sub {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #64748b;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .buyer-page-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        font-size: 0.8rem;
+        color: #475569;
+    }
+
+    .btn-add {
+        border-radius: 999px;
+        padding: 0.55rem 1.6rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        box-shadow: 0 12px 30px rgba(34, 197, 94, 0.35);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        color: #ecfdf3;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-add::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), transparent 40%, transparent 60%);
+        transform: translateX(-100%);
+        transition: transform 0.4s ease-out;
+    }
+
+    .btn-add:hover::after {
+        transform: translateX(100%);
+    }
+
+    .btn-add:hover {
+        transform: translateY(-1.5px) scale(1.01);
+        box-shadow: 0 16px 36px rgba(34, 197, 94, 0.45);
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 3. Search Card & Filter Summary */
+    /* ------------------------------------------------------------------- */
+    .search-card {
+        border-radius: var(--radius-xl);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow-soft);
+        padding: 20px 20px 16px;
+        margin-bottom: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        animation: floatIn 0.35s ease-out;
+    }
+
+    .search-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        gap: 10px;
+    }
+
+    .search-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .search-title span.icon {
+        font-size: 1rem;
+    }
+
+    .search-hint {
+        font-size: 0.8rem;
+        color: #6b7280;
+        text-align: left;
+    }
+
+    .search-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .search-input-group .form-control {
+        flex: 1;
+        border-radius: var(--radius-md);
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        font-size: 0.9rem;
+        padding: 0.6rem 1rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .search-input-group .form-control:focus {
+        border-color: var(--primary);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 3px var(--primary-soft);
+    }
+
+    .search-input-group button {
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 0.6rem 1.3rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .search-input-group button span.icon {
+        font-size: 1rem;
+    }
+
+    /* Smart filter summary chips */
+    .filter-summary {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+
+    .filter-summary-label {
+        font-weight: 500;
+        color: #4b5563;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background-color: rgba(79, 70, 229, 0.06);
+        border: 1px solid rgba(129, 140, 248, 0.7);
+        color: #4338ca;
+        white-space: nowrap;
+    }
+
+    .filter-chip span.icon {
+        font-size: 0.9rem;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 3.5 Category Legend (New) */
+    /* ------------------------------------------------------------------- */
+    .category-legend {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        font-size: 0.78rem;
+        color: #6b7280;
+    }
+
+    .category-legend-label {
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    .category-legend-scroll {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5f5 transparent;
+    }
+
+    .category-legend-scroll::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .category-legend-scroll::-webkit-scrollbar-thumb {
+        background-color: #cbd5f5;
+        border-radius: 999px;
+    }
+
+    .legend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background-color: rgba(241, 245, 249, 0.9);
+        border: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    .legend-color {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 4. Buyer Card */
+    /* ------------------------------------------------------------------- */
+    .buyer-card {
+        position: relative;
+        background: rgba(255, 255, 255, 0.94);
+        border-radius: var(--radius-md);
+        padding: 14px 18px 14px 18px;
+        margin-bottom: 14px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+        animation: floatIn 0.35s ease-out;
+    }
+
+    .buyer-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+        border-color: rgba(79, 70, 229, 0.35);
+        background-color: #ffffff;
+    }
+
+    .category-stripes {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 9px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .category-stripe {
+        flex: 1;
+    }
+
+    .buyer-info {
+        direction: rtl;
+        text-align: right;
+        line-height: 1.7;
+        padding-left: 10px;
+    }
+
+    .buyer-name {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #0f172a;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .buyer-name::before {
+        content: "👤";
+        font-size: 1rem;
+    }
+
+    .buyer-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .btn-custom {
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-custom:hover {
+        transform: translateY(-0.5px);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
+    }
+
+    .btn-history {
+        background-color: rgba(59, 130, 246, 0.08);
+        color: #1d4ed8;
+    }
+
+    .btn-edit {
+        background-color: rgba(249, 115, 22, 0.08);
+        color: #c05621;
+    }
+
+    .btn-delete {
+        background-color: rgba(248, 113, 113, 0.08);
+        color: #b91c1c;
+    }
+
+    .buyer-meta-blocks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #6b7280;
+    }
+
+    .buyer-meta-blocks div {
+        background-color: #f1f5f9;
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 5. Delete Modal Styling */
+    /* ------------------------------------------------------------------- */
+    .modal-content {
+        border-radius: var(--radius-lg);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        border: none;
+        direction: rtl;
+    }
+
+    .modal-header {
+        background-color: #fff;
+        border-bottom: 1px solid #e5e7eb;
+        border-top-left-radius: var(--radius-lg);
+        border-top-right-radius: var(--radius-lg);
+        text-align: right;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        color: var(--danger);
+    }
+
+    .modal-body {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        text-align: right;
+    }
+
+    .modal-footer {
+        justify-content: flex-start;
+        direction: rtl;
+        border-top: none;
+    }
+
+    .modal-footer .btn-danger {
+        background-color: var(--danger);
+        border-radius: var(--radius-md);
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+    }
+
+    .modal-footer .btn-secondary {
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 6. Empty State */
+    /* ------------------------------------------------------------------- */
+    .empty-state-card {
+        margin-top: 32px;
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px dashed rgba(148, 163, 184, 0.7);
+        padding: 26px 20px;
+        text-align: center;
+        color: #64748b;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+    }
+
+    .empty-state-icon {
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+    }
+
+    .empty-state-title {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .empty-state-text {
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+    }
+
+    /* ------------------------------------------------------------------- */
+    /* 7. Mobile Responsiveness */
+    /* ------------------------------------------------------------------- */
+    @media (max-width: 768px) {
+        .buyer-page {
+            margin-top: 20px;
+        }
+
+        .buyer-page-header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .buyer-page-title {
+            font-size: 1.35rem;
+        }
+
+        .buyer-page-title-main {
+            gap: 8px;
+        }
+
+        .btn-add {
+            width: 100%;
+            justify-content: center;
+            padding: 0.6rem 1rem;
+        }
+
+        .search-card {
+            padding: 16px 14px 14px;
+        }
+
+        .search-header-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+
+        .search-hint {
+            text-align: right;
+            width: 100%;
+        }
+
+        .search-input-group {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-input-group .form-control,
+        .search-input-group button {
+            width: 100%;
+            border-radius: var(--radius-md) !important;
+        }
+
+        .buyer-card {
+            padding: 12px 12px 12px 14px;
+        }
+
+        .buyer-name {
+            font-size: 1rem;
+        }
+
+        .buyer-info > div:first-child {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .buyer-actions {
+            margin-top: 8px;
+            margin-bottom: 0;
+            gap: 6px;
+        }
+
+        .category-legend {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .category-legend-scroll {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="buyer-page" dir="rtl">
+    <div class="buyer-page-header">
+        <div class="buyer-page-title">
+            <div class="buyer-page-title-main">
+                <span class="icon">📋</span>
+                <span>لیست مشتریان</span>
+            </div>
+            <div class="buyer-page-title-sub">
+                <span class="buyer-page-badge">تعداد ثبت‌شده: {{ counts }}</span>
+                <span class="buyer-page-badge">
+                    حالت نمایش هوشمند بر اساس جستجو و فیلترها
+                </span>
+            </div>
+        </div>
+
+        <a href="{% url 'add_buyer' %}" class="btn btn-success btn-add">
+            <span>➕</span>
+            <span>مشتری جدید</span>
+        </a>
+    </div>
+
+    <!-- جستجو و فیلتر -->
+    <div class="search-card">
+        <div class="search-header-row">
+            <div class="search-title">
+                <span class="icon">🔎</span>
+                <span>جستجوی سریع مشتریان</span>
+            </div>
+            <div class="search-hint">
+                با ترکیب متن، دسته‌بندی و ملیت، نتایج خود را دقیق‌تر کنید.
+            </div>
+        </div>
+
+        <form method="get">
+            <div class="search-input-group">
+                <input
+                    type="text"
+                    name="q"
+                    placeholder="جستجو بر اساس نام، شماره، ملیت یا دسته‌بندی..."
+                    value="{{ query|default:'' }}"
+                    class="form-control text-end"
+                />
+                <select name="category" class="form-control text-end" aria-label="دسته بندی">
+                    <option value="">تمام دسته‌بندی‌ها</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id == selected_category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="nationality" class="form-control text-end" aria-label="ملیت">
+                    <option value="">تمام ملیت‌ها</option>
+                    {% for nationality in nationalities %}
+                        <option value="{{ nationality.id }}" {% if nationality.id == selected_nationality %}selected{% endif %}>
+                            {{ nationality.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <span class="icon">🔍</span>
+                    <span>جستجو</span>
+                </button>
+            </div>
+        </form>
+
+        {# Smart filter summary chips #}
+        {% if query or selected_category or selected_nationality %}
+            <div class="filter-summary mt-2">
+                <span class="filter-summary-label">فیلترهای فعال:</span>
+
+                {% if query %}
+                    <span class="filter-chip">
+                        <span class="icon">💬</span>
+                        <span>متن جستجو: «{{ query }}»</span>
+                    </span>
+                {% endif %}
+
+                {% if selected_category %}
+                    {% for c in categories %}
+                        {% if c.id == selected_category %}
+                            <span class="filter-chip">
+                                <span class="icon">🏷</span>
+                                <span>دسته‌بندی: {{ c.name }}</span>
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if selected_nationality %}
+                    {% for n in nationalities %}
+                        {% if n.id == selected_nationality %}
+                            <span class="filter-chip">
+                                <span class="icon">🌍</span>
+                                <span>ملیت: {{ n.name }}</span>
+                            </span>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# Category legend (visual intelligence) #}
+        {% if categories %}
+            <div class="category-legend">
+                <span class="category-legend-label">راهنمای رنگ دسته‌بندی‌ها:</span>
+                <div class="category-legend-scroll">
+                    {% for category in categories %}
+                        <span class="legend-chip">
+                            <span class="legend-color" style="background-color: {{ category.color }}"></span>
+                            {{ category.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if buyers %}
+        {% for buyer in buyers %}
+            <div class="buyer-card">
+                <div class="category-stripes">
+                    {% for category in buyer.categories.all %}
+                        <div class="category-stripe" style="background-color: {{ category.color }}"></div>
+                    {% endfor %}
+                </div>
+
+                <div class="buyer-info d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 flex-wrap">
+                    <!-- Name and Actions Group -->
+                    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
+                        <div class="buyer-name mb-0">{{ buyer.short_name }}</div>
+                        <div class="buyer-actions">
+                            <a href="{% url 'buyer_detail' buyer.id %}" class="btn btn-history btn-custom">📜 سوابق</a>
+                            <a href="{% url 'edit_buyer' buyer.id %}" class="btn btn-edit btn-custom">✏️ ویرایش</a>
+                            <button
+                                type="button"
+                                class="btn btn-delete btn-custom"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ buyer.id }}"
+                            >
+                                🗑 حذف
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Meta Blocks Group -->
+                    <div class="buyer-meta-blocks">
+                        <div>📱 {{ buyer.phone_number }}</div>
+                        {% if buyer.nationality %}
+                            <div>🌍 ملیت: {{ buyer.nationality.name }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteModal{{ buyer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ buyer.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel{{ buyer.id }}">تأیید حذف مشتری</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            آیا مطمئن هستید که می‌خواهید مشتری <strong>{{ buyer.short_name }}</strong> را حذف کنید؟
+                            این عمل غیرقابل بازگشت است.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لغو</button>
+                            <a href="{% url 'delete_buyer' buyer.id %}" class="btn btn-danger">حذف دائمی</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state-card">
+            <div class="empty-state-icon">🧾</div>
+            <div class="empty-state-title">هیچ مشتریی ثبت نشده است</div>
+            <div class="empty-state-text">
+                از دکمه <strong>«مشتری جدید»</strong> برای ثبت اولین مشتری استفاده کنید
+                یا معیارهای جستجو را تغییر دهید.
+            </div>
+            <a href="{% url 'add_buyer' %}" class="btn btn-success btn-add">
+                <span>➕</span>
+                <span>ثبت اولین مشتری</span>
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock content %}

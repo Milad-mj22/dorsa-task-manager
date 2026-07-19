@@ -1,0 +1,63 @@
+{% extends "users/base.html" %}
+{% block content %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Team & User Overview</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div class="container mx-auto px-6 py-10">
+    <h1 class="text-3xl font-bold mb-6">🏢 Team & User Overview</h1>
+
+    <div id="overview-container" class="space-y-10"></div>
+
+    <script>
+      const data = JSON.parse(`{{ overview_json|escapejs }}`);
+      const container = document.getElementById('overview-container');
+
+      Object.keys(data).forEach((teamName, i) => {
+        const teamData = data[teamName];
+        const userNames = teamData.users.map(u => u.name);
+        const userTimes = teamData.users.map(u => u.time);
+
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-xl shadow-md';
+
+        card.innerHTML = `
+          <h2 class="text-2xl font-semibold mb-4 text-indigo-600">${teamName} – Total: ${teamData.total.toFixed(2)}h</h2>
+          <canvas id="chart_${i}"></canvas>
+        `;
+        container.appendChild(card);
+
+        const ctx = document.getElementById(`chart_${i}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: userNames,
+            datasets: [{
+              label: 'Time Spent (h)',
+              data: userTimes,
+              backgroundColor: 'rgba(99,102,241,0.7)'
+            }]
+          },
+          options: {
+            plugins: {
+              title: { display: false },
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: { display: true, text: 'Hours' }
+              }
+            },
+            responsive: true
+          }
+        });
+      });
+    </script>
+  </div>
+</body>
+{% endblock %}
