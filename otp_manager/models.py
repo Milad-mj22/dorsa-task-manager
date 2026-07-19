@@ -42,6 +42,7 @@ class OTPVar_Enum(models.TextChoices):
     HOUR2 = "HOUR2","ساعت تخمین"
     OLDSTATUS = "OLDSTATUS","وضعیت قبلی"
     NEWSTATUS = "NEWSTATUS","وضعیت جدید"
+    NAMES = "NAMES","نام ها"
 
 
 

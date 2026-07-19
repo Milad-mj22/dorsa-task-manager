@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from otp_manager.models import SMS_Recievers, SMS_Template, SMSServiceTemplate_Enum
+from otp_manager.models import OTPVar_Enum, SMS_Recievers, SMS_Template, SMSServiceTemplate_Enum
 from otp_manager.service import send_sms
 from timeTracker.models import TimeEntry, Sprint, Task
 from django.db.models import Q
@@ -50,7 +50,8 @@ class Command(BaseCommand):
             first_name = user.first_name
             last_name = user.last_name
         
-        full_name = f'{first_name} {last_name}'.strip()
+        # full_name = f'{first_name} {last_name}'.strip()
+        full_name = f'{last_name}'.strip()
         return full_name if full_name else user.username
 
     def handle(self, *args, **options):
@@ -171,8 +172,7 @@ class Command(BaseCommand):
                     ret = send_sms(
                         sms_template,
                         phone_number=receiver.persons.phone,
-                        vars=None,
-                        text=message_text
+                        vars={OTPVar_Enum.COUNT:count,OTPVar_Enum.NAMES:text,}
                     )
                     
                     self.stdout.write(self.style.SUCCESS(f'✅ پیامک برای {receiver.persons.phone} ارسال شد'))
