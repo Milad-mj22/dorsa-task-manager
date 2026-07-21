@@ -2,561 +2,1063 @@
 {% block content %}
 
 <style>
-  .rtl-report { direction: rtl; text-align: right; }
-  .rtl-report * { letter-spacing: -0.1px; }
-
-  .report-card { border: 0; border-radius: 18px; overflow: hidden; }
-  .report-card .card-header {
-    background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(32,201,151,.08));
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    padding: 14px 16px;
+  /* ===== Base ===== */
+  .report-page {
+    min-height: calc(100vh - 80px);
+    padding: 28px 24px 40px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+    direction: rtl;
+    color: #1a1a2e;
+    background: #f4f5f7;
   }
-  .report-card .card-body { padding: 16px; }
 
-  .user-title { font-weight: 900; font-size: 1.05rem; margin: 0; }
-  .sub-title { font-size: .85rem; opacity: .75; }
-
-  .kpi {
-    border: 1px solid rgba(0,0,0,.06);
-    border-radius: 16px;
-    padding: 14px;
-    background: rgba(248,249,250,.85);
-    height: 100%;
+  /* ===== Page Header ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
   }
-  .kpi .kpi-label {
-    font-size: .85rem;
-    color: rgba(0,0,0,.6);
-    margin-bottom: 6px;
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-header h1 .badge-count {
+    font-size: 14px;
+    background: #e8ecf1;
+    color: #4a4a6a;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .header-actions {
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-modern {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+  }
+
+  .btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+
+  .btn-primary-modern {
+    background: linear-gradient(135deg, #5850ec, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(88, 80, 236, 0.3);
+  }
+
+  .btn-primary-modern:hover {
+    box-shadow: 0 8px 35px rgba(88, 80, 236, 0.4);
+    color: #fff;
+  }
+
+  .btn-outline-modern {
+    background: #fff;
+    color: #4a4a6a;
+    border: 1px solid #e0e4ea;
+  }
+
+  .btn-outline-modern:hover {
+    background: #f8f9fa;
+    border-color: #c8cdd6;
+    color: #1a1a2e;
+  }
+
+  .btn-outline-modern .icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ===== Filter Card ===== */
+  .filter-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+  }
+
+  .filter-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .filter-header .title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #1a1a2e;
+  }
+
+  .filter-header .title .icon {
+    font-size: 20px;
+  }
+
+  .filter-header .status-badge {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f0f0ff;
+    color: #5850ec;
+    border: 1px solid rgba(88, 80, 236, 0.15);
+  }
+
+  .filter-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .filter-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a4a6a;
+    margin-bottom: 4px;
+  }
+
+  .filter-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+    color: #1a1a2e;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a8f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+  }
+
+  .filter-group select:hover {
+    border-color: #b0b8c4;
+  }
+
+  .filter-group select:focus {
+    outline: none;
+    border-color: #5850ec;
+    box-shadow: 0 0 0 3px rgba(88, 80, 236, 0.1);
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .filter-actions .btn-reset {
+    padding: 10px 20px;
+    border: 1px solid #d0d5dd;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #4a4a6a;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+  }
+
+  .filter-actions .btn-reset:hover {
+    background: #f8f9fa;
+    border-color: #b0b8c4;
+  }
+
+  .filter-meta {
+    font-size: 12px;
+    color: #6b7a8f;
+    margin-top: 6px;
+  }
+
+  /* ===== Ranking Card ===== */
+  .ranking-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+  }
+
+  .ranking-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .ranking-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ranking-header .count-badge {
+    font-size: 13px;
+    background: #e8ecf1;
+    color: #4a4a6a;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .ranking-header .subtitle {
+    font-size: 13px;
+    color: #6b7a8f;
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid #e8ecf1;
+  }
+
+  .table-custom {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .table-custom thead {
+    background: #f8f9fa;
+  }
+
+  .table-custom thead th {
+    padding: 12px 16px;
+    text-align: right;
+    font-weight: 700;
+    color: #4a4a6a;
+    border-bottom: 2px solid #e8ecf1;
+    font-size: 13px;
     white-space: nowrap;
   }
-  .kpi .kpi-icon {
-    width: 34px; height: 34px;
-    border-radius: 12px;
+
+  .table-custom tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f2f5;
+    vertical-align: middle;
+  }
+
+  .table-custom tbody tr:hover {
+    background: #f8f9fa;
+  }
+
+  .table-custom tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .rank-medal {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    border: 1px solid rgba(0,0,0,.06);
-    background: rgba(0,0,0,.02);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 13px;
   }
-  .kpi .kpi-value {
-    font-size: 1.15rem;
-    font-weight: 900;
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-  }
-  .kpi .kpi-unit { font-size: .85rem; color: rgba(0,0,0,.55); font-weight: 700; }
-  .text-num { font-variant-numeric: tabular-nums; }
 
-  .section-title {
-    font-weight: 900;
-    font-size: .98rem;
-    margin: 14px 0 10px;
+  .rank-medal.gold { background: #fef3c7; color: #d97706; }
+  .rank-medal.silver { background: #f3f4f6; color: #6b7280; }
+  .rank-medal.bronze { background: #fde68a; color: #92400e; }
+  .rank-medal.normal { background: #f0f2f5; color: #4a4a6a; }
+
+  .progress-mini {
+    width: 100px;
+    height: 6px;
+    background: #f0f2f5;
+    border-radius: 10px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+
+  .progress-mini .fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #5850ec, #7c3aed);
+    transition: width 0.6s ease;
+  }
+
+  /* ===== User Report Card ===== */
+  .user-report-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .user-report-card:nth-child(2) { animation-delay: 0.1s; }
+  .user-report-card:nth-child(3) { animation-delay: 0.2s; }
+  .user-report-card:nth-child(4) { animation-delay: 0.3s; }
+  .user-report-card:nth-child(5) { animation-delay: 0.4s; }
+
+  .user-report-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f2f5;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .user-header .user-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
-  .section-title .badge { font-weight: 800; border-radius: 999px; padding: 7px 10px; }
 
-  .report-table { border: 1px solid rgba(0,0,0,.06); border-radius: 14px; overflow: hidden; }
-  .report-table table { margin: 0; }
-  .report-table thead th {
-    background: rgba(13,110,253,.06);
-    font-weight: 900;
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    padding-top: 12px;
-    padding-bottom: 12px;
+  .user-header .user-info .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5850ec, #7c3aed);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
   }
-  .report-table td, .report-table th { vertical-align: middle !important; }
-  .remaining-strong { font-weight: 950; }
 
-  .status-pill {
-    border-radius: 999px;
-    padding: 6px 10px;
-    font-weight: 900;
-    font-size: .8rem;
-    border: 1px solid rgba(0,0,0,.06);
-    background: rgba(0,0,0,.02);
-    white-space: nowrap;
-    display: inline-flex;
+  .user-header .user-info .name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  .user-header .user-info .rank {
+    font-size: 13px;
+    color: #6b7a8f;
+  }
+
+  .user-header .status-pill {
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-pill.good {
+    background: #f0fdf4;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+
+  .status-pill.warning {
+    background: #fffbeb;
+    color: #d97706;
+    border: 1px solid #fde68a;
+  }
+
+  .status-pill.danger {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  /* ===== KPI Grid ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-item {
+    background: #f8f9fa;
+    border: 1px solid #e8ecf1;
+    border-radius: 14px;
+    padding: 14px 16px;
+    transition: all 0.3s ease;
+  }
+
+  .kpi-item:hover {
+    background: #f0f2f5;
+  }
+
+  .kpi-item .label {
+    font-size: 12px;
+    color: #6b7a8f;
+    font-weight: 600;
+    display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .empty-row { padding: 16px 10px; color: rgba(0,0,0,.55); }
+  .kpi-item .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: block;
+    margin-top: 2px;
+  }
 
-  .done-summary {
-    margin-top: 10px;
-    padding: 10px 12px;
+  .kpi-item .value .unit {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7a8f;
+  }
+
+  /* ===== Alerts ===== */
+  .alert-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
     border-radius: 14px;
-    background: rgba(32,201,151,.08);
-    border: 1px solid rgba(0,0,0,.06);
-    font-size: .9rem;
+    margin-bottom: 12px;
   }
 
-  .progress-wrap {
-    margin-top: 12px;
-    padding: 12px;
-    border-radius: 16px;
-    border: 1px solid rgba(0,0,0,.06);
-    background: linear-gradient(135deg, rgba(13,110,253,.04), rgba(25,135,84,.04));
+  .alert-box .icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
   }
-  .progress-top {
+
+  .alert-box .content .title {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .alert-box .content .desc {
+    font-size: 13px;
+    color: #4a4a6a;
+  }
+
+  .alert-box.danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+  }
+
+  .alert-box.warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+  }
+
+  /* ===== Progress Bar ===== */
+  .progress-large {
+    margin: 12px 0 16px;
+  }
+
+  .progress-large .progress-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 10px;
+    margin-bottom: 6px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+    gap: 8px;
   }
-  .progress-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 900;
+
+  .progress-large .progress-header .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a4a6a;
   }
-  .progress-meta { font-size: .88rem; color: rgba(0,0,0,.65); }
-  .progress {
+
+  .progress-large .progress-header .percentage {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+  }
+
+  .progress-large .progress-bar-bg {
+    width: 100%;
     height: 10px;
-    border-radius: 999px;
-    background: rgba(0,0,0,.06);
-  }
-  .progress-bar { border-radius: 999px; }
-
-  .p-good { background: rgba(25,135,84,.10) !important; }
-  .p-mid  { background: rgba(255,193,7,.14) !important; }
-  .p-low  { background: rgba(220,53,69,.10) !important; }
-
-  .pill-good { background: rgba(25,135,84,.12); border-color: rgba(25,135,84,.20); }
-  .pill-mid  { background: rgba(255,193,7,.16); border-color: rgba(255,193,7,.22); }
-  .pill-low  { background: rgba(220,53,69,.12); border-color: rgba(220,53,69,.20); }
-
-  /* Ranking box */
-  .rank-card{
-    border: 0;
-    border-radius: 18px;
+    background: #f0f2f5;
+    border-radius: 10px;
     overflow: hidden;
   }
-  .rank-card .card-header{
-    background: linear-gradient(135deg, rgba(111,66,193,.10), rgba(13,110,253,.08));
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    padding: 14px 16px;
-  }
-  .rank-card .card-body{ padding: 16px; }
-  .rank-note{
-    font-size:.88rem;
-    color: rgba(0,0,0,.65);
+
+  .progress-large .progress-bar-bg .fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #5850ec, #7c3aed);
+    transition: width 1s ease;
   }
 
-  /* Alert pills */
-  .alert-mini{
-    border-radius: 14px;
-    padding: 10px 12px;
-    border: 1px solid rgba(0,0,0,.06);
-    background: rgba(0,0,0,.02);
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-  }
-  .alert-mini .t{ font-weight: 900; }
-  .alert-mini .d{ color: rgba(0,0,0,.65); font-size:.88rem; }
-  .alert-overrun{ background: rgba(220,53,69,.08); border-color: rgba(220,53,69,.18); }
-  .alert-overcommit{ background: rgba(255,193,7,.12); border-color: rgba(255,193,7,.22); }
-
-
-  .filter-card{
-    border: 0;
-    border-radius: 18px;
-    overflow: hidden;
-  }
-  .filter-card .card-header{
-    background: linear-gradient(135deg, rgba(13,110,253,.08), rgba(111,66,193,.08));
-    border-bottom: 1px solid rgba(0,0,0,.06);
-    padding: 14px 16px;
-  }
-  .filter-card .card-body{
-    padding: 14px 16px;
-  }
-
-  .filter-label{
-    font-weight: 900;
-    display: inline-flex;
+  /* ===== Section Title ===== */
+  .section-title {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-  }
-  .filter-label .kpi-icon{
-    width: 34px; height: 34px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    border: 1px solid rgba(0,0,0,.06);
-    background: rgba(0,0,0,.02);
+    margin: 16px 0 12px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .filter-select{
-    border-radius: 14px !important;
-    border: 1px solid rgba(0,0,0,.08) !important;
-    padding: 10px 12px !important;
-    font-weight: 800;
-    background-color: rgba(248,249,250,.9);
-  }
-  .filter-select:focus{
-    box-shadow: 0 0 0 .2rem rgba(13,110,253,.12) !important;
-    border-color: rgba(13,110,253,.35) !important;
-  }
-
-  .filter-meta{
-    font-size: .88rem;
-    color: rgba(0,0,0,.65);
+  .section-title .title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a2e;
   }
 
+  .section-title .title .badge {
+    font-size: 12px;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
 
+  .section-title .title .badge.todo {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
+  .section-title .title .badge.doing {
+    background: #fffbeb;
+    color: #d97706;
+  }
+
+  .section-title .title .badge.done {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .section-title .count {
+    font-size: 13px;
+    color: #6b7a8f;
+  }
+
+  /* ===== Done Summary ===== */
+  .done-summary {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .done-summary strong {
+    color: #16a34a;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 992px) {
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .report-page {
+      padding: 16px 12px 32px;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-header h1 {
+      font-size: 22px;
+    }
+
+    .header-actions {
+      width: 100%;
+    }
+
+    .header-actions .btn-modern {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .filter-card {
+      padding: 16px;
+    }
+
+    .filter-body {
+      flex-direction: column;
+    }
+
+    .filter-group {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .filter-actions {
+      width: 100%;
+    }
+
+    .filter-actions .btn-reset {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ranking-card {
+      padding: 16px;
+    }
+
+    .user-report-card {
+      padding: 16px;
+    }
+
+    .user-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .user-header .user-info .avatar {
+      width: 36px;
+      height: 36px;
+      font-size: 15px;
+    }
+
+    .user-header .user-info .name {
+      font-size: 16px;
+    }
+
+    .table-custom {
+      font-size: 13px;
+    }
+
+    .table-custom thead th,
+    .table-custom tbody td {
+      padding: 8px 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .kpi-item .value {
+      font-size: 17px;
+    }
+
+    .ranking-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  /* ===== Scrollbar ===== */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f0f2f5;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #d0d5dd;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b0b8c4;
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 </style>
 
-<div class="rtl-report container-fluid py-3">
-<!-- Sprint Filter -->
-<div class="card mb-4 shadow-sm filter-card">
-  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div class="filter-label">
-      <span class="kpi-icon">🗓️</span>
-      فیلتر گزارش بر اساس اسپرینت
-    </div>
+<div class="report-page">
 
-    <span class="status-pill">
-      {% if selected_sprint == "all" %}
-        همه اسپرینت‌ها
-      {% else %}
-        اسپرینت انتخاب‌شده
-      {% endif %}
-    </span>
+  <!-- ===== Header ===== -->
+  <div class="page-header">
+    <h1>
+      📊 گزارش عملکرد
+      <span class="badge-count">{{ data|length }} کاربر</span>
+    </h1>
+    <div class="header-actions">
+      <button class="btn-modern btn-primary-modern" onclick="location.reload()">
+        <span class="icon">🔄</span>
+        بروزرسانی
+      </button>
+      <button class="btn-modern btn-outline-modern" onclick="window.print()">
+        <span class="icon">🖨️</span>
+        چاپ
+      </button>
+    </div>
   </div>
 
-  <div class="card-body">
-    <form method="get" class="row g-3 align-items-end">
-      <div class="col-12 col-md-8 col-lg-6">
-        <label class="form-label fw-bold mb-2">اسپرینت</label>
+  <!-- ===== Filter ===== -->
+  <div class="filter-card">
+    <div class="filter-header">
+      <div class="title">
+        <span class="icon">🗓️</span>
+        فیلتر گزارش بر اساس اسپرینت
+      </div>
+      <span class="status-badge">
+        {% if selected_sprint == "all" %}
+          ✅ همه اسپرینت‌ها
+        {% else %}
+          📌 اسپرینت انتخاب‌شده
+        {% endif %}
+      </span>
+    </div>
 
-        <select name="sprint" class="form-select filter-select" onchange="this.form.submit()">
+    <form method="get" class="filter-body">
+      <div class="filter-group">
+        <label for="sprintSelect">اسپرینت</label>
+        <select name="sprint" id="sprintSelect" onchange="this.form.submit()">
           <option value="all" {% if selected_sprint == "all" %}selected{% endif %}>
             ✅ همه اسپرینت‌ها
           </option>
-
           {% for sp in sprints %}
             <option value="{{ sp.id }}" {% if selected_sprint == sp.id|stringformat:"s" %}selected{% endif %}>
               🏁 {{ sp.title|default:"Sprint" }}
-              {% if sp.start_date %} — {{ sp.start_date }}{% endif %}
               {% if sp.name %} — {{ sp.name }}{% endif %}
             </option>
           {% endfor %}
         </select>
-
-        <div class="mt-2 filter-meta">
-          <span>با تغییر اسپرینت، گزارش به صورت خودکار آپدیت می‌شود.</span>
-        </div>
+        <div class="filter-meta">با تغییر اسپرینت، گزارش به‌صورت خودکار آپدیت می‌شود.</div>
       </div>
 
-      <div class="col-12 col-md-4 col-lg-3">
-        <noscript>
-          <button class="btn btn-primary w-100" style="border-radius: 14px; font-weight: 900;">
-            اعمال فیلتر
-          </button>
-        </noscript>
-
-        <a href="?" class="btn btn-light w-100"
-           style="border-radius: 14px; font-weight: 900; border: 1px solid rgba(0,0,0,.08);">
-          ریست
-        </a>
+      <div class="filter-actions">
+        <a href="?" class="btn-reset">🔄 ریست</a>
       </div>
     </form>
   </div>
-</div>
 
-
-  <!-- Ranking -->
-  <div class="card mb-4 shadow-sm rank-card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+  <!-- ===== Ranking ===== -->
+  <div class="ranking-card">
+    <div class="ranking-header">
       <div>
-        <h5 class="m-0 fw-bold">🏆 رتبه‌بندی افراد بر اساس عملکرد</h5>
-        <div class="rank-note">
-          معیار: (مجموع ساعات ثبت‌شده) ÷ (مجموع ساعات هدف همه تسک‌ها) × ۱۰۰
-        </div>
+        <h2>🏆 رتبه‌بندی افراد</h2>
+        <div class="subtitle">بر اساس پیشرفت: (ساعات ثبت‌شده ÷ ساعات هدف) × ۱۰۰</div>
       </div>
-      <span class="status-pill">تعداد افراد: {{ summary.users_count }}</span>
+      <span class="count-badge">👥 {{ summary.users_count }} نفر</span>
     </div>
 
-    <div class="card-body">
-      <div class="table-responsive report-table">
-        <table class="table table-hover table-striped align-middle">
-          <thead>
-            <tr>
-              <th style="width: 8%">رتبه</th>
-              <th style="width: 24%">کاربر</th>
-              <th style="width: 16%">پیشرفت</th>
-              <th style="width: 17%">هدف کل (ساعت)</th>
-              <th style="width: 17%">انجام‌شده کل (ساعت)</th>
-              <th style="width: 18%">مانده کل (ساعت)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in data %}
-            <tr>
-              <td class="fw-bold">{{ item.rank_badge }} {{ item.rank }}</td>
-              <td class="fw-semibold">{{ item.user.username }}</td>
-              <td class="text-num fw-bold">{{ item.progress_display }}%</td>
-              <td class="text-num">{{ item.total_goal_all|default_if_none:"0"|floatformat:2 }}</td>
-              <td class="text-num">{{ item.total_spent_all_tasks|default_if_none:"0"|floatformat:2 }}</td>
-              <td class="text-num fw-bold">{{ item.total_remaining_all|default_if_none:"0"|floatformat:2 }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" class="empty-row">اطلاعاتی برای نمایش وجود ندارد.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div class="table-wrap">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th style="width:8%;">رتبه</th>
+            <th style="width:22%;">کاربر</th>
+            <th style="width:18%;">پیشرفت</th>
+            <th style="width:17%;">هدف کل</th>
+            <th style="width:17%;">انجام‌شده</th>
+            <th style="width:18%;">مانده</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in data %}
+          <tr>
+            <td>
+              <span class="rank-medal 
+                {% if item.rank == 1 %}gold
+                {% elif item.rank == 2 %}silver
+                {% elif item.rank == 3 %}bronze
+                {% else %}normal{% endif %}">
+                {{ item.rank }}
+              </span>
+            </td>
+            <td class="fw-semibold">{{ item.user.username }}</td>
+            <td>
+              <span class="progress-mini">
+                <span class="fill" style="width:{{ item.progress_int }}%;"></span>
+              </span>
+              {{ item.progress_display }}%
+            </td>
+            <td class="text-num">{{ item.total_goal_all|default:"0"|floatformat:2 }}</td>
+            <td class="text-num">{{ item.total_spent_all_tasks|default:"0"|floatformat:2 }}</td>
+            <td class="text-num fw-bold">{{ item.total_remaining_all|default:"0"|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" style="padding:24px; text-align:center; color:#6b7a8f;">اطلاعاتی برای نمایش وجود ندارد.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Per user cards -->
+  <!-- ===== User Reports ===== -->
   {% for item in data %}
-  <div class="card mb-4 shadow-sm report-card">
+  <div class="user-report-card">
 
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <h5 class="user-title">{{ item.rank_badge }} {{ item.user.username }}</h5>
-        <div class="sub-title">گزارش ساعات و وضعیت تسک‌ها (رتبه {{ item.rank }})</div>
+    <!-- User Header -->
+    <div class="user-header">
+      <div class="user-info">
+        <div class="avatar">{{ item.user.username|first|upper }}</div>
+        <div>
+          <div class="name">{{ item.user.username }}</div>
+          <div class="rank">🏅 رتبه {{ item.rank }} · {{ item.rank_badge }}</div>
+        </div>
       </div>
-
       <span class="status-pill {{ item.status_class }}">
         {{ item.status_text }}
       </span>
     </div>
 
-    <div class="card-body">
-
-      <!-- KPI ROW -->
-      <div class="row g-3 mb-2">
-        <div class="col-lg-4 col-md-6">
-          <div class="kpi">
-            <div class="kpi-label">
-              <span class="kpi-icon">🎯</span>
-              مجموع ساعات هدف (همه تسک‌ها)
-            </div>
-            <div class="kpi-value text-num">
-              {{ item.total_goal_all|default_if_none:"0"|floatformat:2 }}
-              <span class="kpi-unit">ساعت</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6">
-          <div class="kpi">
-            <div class="kpi-label">
-              <span class="kpi-icon">⏱️</span>
-              مجموع ساعات ثبت‌شده (همه تسک‌ها)
-            </div>
-            <div class="kpi-value text-num">
-              {{ item.total_spent_all_tasks|default_if_none:"0"|floatformat:2 }}
-              <span class="kpi-unit">ساعت</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-md-12">
-          <div class="kpi">
-            <div class="kpi-label">
-              <span class="kpi-icon">⏳</span>
-              مجموع ساعات مانده (بر اساس هدف)
-            </div>
-            <div class="kpi-value text-num">
-              {{ item.total_remaining_all|default_if_none:"0"|floatformat:2 }}
-              <span class="kpi-unit">ساعت</span>
-            </div>
-          </div>
-        </div>
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <div class="kpi-item">
+        <div class="label">🎯 هدف کل</div>
+        <span class="value">{{ item.total_goal_all|default:"0"|floatformat:2 }} <span class="unit">ساعت</span></span>
       </div>
+      <div class="kpi-item">
+        <div class="label">⏱️ انجام‌شده</div>
+        <span class="value">{{ item.total_spent_all_tasks|default:"0"|floatformat:2 }} <span class="unit">ساعت</span></span>
+      </div>
+      <div class="kpi-item">
+        <div class="label">⏳ مانده</div>
+        <span class="value">{{ item.total_remaining_all|default:"0"|floatformat:2 }} <span class="unit">ساعت</span></span>
+      </div>
+    </div>
 
-      <!-- Alerts -->
-      <div class="row g-3 mt-1">
+    <!-- Alerts -->
+    {% if item.is_overrun or item.is_overcommit %}
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
         {% if item.is_overrun %}
-        <div class="col-lg-6">
-          <div class="alert-mini alert-overrun">
-            <div>🚨</div>
-            <div>
-              <div class="t">هشدار Overrun (عبور از هدف)</div>
-              <div class="d">
-                ساعات ثبت‌شده از هدف کل بیشتر شده است.
-                درصد واقعی: <span class="text-num fw-bold">{{ item.progress_raw_display }}%</span>
-              </div>
+          <div class="alert-box danger">
+            <span class="icon">🚨</span>
+            <div class="content">
+              <div class="title">هشدار Overrun</div>
+              <div class="desc">ساعات ثبت‌شده از هدف کل بیشتر شده است. ({{ item.progress_raw_display }}%)</div>
             </div>
           </div>
-        </div>
         {% endif %}
-
         {% if item.is_overcommit %}
-        <div class="col-lg-6">
-          <div class="alert-mini alert-overcommit">
-            <div>⚠️</div>
-            <div>
-              <div class="t">هشدار Over-commitment (تعهد زیاد)</div>
-              <div class="d">
-                هدف کل بالا است ولی پیشرفت پایین؛ احتمالاً حجم کار زیاد یا نیاز به بازنگری برنامه.
-              </div>
+          <div class="alert-box warning">
+            <span class="icon">⚠️</span>
+            <div class="content">
+              <div class="title">هشدار Over-commitment</div>
+              <div class="desc">هدف کل بالا است ولی پیشرفت پایین؛ نیاز به بازنگری برنامه.</div>
             </div>
           </div>
-        </div>
         {% endif %}
       </div>
+    {% endif %}
 
-      <!-- Progress -->
-      <div class="progress-wrap {{ item.progress_class }}">
-        <div class="progress-top">
-          <div class="progress-title">
-            <span class="kpi-icon">📈</span>
-            درصد پیشرفت (عملکرد فرد)
-          </div>
-          <div class="progress-meta">
-            انجام‌شده:
-            <span class="text-num fw-bold">{{ item.total_spent_all_tasks|default_if_none:"0"|floatformat:2 }}</span>
-            از
-            <span class="text-num fw-bold">{{ item.total_goal_all|default_if_none:"0"|floatformat:2 }}</span>
-            ساعت
-            | پیشرفت:
-            <span class="text-num fw-bold">{{ item.progress_display }}%</span>
-          </div>
-        </div>
+    <!-- Progress -->
+    <div class="progress-large">
+      <div class="progress-header">
+        <span class="label">📈 درصد پیشرفت</span>
+        <span class="percentage">{{ item.progress_display }}%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="fill" style="width:{{ item.progress_int }}%;"></div>
+      </div>
+    </div>
 
-        <div class="progress" role="progressbar" aria-valuenow="{{ item.progress_int }}" aria-valuemin="0" aria-valuemax="100">
-          <div class="progress-bar" style="width: {{ item.progress_int }}%"></div>
+    <!-- ===== TODO Tasks ===== -->
+    <div class="section-title">
+      <div class="title">
+        <span class="badge todo">❌</span>
+        تسک‌های انجام‌نشده
+      </div>
+      <span class="count">{{ item.todo_tasks|length }} مورد</span>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th style="width:46%;">عنوان</th>
+            <th style="width:18%;">هدف</th>
+            <th style="width:18%;">انجام‌شده</th>
+            <th style="width:18%;">مانده</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in item.todo_tasks %}
+          <tr>
+            <td class="fw-semibold">{{ task.title }}</td>
+            <td class="text-num">{{ task.goal_time|default:"0"|floatformat:2 }}</td>
+            <td class="text-num">{{ task.spent|default:"0"|floatformat:2 }}</td>
+            <td class="text-num fw-bold">{{ task.remaining|default:"0"|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="padding:16px; text-align:center; color:#6b7a8f;">موردی برای نمایش وجود ندارد.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== DOING Tasks ===== -->
+    <div class="section-title">
+      <div class="title">
+        <span class="badge doing">🔄</span>
+        تسک‌های در حال انجام
+      </div>
+      <span class="count">{{ item.doing_tasks|length }} مورد</span>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th style="width:46%;">عنوان</th>
+            <th style="width:18%;">هدف</th>
+            <th style="width:18%;">انجام‌شده</th>
+            <th style="width:18%;">مانده</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in item.doing_tasks %}
+          <tr>
+            <td class="fw-semibold">{{ task.title }}</td>
+            <td class="text-num">{{ task.goal_time|default:"0"|floatformat:2 }}</td>
+            <td class="text-num">{{ task.spent|default:"0"|floatformat:2 }}</td>
+            <td class="text-num fw-bold">{{ task.remaining|default:"0"|floatformat:2 }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="padding:16px; text-align:center; color:#6b7a8f;">موردی برای نمایش وجود ندارد.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== DONE Tasks ===== -->
+    {% if item.done_tasks %}
+      <div class="section-title">
+        <div class="title">
+          <span class="badge done">✅</span>
+          تسک‌های تکمیل‌شده
         </div>
+        <span class="count">{{ item.done_tasks|length }} مورد</span>
       </div>
 
-      <hr class="my-3">
-
-      <!-- TODO -->
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="section-title">
-          <span class="badge bg-danger-subtle text-danger">❌ در انتظار انجام</span>
-          <span>تسک‌های انجام‌نشده</span>
-        </div>
-        <span class="status-pill">Todo</span>
-      </div>
-
-      <div class="table-responsive report-table mb-4">
-        <table class="table table-hover table-striped align-middle">
+      <div class="table-wrap" style="margin-bottom:12px;">
+        <table class="table-custom">
           <thead>
             <tr>
-              <th style="width: 46%">عنوان</th>
-              <th class="text-nowrap" style="width: 18%">هدف (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">انجام‌شده (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">مانده (ساعت)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for task in item.todo_tasks %}
-              <tr>
-                <td class="fw-semibold">{{ task.title }}</td>
-                <td class="text-num">{{ task.goal_time|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num">{{ task.spent|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num remaining-strong">{{ task.remaining|default_if_none:"0"|floatformat:2 }}</td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="4" class="empty-row">موردی برای نمایش وجود ندارد.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- DOING -->
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="section-title">
-          <span class="badge bg-warning-subtle text-warning">🔄 در حال انجام</span>
-          <span>تسک‌های فعال</span>
-        </div>
-        <span class="status-pill">Doing</span>
-      </div>
-
-      <div class="table-responsive report-table mb-4">
-        <table class="table table-hover table-striped align-middle">
-          <thead>
-            <tr>
-              <th style="width: 46%">عنوان</th>
-              <th class="text-nowrap" style="width: 18%">هدف (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">انجام‌شده (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">مانده (ساعت)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for task in item.doing_tasks %}
-              <tr>
-                <td class="fw-semibold">{{ task.title }}</td>
-                <td class="text-num">{{ task.goal_time|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num">{{ task.spent|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num remaining-strong">{{ task.remaining|default_if_none:"0"|floatformat:2 }}</td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="4" class="empty-row">موردی برای نمایش وجود ندارد.</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {% if item.done_tasks %}
-      <!-- DONE -->
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="section-title">
-          <span class="badge bg-success-subtle text-success">✅ انجام‌شده</span>
-          <span>تسک‌های تکمیل‌شده</span>
-        </div>
-        <span class="status-pill">Done</span>
-      </div>
-
-      <div class="table-responsive report-table">
-        <table class="table table-hover table-striped align-middle">
-          <thead>
-            <tr>
-              <th style="width: 46%">عنوان</th>
-              <th class="text-nowrap" style="width: 18%">هدف (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">انجام‌شده (ساعت)</th>
-              <th class="text-nowrap" style="width: 18%">مانده (ساعت)</th>
+              <th style="width:46%;">عنوان</th>
+              <th style="width:18%;">هدف</th>
+              <th style="width:18%;">انجام‌شده</th>
+              <th style="width:18%;">مانده</th>
             </tr>
           </thead>
           <tbody>
             {% for task in item.done_tasks %}
-              <tr>
-                <td class="fw-semibold">{{ task.title }}</td>
-                <td class="text-num">{{ task.goal_time|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num">{{ task.spent|default_if_none:"0"|floatformat:2 }}</td>
-                <td class="text-num remaining-strong">{{ task.remaining|default_if_none:"0"|floatformat:2 }}</td>
-              </tr>
-            {% empty %}
-              <tr><td colspan="4" class="empty-row">موردی برای نمایش وجود ندارد.</td></tr>
+            <tr>
+              <td class="fw-semibold">{{ task.title }}</td>
+              <td class="text-num">{{ task.goal_time|default:"0"|floatformat:2 }}</td>
+              <td class="text-num">{{ task.spent|default:"0"|floatformat:2 }}</td>
+              <td class="text-num fw-bold">{{ task.remaining|default:"0"|floatformat:2 }}</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
 
       <div class="done-summary">
-        <strong>جمع‌بندی تسک‌های انجام‌شده:</strong>
-        هدف: <span class="text-num fw-bold">{{ item.done_total_goal|default_if_none:"0"|floatformat:2 }}</span> ساعت |
-        انجام‌شده: <span class="text-num fw-bold">{{ item.done_total_spent|default_if_none:"0"|floatformat:2 }}</span> ساعت |
-        مانده: <span class="text-num fw-bold">{{ item.done_total_remaining|default_if_none:"0"|floatformat:2 }}</span> ساعت
+        <strong>📊 جمع‌بندی تسک‌های انجام‌شده:</strong>
+        هدف: <span class="fw-bold">{{ item.done_total_goal|default:"0"|floatformat:2 }}</span> ساعت |
+        انجام‌شده: <span class="fw-bold">{{ item.done_total_spent|default:"0"|floatformat:2 }}</span> ساعت |
+        مانده: <span class="fw-bold">{{ item.done_total_remaining|default:"0"|floatformat:2 }}</span> ساعت
       </div>
-      {% endif %}
+    {% endif %}
 
-    </div>
   </div>
   {% endfor %}
 
 </div>
+
+<!-- ===== Animation Trigger ===== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars on load
+    setTimeout(function() {
+      document.querySelectorAll('.progress-bar-bg .fill').forEach(function(bar) {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(function() {
+          bar.style.width = width;
+        }, 100);
+      });
+
+      document.querySelectorAll('.progress-mini .fill').forEach(function(bar) {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(function() {
+          bar.style.width = width;
+        }, 150);
+      });
+    }, 300);
+  });
+</script>
 
 {% endblock %}

@@ -34,18 +34,24 @@ def sms_ir(template_obj:SMS_Template,phone_number,vars,text= None):
         ret = sms_ir.send_sms(phone_number,text,linenumber,)
         return ret.ok
 
-# api_key = "API_KEY"
-# linenumber = "300790"
-# number = "09135689040"
-# message = "سلام"
-# template_id = "859705"
-# parameters = [
-#     {"name": "CODE", "value": "1378"}
-# ]
-# sms_ir = SmsIr(api_key,linenumber,)
-# # ret = sms_ir.send_sms(number,message,linenumber,)
-# # #print(ret)
-# a = sms_ir.get_line_numbers()
-# #print(a.text)
-# a = sms_ir.send_verify_code(number,template_id,parameters,)
-# #print(a)
+
+if __name__=='__main__':
+
+    api_key = "oawJpqq5LPk4aMgH8krrG2IyGcVtGlsCiVvhE0WXN2PcPhEg"
+    linenumber = "50003181890144"
+    number = "09135689040"
+    message = "سلام"
+    # template_id = "859705"
+    parameters = [
+        # {"name": "CODE", "value": "1378"}
+    ]
+    
+    template_id = 354198
+
+    sms_ir = SmsIr(api_key,linenumber,)
+    # ret = sms_ir.send_sms(number,message,linenumber,)
+    # #print(ret)
+    a = sms_ir.get_line_numbers()
+    print(a.text)
+    a = sms_ir.send_verify_code(number,template_id,parameters,)
+    print(a)

@@ -2,20 +2,382 @@
 {% load static %}
 {% block content %}
 <head>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ===== Base ===== */
+    .dashboard-page {
+      min-height: calc(100vh - 80px);
+      padding: 28px 24px 40px;
+      font-family: 'Inter', "Vazirmatn", sans-serif;
+      direction: rtl;
+      color: #1a1a2e;
+      background: #f4f5f7;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0;
+      color: #1a1a2e;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-header h1 .badge-count {
+      font-size: 14px;
+      background: #e8ecf1;
+      color: #4a4a6a;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-modern {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Inter', "Vazirmatn", sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+    }
+
+    .btn-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary-modern {
+      background: linear-gradient(135deg, #5850ec, #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(88, 80, 236, 0.3);
+    }
+
+    .btn-primary-modern:hover {
+      box-shadow: 0 8px 35px rgba(88, 80, 236, 0.4);
+      color: #fff;
+    }
+
+    .btn-outline-modern {
+      background: #fff;
+      color: #4a4a6a;
+      border: 1px solid #e0e4ea;
+    }
+
+    .btn-outline-modern:hover {
+      background: #f8f9fa;
+      border-color: #c8cdd6;
+      color: #1a1a2e;
+    }
+
+    .btn-outline-modern .icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* ===== Sprint Selector ===== */
+    .sprint-selector {
+      background: #ffffff;
+      border: 1px solid #e0e4ea;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .sprint-selector label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a4a6a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sprint-selector select {
+      padding: 8px 32px 8px 16px;
+      border-radius: 10px;
+      border: 1px solid #d0d5dd;
+      background: #ffffff;
+      color: #1a1a2e;
+      font-size: 14px;
+      font-family: 'Inter', "Vazirmatn", sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 200px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a8f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: left 12px center;
+    }
+
+    .sprint-selector select:hover {
+      border-color: #b0b8c4;
+    }
+
+    .sprint-selector select:focus {
+      outline: none;
+      border-color: #5850ec;
+      box-shadow: 0 0 0 3px rgba(88, 80, 236, 0.1);
+    }
+
+    /* ===== Cards ===== */
+    .dashboard-card {
+      background: #ffffff;
+      border: 1px solid #e0e4ea;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: all 0.3s ease;
+    }
+
+    .dashboard-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .dashboard-card .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dashboard-card .card-title .title-icon {
+      font-size: 24px;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .chart-container {
+      background: #fafbfc;
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid #e8ecf1;
+      position: relative;
+    }
+
+    .chart-container h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a4a6a;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .chart-container canvas {
+      max-height: 250px;
+      max-width: 100%;
+    }
+
+    /* ===== Team Cards ===== */
+    .team-card {
+      background: #ffffff;
+      border: 1px solid #e0e4ea;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: all 0.3s ease;
+    }
+
+    .team-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .team-card .team-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f2f5;
+    }
+
+    .team-card .team-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .team-card .team-header .team-total {
+      font-size: 14px;
+      color: #6b7a8f;
+      background: #f0f2f5;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .team-card .team-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 992px) {
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .team-card .team-charts {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-page {
+        padding: 16px 12px 32px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .page-header h1 {
+        font-size: 22px;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .header-actions .btn-modern {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .sprint-selector {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sprint-selector select {
+        width: 100%;
+      }
+
+      .dashboard-card {
+        padding: 16px;
+      }
+
+      .dashboard-card .card-title {
+        font-size: 18px;
+      }
+
+      .team-card {
+        padding: 16px;
+      }
+
+      .team-card .team-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .chart-container {
+        padding: 12px;
+      }
+
+      .chart-container canvas {
+        max-height: 200px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-container canvas {
+        max-height: 160px;
+      }
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f0f2f5;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #d0d5dd;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #b0b8c4;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
-  <div class="container mx-auto px-6 py-10">
 
-    
-    <h1 class="text-3xl font-bold mb-6">🧠 Time Tracking Dashboard</h1>
+<div class="dashboard-page">
 
-    <!-- Sprint selector -->
-    <form method="get" class="mb-6">
-      <label class="block text-sm font-semibold mb-1">Select Sprint:</label>
-      <select name="sprint" class="p-2 border rounded w-60" onchange="this.form.submit()">
+  <!-- ===== Header ===== -->
+  <div class="page-header">
+    <h1>
+      🧠 داشبورد زمان
+      <span class="badge-count">{{ sprints|length }} اسپرینت</span>
+    </h1>
+    <div class="header-actions">
+      <button class="btn-modern btn-primary-modern" onclick="location.reload()">
+        <span class="icon">🔄</span>
+        بروزرسانی
+      </button>
+      <button class="btn-modern btn-outline-modern">
+        <span class="icon">📊</span>
+        گزارش کامل
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Sprint Selector ===== -->
+  <div class="sprint-selector">
+    <label>
+      <span>📅</span>
+      انتخاب اسپرینت:
+    </label>
+    <form method="get" style="margin:0; flex:1;">
+      <select name="sprint" onchange="this.form.submit()" style="width:100%;">
         {% for sprint in sprints %}
           <option value="{{ sprint.id }}" {% if sprint.id == selected_sprint.id %}selected{% endif %}>
             {{ sprint.name }}
@@ -23,99 +385,36 @@
         {% endfor %}
       </select>
     </form>
-
-
-<div class="bg-white p-6 rounded-2xl shadow-md mb-10">
-  <h2 class="text-2xl font-semibold text-teal-600 mb-4">🏢 Total Time Spent Per Team</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <canvas id="team_bar_chart"></canvas>
-    </div>
-    <div>
-      <canvas id="team_pie_chart"></canvas>
+    <div style="font-size:13px; color:#6b7a8f; background:#f0f2f5; padding:4px 16px; border-radius:20px;">
+      <span id="totalHours">۰</span> ساعت کل
     </div>
   </div>
+
+  <!-- ===== Team Summary ===== -->
+  <div class="dashboard-card">
+    <div class="card-title">
+      <span class="title-icon">🏢</span>
+      زمان صرف‌شده به تفکیک تیم
+    </div>
+    <div class="chart-grid">
+      <div class="chart-container">
+        <h3>📊 نمودار میل‌ای</h3>
+        <canvas id="team_bar_chart"></canvas>
+      </div>
+      <div class="chart-container">
+        <h3>🎯 نمودار دایره‌ای</h3>
+        <canvas id="team_pie_chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Team Charts ===== -->
+  <div id="dashboard-charts"></div>
+
 </div>
 
-    <div id="dashboard-charts" class="space-y-10"></div>
-
-    <!-- Chart rendering logic -->
-    <script>
-      const stackedData = JSON.parse('{{ stacked_data_json|escapejs }}');
-      const goalData = JSON.parse('{{ goal_data_json|escapejs }}');
-
-      const container = document.getElementById("dashboard-charts");
-
-      Object.keys(stackedData).forEach((team, idx) => {
-        const taskNames = Object.keys(stackedData[team]);
-        const users = [...new Set(taskNames.flatMap(t => Object.keys(stackedData[team][t])))];
-
-        // Build card
-        const card = document.createElement("div");
-        card.className = "bg-white p-6 rounded-xl shadow-md";
-
-        card.innerHTML = `
-          <h2 class="text-2xl font-bold text-indigo-600 mb-4">${team}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 class="text-lg font-semibold mb-2">⏱ Time by Users</h3>
-              <canvas id="stacked_${idx}"></canvas>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold mb-2">🎯 Goal vs Actual</h3>
-              <canvas id="goal_${idx}"></canvas>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-
-        // Stacked Chart
-        new Chart(document.getElementById(`stacked_${idx}`), {
-          type: 'bar',
-          data: {
-            labels: taskNames,
-            datasets: users.map(user => ({
-              label: user,
-              data: taskNames.map(task => stackedData[team][task][user] || 0),
-              stack: 'users',
-              backgroundColor: `hsl(${Math.random() * 360}, 70%, 70%)`
-            }))
-          },
-          options: {
-            plugins: { legend: { position: 'bottom' }},
-            responsive: true,
-            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }
-          }
-        });
-
-        // Goal vs Actual
-        const goals = taskNames.map(t => goalData[team]?.[t] || 0);
-        const actuals = taskNames.map(t =>
-          Object.values(stackedData[team][t]).reduce((a, b) => a + b, 0)
-        );
-
-        new Chart(document.getElementById(`goal_${idx}`), {
-          type: 'bar',
-          data: {
-            labels: taskNames,
-            datasets: [
-              { label: 'Goal', data: goals, backgroundColor: 'rgba(59,130,246,0.5)' },
-              { label: 'Actual', data: actuals, backgroundColor: 'rgba(239,68,68,0.6)' }
-            ]
-          },
-          options: {
-            plugins: { legend: { position: 'bottom' }},
-            responsive: true,
-            scales: { y: { beginAtZero: true } }
-          }
-        });
-      });
-    </script>
-  </div>
-
-
-
 <script>
+  // ===== Team Charts =====
   const teamChartData = JSON.parse('{{ team_hours_chart|escapejs }}');
 
   // Bar chart
@@ -124,19 +423,42 @@
     data: {
       labels: teamChartData.labels,
       datasets: [{
-        label: 'Total Hours',
+        label: 'ساعت صرف‌شده',
         data: teamChartData.values,
-        backgroundColor: 'rgba(56, 189, 248, 0.7)', // cyan
+        backgroundColor: [
+          'rgba(56, 189, 248, 0.8)',
+          'rgba(52, 211, 153, 0.8)',
+          'rgba(251, 191, 36, 0.8)',
+          'rgba(248, 113, 113, 0.8)',
+          'rgba(167, 139, 250, 0.8)'
+        ],
+        borderColor: [
+          '#38bdf8',
+          '#34d399',
+          '#fbbf24',
+          '#f87171',
+          '#a78bfa'
+        ],
+        borderWidth: 2,
+        borderRadius: 6,
       }]
     },
     options: {
       plugins: {
-        title: { display: true, text: 'Bar Chart – Hours per Team' },
         legend: { display: false }
       },
       responsive: true,
+      maintainAspectRatio: true,
       scales: {
-        y: { beginAtZero: true }
+        y: { 
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { font: { size: 11 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 11 } }
+        }
       }
     }
   });
@@ -147,22 +469,188 @@
     data: {
       labels: teamChartData.labels,
       datasets: [{
-        label: 'Total Hours',
+        label: 'درصد زمان',
         data: teamChartData.values,
-        backgroundColor: teamChartData.labels.map((_, i) =>
-          `hsl(${i * 60}, 70%, 70%)`
-        )
+        backgroundColor: [
+          'rgba(56, 189, 248, 0.8)',
+          'rgba(52, 211, 153, 0.8)',
+          'rgba(251, 191, 36, 0.8)',
+          'rgba(248, 113, 113, 0.8)',
+          'rgba(167, 139, 250, 0.8)'
+        ],
+        borderColor: '#ffffff',
+        borderWidth: 3,
       }]
     },
     options: {
       plugins: {
-        title: { display: true, text: 'Pie Chart – % Time by Team' },
-        legend: { position: 'bottom' }
+        legend: { 
+          position: 'bottom',
+          labels: { 
+            font: { size: 11 },
+            padding: 12
+          }
+        }
       },
-      responsive: true
+      responsive: true,
+      maintainAspectRatio: true,
     }
+  });
+
+  // ===== Team Detail Charts =====
+  const stackedData = JSON.parse('{{ stacked_data_json|escapejs }}');
+  const goalData = JSON.parse('{{ goal_data_json|escapejs }}');
+  const container = document.getElementById("dashboard-charts");
+
+  // Calculate total hours
+  let totalHours = 0;
+  Object.values(teamChartData.values).forEach(v => totalHours += v);
+  document.getElementById('totalHours').textContent = totalHours.toFixed(1);
+
+  Object.keys(stackedData).forEach((team, idx) => {
+    const taskNames = Object.keys(stackedData[team]);
+    const users = [...new Set(taskNames.flatMap(t => Object.keys(stackedData[team][t])))];
+
+    // Calculate team total
+    let teamTotal = 0;
+    taskNames.forEach(task => {
+      Object.values(stackedData[team][task]).forEach(v => teamTotal += v);
+    });
+
+    const card = document.createElement("div");
+    card.className = "team-card";
+
+    card.innerHTML = `
+      <div class="team-header">
+        <h2>
+          <span style="font-size:24px;">👥</span>
+          ${team}
+        </h2>
+        <span class="team-total">⏱ ${teamTotal.toFixed(1)} ساعت</span>
+      </div>
+      <div class="team-charts">
+        <div class="chart-container">
+          <h3>⏱ زمان به تفکیک کاربران</h3>
+          <canvas id="stacked_${idx}"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>🎯 هدف vs واقعیت</h3>
+          <canvas id="goal_${idx}"></canvas>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+
+    // Colors for users
+    const userColors = [
+      'rgba(56, 189, 248, 0.8)',
+      'rgba(52, 211, 153, 0.8)',
+      'rgba(251, 191, 36, 0.8)',
+      'rgba(248, 113, 113, 0.8)',
+      'rgba(167, 139, 250, 0.8)',
+      'rgba(251, 146, 60, 0.8)',
+      'rgba(236, 72, 153, 0.8)'
+    ];
+
+    // Stacked Chart
+    new Chart(document.getElementById(`stacked_${idx}`), {
+      type: 'bar',
+      data: {
+        labels: taskNames,
+        datasets: users.map((user, i) => ({
+          label: user,
+          data: taskNames.map(task => stackedData[team][task][user] || 0),
+          backgroundColor: userColors[i % userColors.length],
+          borderColor: userColors[i % userColors.length].replace('0.8', '1'),
+          borderWidth: 1,
+          borderRadius: 4,
+        }))
+      },
+      options: {
+        plugins: { 
+          legend: { 
+            position: 'bottom',
+            labels: { 
+              font: { size: 10 },
+              padding: 8,
+              boxWidth: 12
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { 
+          x: { 
+            stacked: true,
+            grid: { display: false },
+            ticks: { font: { size: 10 } }
+          }, 
+          y: { 
+            stacked: true, 
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: { font: { size: 10 } }
+          } 
+        }
+      }
+    });
+
+    // Goal vs Actual
+    const goals = taskNames.map(t => goalData[team]?.[t] || 0);
+    const actuals = taskNames.map(t =>
+      Object.values(stackedData[team][t]).reduce((a, b) => a + b, 0)
+    );
+
+    new Chart(document.getElementById(`goal_${idx}`), {
+      type: 'bar',
+      data: {
+        labels: taskNames,
+        datasets: [
+          { 
+            label: 'هدف', 
+            data: goals, 
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#3b82f6',
+            borderWidth: 2,
+            borderRadius: 4,
+          },
+          { 
+            label: 'واقعیت', 
+            data: actuals, 
+            backgroundColor: 'rgba(239, 68, 68, 0.6)',
+            borderColor: '#ef4444',
+            borderWidth: 2,
+            borderRadius: 4,
+          }
+        ]
+      },
+      options: {
+        plugins: { 
+          legend: { 
+            position: 'bottom',
+            labels: { 
+              font: { size: 10 },
+              padding: 8,
+              boxWidth: 12
+            }
+          }
+        },
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: { 
+          y: { 
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.04)' },
+            ticks: { font: { size: 10 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 } }
+          }
+        }
+      }
+    });
   });
 </script>
 
-</body>
 {% endblock %}

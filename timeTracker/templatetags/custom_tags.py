@@ -13,6 +13,12 @@ def get_item(dictionary, key):
 
 
 
+@register.filter
+def filter_status(tasks, status):
+    """فیلتر کردن تسک‌ها بر اساس وضعیت"""
+    if not tasks:
+        return []
+    return [task for task in tasks if task.status == status]
 
 
 @register.filter
