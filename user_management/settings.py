@@ -46,9 +46,9 @@ ALLOWED_HOSTS = ['37.191.77.130','192.168.1.107','172.20.10.4','127.0.0.1','0.0.
 
 
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True  # Optional, only if not forcing from server
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
+SECURE_SSL_REDIRECT = False  # Optional, only if not forcing from server
 
 
 CSRF_TRUSTED_ORIGINS = [
