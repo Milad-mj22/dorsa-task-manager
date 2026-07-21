@@ -1,6 +1,5 @@
 
 
-
 from otp_manager.models import OTPVar_Enum, SMS_Template, SMSServiceName_Enum
 from sms_ir import SmsIr #pip install smsir-python
 

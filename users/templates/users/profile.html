@@ -10,478 +10,789 @@
 <script src="{% static 'js/persian.datepicker.js' %}"></script>
 
 <style>
-  :root {
-    --gold-main: #F4B41A;
-    --gold-light: #F7D141;
-    --gold-soft: #FFF7CC;
-    --gold-deep: #B38408;
-    --text-main: #111827;
-    --text-muted: #6b7280;
-    --card-radius: 22px;
-    --shadow-soft: 0 18px 45px rgba(148, 120, 52, 0.16);
-  }
-
-  body {
-    background: radial-gradient(circle at top left, #fff7e6, #fdfdfd 40%, #fff5cc 100%);
-    font-size: 15px;
-  }
-
+  /* ===== Base ===== */
   .profile-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px 16px 40px;
+    min-height: calc(100vh - 80px);
+    padding: 28px 24px 40px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
     direction: rtl;
-    text-align: right;
+    color: #1a1a2e;
+    background: #f4f5f7;
   }
 
-  @media (min-width: 768px) {
-    .profile-page {
-      padding-top: 32px;
-    }
-  }
-
-  .page-shell {
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(14px);
-    border-radius: 28px;
-    padding: 24px 18px 28px;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid rgba(212, 178, 88, 0.45);
-  }
-
-  @media (min-width: 992px) {
-    .page-shell {
-      padding: 28px 24px 32px;
-    }
-  }
-
+  /* ===== Page Header ===== */
   .page-header {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 18px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
   }
 
-  @media (min-width: 768px) {
-    .page-header {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-    }
-  }
-
-  .page-title-wrapper {
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #1a1a2e;
     display: flex;
     align-items: center;
     gap: 12px;
   }
 
-  .page-title-pill {
-    width: 40px;
-    height: 40px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at 30% 20%, #F7D141, #F4B41A);
-    box-shadow: 0 12px 30px rgba(180, 137, 12, 0.7);
-    font-size: 20px;
-  }
-
-  .page-title {
-    margin: 0;
-    font-weight: 800;
-    font-size: 22px;
-    letter-spacing: -0.02em;
-    color: var(--text-main);
-  }
-
-  .page-subtitle {
+  .page-header h1 .badge-count {
     font-size: 14px;
-    color: var(--text-muted);
-    margin-top: 3px;
+    background: #e8ecf1;
+    color: #4a4a6a;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
   }
 
-  .chip-small {
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-modern {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    background: var(--gold-soft);
-    color: #6b4b02;
-    border: 1px solid rgba(244, 180, 26, 0.7);
-  }
-
-  .chip-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--gold-main);
-  }
-
-  .card-custom {
-    background: #ffffff;
+    gap: 8px;
+    padding: 10px 22px;
     border: none;
-    border-radius: var(--card-radius);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
-    padding: 20px 18px;
+    border-radius: 12px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+  }
+
+  .btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  }
+
+  .btn-primary-modern {
+    background: linear-gradient(135deg, #5850ec, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(88, 80, 236, 0.3);
+  }
+
+  .btn-primary-modern:hover {
+    box-shadow: 0 8px 35px rgba(88, 80, 236, 0.4);
+    color: #fff;
+  }
+
+  .btn-outline-modern {
+    background: #fff;
+    color: #4a4a6a;
+    border: 1px solid #e0e4ea;
+  }
+
+  .btn-outline-modern:hover {
+    background: #f8f9fa;
+    border-color: #c8cdd6;
+    color: #1a1a2e;
+  }
+
+  .btn-outline-modern .icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ===== Profile Container ===== */
+  .profile-container {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ===== Profile Card ===== */
+  .profile-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+    text-align: center;
+    position: sticky;
+    top: 100px;
+    align-self: start;
+  }
+
+  .profile-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .profile-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e8ecf1;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .profile-avatar:hover {
+    transform: scale(1.02);
+    border-color: #5850ec;
+  }
+
+  .profile-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+
+  .profile-username {
+    font-size: 14px;
+    color: #6b7a8f;
     margin-bottom: 16px;
   }
 
-  @media (min-width: 768px) {
-    .card-custom {
-      padding: 22px 20px;
-    }
+  .profile-role {
+    display: inline-block;
+    background: #f0f0ff;
+    color: #5850ec;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
   }
 
-  .avatar-lg {
-    width: 130px;
-    height: 130px;
+  .profile-divider {
+    border: none;
+    border-top: 1px solid #e8ecf1;
+    margin: 16px 0;
+  }
+
+  /* ===== Social Links ===== */
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .social-link {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid rgba(244, 180, 26, 0.6);
-    box-shadow: 0 8px 22px rgba(148, 120, 52, 0.35);
-  }
-
-  .username-label {
-    font-size: 14px;
-    color: var(--text-muted);
-  }
-
-  .username-value {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-main);
-  }
-
-  .profile-section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
-  }
-
-  .profile-section-title span.icon {
+    justify-content: center;
+    background: #f8f9fa;
+    border: 1px solid #e8ecf1;
+    color: #4a4a6a;
+    transition: all 0.3s ease;
+    text-decoration: none;
     font-size: 18px;
   }
 
-  .profile-field {
-    font-size: 15px;
-    margin-bottom: 8px;
-    color: var(--text-main);
+  .social-link:hover {
+    background: #5850ec;
+    color: #fff;
+    border-color: #5850ec;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(88, 80, 236, 0.3);
   }
 
-  .profile-field strong {
+  /* ===== Content Cards ===== */
+  .content-card {
+    background: #ffffff;
+    border: 1px solid #e0e4ea;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: all 0.3s ease;
+  }
+
+  .content-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .card-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f2f5;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .card-header-custom h3 {
+    font-size: 18px;
     font-weight: 700;
+    color: #1a1a2e;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
-  .link-row {
-    font-size: 14px;
-    margin-bottom: 6px;
+  .card-header-custom h3 .icon {
+    font-size: 22px;
   }
 
-  .link-row i {
-    width: 18px;
-    text-align: center;
-    margin-left: 6px;
+  .card-header-custom .badge-count {
+    font-size: 12px;
+    background: #e8ecf1;
+    color: #4a4a6a;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-weight: 600;
   }
 
-  .link-row a {
-    text-decoration: none;
-    color: #2563eb;
-    font-weight: 500;
-    word-break: break-all;
-  }
-
-  .link-row a:hover {
-    text-decoration: underline;
-  }
-
-  /* Quick links */
-  .quick-links {
+  /* ===== Info Grid ===== */
+  .info-grid {
     display: grid;
-    gap: 8px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
   }
 
-  @media (min-width: 768px) {
-    .quick-links {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .quick-links a {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-    padding: 11px 16px;
-    background: #f9fafb;
-    border-radius: 14px;
-    transition: all 0.2s ease-in-out;
-    border: 1px solid #e5e7eb;
-    color: #374151;
-    font-size: 14px;
-  }
-
-  .quick-links a:hover {
-    background: linear-gradient(135deg, #fff9e6, #fef3c7);
-    border-color: rgba(244, 180, 26, 0.8);
-    color: #b45309;
-    transform: translateY(-1px);
-  }
-
-  /* Shortcut inner UI */
-  .shortcut-icon {
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  .shortcut-text {
+  .info-item {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
 
-  .shortcut-title {
+  .info-item .label {
+    font-size: 12px;
+    color: #6b7a8f;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .info-item .value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
+  /* ===== Quick Links ===== */
+  .quick-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .quick-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: 1px solid #e8ecf1;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #1a1a2e;
+    transition: all 0.3s ease;
+  }
+
+  .quick-link-item:hover {
+    background: #f0f0ff;
+    border-color: #5850ec;
+    transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(88, 80, 236, 0.1);
+  }
+
+  .quick-link-item .ql-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .quick-link-item .ql-content {
+    flex: 1;
+  }
+
+  .quick-link-item .ql-title {
     font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
+  .quick-link-item .ql-desc {
+    font-size: 12px;
+    color: #6b7a8f;
+  }
+
+  .quick-link-item .ql-arrow {
+    color: #6b7a8f;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .quick-link-item:hover .ql-arrow {
+    transform: translateX(-4px);
+    color: #5850ec;
+  }
+
+  /* ===== Skills ===== */
+  .skill-item {
+    margin-bottom: 12px;
+  }
+
+  .skill-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .skill-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
+
+  .skill-level {
+    font-size: 13px;
+    color: #6b7a8f;
     font-weight: 600;
   }
 
-  .shortcut-desc {
-    font-size: 12px;
-    color: var(--text-muted);
+  .skill-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f2f5;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
-  .shortcut-category-label {
-    font-size: 13px;
+  .skill-bar .fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #5850ec, #7c3aed);
+    transition: width 1s ease;
+  }
+
+  /* ===== Leave Section ===== */
+  .leave-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .leave-stat {
+    text-align: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 1px solid #e8ecf1;
+  }
+
+  .leave-stat .number {
+    font-size: 24px;
     font-weight: 700;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    padding-inline: 2px;
-    border-right: 3px solid var(--gold-main);
+    color: #1a1a2e;
+    display: block;
   }
 
-  /* Skills */
-  .skill-name {
+  .leave-stat .label {
+    font-size: 12px;
+    color: #6b7a8f;
+  }
+
+  .leave-stat.primary .number { color: #5850ec; }
+  .leave-stat.success .number { color: #22c55e; }
+  .leave-stat.warning .number { color: #f59e0b; }
+
+  .leave-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .leave-input-group input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
     font-size: 14px;
+    font-family: 'Inter', "Vazirmatn", sans-serif;
+    background: #ffffff;
+    color: #1a1a2e;
+    transition: all 0.3s ease;
+    min-width: 150px;
   }
 
-  .skill-percent {
-    font-size: 13px;
-    color: var(--text-muted);
+  .leave-input-group input:focus {
+    outline: none;
+    border-color: #5850ec;
+    box-shadow: 0 0 0 3px rgba(88, 80, 236, 0.1);
   }
 
-  .progress {
-    background-color: #f3f4f6;
+  .leave-input-group input::placeholder {
+    color: #9aa3b0;
   }
 
-  .progress-bar {
-    background: linear-gradient(135deg, #F4B41A, #D97706);
+  /* ===== Responsive ===== */
+  @media (max-width: 1024px) {
+    .profile-container {
+      grid-template-columns: 1fr;
+    }
+
+    .profile-card {
+      position: static;
+    }
+
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+    }
   }
+
+  @media (max-width: 768px) {
+    .profile-page {
+      padding: 16px 12px 32px;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-header h1 {
+      font-size: 22px;
+    }
+
+    .header-actions {
+      width: 100%;
+    }
+
+    .header-actions .btn-modern {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .quick-links-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .leave-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .leave-input-group {
+      flex-direction: column;
+    }
+
+    .leave-input-group input {
+      width: 100%;
+    }
+
+    .leave-input-group button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .social-links {
+      gap: 8px;
+    }
+
+    .social-link {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+
+    .profile-card {
+      padding: 16px;
+    }
+
+    .content-card {
+      padding: 16px;
+    }
+
+    .card-header-custom h3 {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+    }
+
+    .profile-name {
+      font-size: 18px;
+    }
+  }
+
+  /* ===== Scrollbar ===== */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f0f2f5;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #d0d5dd;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b0b8c4;
+  }
+
+  /* ===== Animations ===== */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .profile-card {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .content-card {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  .content-card:nth-child(2) { animation-delay: 0.1s; }
+  .content-card:nth-child(3) { animation-delay: 0.2s; }
+  .content-card:nth-child(4) { animation-delay: 0.3s; }
 </style>
 
 <div class="profile-page">
-  <div class="page-shell">
-    <div class="page-header">
-      <div class="page-title-wrapper">
-        <div class="page-title-pill">
-          👤
-        </div>
-        <div>
-          <h1 class="page-title">پروفایل کاربری</h1>
-          <div class="page-subtitle">
-            مشاهده اطلاعات فردی، دسترسی‌های سریع و مهارت‌های ثبت‌شده شما
-          </div>
-        </div>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <span class="chip-small">
-          <span class="chip-dot"></span>
-          خوش آمدی {{ user.username }}
-        </span>
 
-        {# Edit button: opens edit page in new tab/window #}
-        <a href="{% url 'users-profile-edit' %}"
-           target="_blank"
-           rel="noopener"
-           class="btn btn-sm btn-outline-secondary"
-           style="border-radius: 999px;">
-          ✏️ ویرایش پروفایل
-        </a>
+  <!-- ===== Header ===== -->
+  <div class="page-header">
+    <h1>
+      👤 پروفایل کاربری
+      <span class="badge-count">{{ user.username }}</span>
+    </h1>
+    <div class="header-actions">
+      <a href="{% url 'users-profile-edit' %}" class="btn-modern btn-primary-modern">
+        <span class="icon">✏️</span>
+        ویرایش پروفایل
+      </a>
+      <button class="btn-modern btn-outline-modern" onclick="window.print()">
+        <span class="icon">🖨️</span>
+        چاپ
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== Profile Container ===== -->
+  <div class="profile-container">
+
+    <!-- ===== Sidebar ===== -->
+    <div class="profile-card">
+      {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" class="profile-avatar" alt="Avatar">
+      {% else %}
+        <img src="{% static 'images/default-avatar.png' %}" class="profile-avatar" alt="Avatar">
+      {% endif %}
+
+      <div class="profile-name">{{ user.profile.first_name }} {{ user.profile.last_name }}</div>
+      <div class="profile-username">@{{ user.username }}</div>
+      <div class="profile-role">{{ user.profile.job_position.persian_name|default:"همکار" }}</div>
+
+      <hr class="profile-divider">
+
+      <div style="text-align:right;">
+        <div style="font-size:13px; color:#6b7a8f; font-weight:600; margin-bottom:8px;">🌐 راه‌های ارتباطی</div>
+
+        {% if user.website %}
+          <div style="display:flex; align-items:center; gap:8px; padding:4px 0; font-size:13px;">
+            <span style="color:#5850ec;">🌍</span>
+            <a href="{{ user.website }}" target="_blank" style="color:#5850ec; text-decoration:none;">{{ user.website|truncatechars:30 }}</a>
+          </div>
+        {% endif %}
+
+        {% if user.github %}
+          <div style="display:flex; align-items:center; gap:8px; padding:4px 0; font-size:13px;">
+            <span style="color:#1a1a2e;">🐙</span>
+            <a href="{{ user.github }}" target="_blank" style="color:#5850ec; text-decoration:none;">
+              {% if user.github_username %}{{ user.github_username }}{% else %}GitHub{% endif %}
+            </a>
+          </div>
+        {% endif %}
+
+        {% if user.instagram %}
+          <div style="display:flex; align-items:center; gap:8px; padding:4px 0; font-size:13px;">
+            <span style="color:#e4405f;">📷</span>
+            <a href="{{ user.instagram }}" target="_blank" style="color:#5850ec; text-decoration:none;">
+              {% if user.instagram_username %}{{ user.instagram_username }}{% else %}Instagram{% endif %}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+      <hr class="profile-divider">
+
+      <div style="text-align:right;">
+        <div style="font-size:13px; color:#6b7a8f; font-weight:600; margin-bottom:8px;">📱 اطلاعات تماس</div>
+        <div style="font-size:14px; color:#1a1a2e; padding:2px 0;">
+          📞 {{ user.profile.phone|default:"ثبت نشده" }}
+        </div>
+        <div style="font-size:14px; color:#1a1a2e; padding:2px 0;">
+          📧 {{ user.email|default:"ثبت نشده" }}
+        </div>
       </div>
     </div>
 
-    <div class="row gy-4">
-      <!-- Left column: avatar & social -->
-      <div class="col-lg-4">
-        <div class="card-custom text-center">
-          {% if user.profile.avatar %}
-            <img src="{{ user.profile.avatar.url }}" class="avatar-lg mb-3" alt="Avatar">
-          {% else %}
-            <img src="{% static 'images/default-avatar.png' %}" class="avatar-lg mb-3" alt="Avatar">
-          {% endif %}
+    <!-- ===== Main Content ===== -->
+    <div>
 
-          <div class="mb-1 username-label">نام کاربری</div>
-          <div class="username-value mb-2">{{ user.username }}</div>
-
-          <hr class="my-3">
-
-          <div class="text-start mt-2">
-            <div class="profile-section-title mb-2" style="font-size: 15px;">
-              <span class="icon">🌐</span>
-              راه‌های ارتباطی
-            </div>
-
-            {% if user.website %}
-              <div class="link-row">
-                <i class="fas fa-globe text-primary"></i>
-                <a href="{{ user.website }}" target="_blank">{{ user.website }}</a>
-              </div>
-            {% endif %}
-
-            {% if user.github %}
-              <div class="link-row">
-                <i class="fab fa-github text-dark"></i>
-                <a href="{{ user.github }}" target="_blank">
-                  {% if user.github_username %}{{ user.github_username }}{% else %}Github{% endif %}
-                </a>
-              </div>
-            {% endif %}
-
-            {% if user.instagram %}
-              <div class="link-row">
-                <i class="fab fa-instagram text-danger"></i>
-                <a href="{{ user.instagram }}" target="_blank">
-                  {% if user.instagram_username %}{{ user.instagram_username }}{% else %}Instagram{% endif %}
-                </a>
-              </div>
-            {% endif %}
+      <!-- ===== Personal Info ===== -->
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h3><span class="icon">🪪</span> اطلاعات فردی</h3>
+        </div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">نام</span>
+            <span class="value">{{ user.profile.first_name|default:"-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">نام خانوادگی</span>
+            <span class="value">{{ user.profile.last_name|default:"-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">سمت</span>
+            <span class="value">{{ user.profile.job_position.persian_name|default:"-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">آدرس</span>
+            <span class="value">{{ user.profile.address|default:"-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">تلفن</span>
+            <span class="value">{{ user.profile.phone|default:"-" }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">ایمیل</span>
+            <span class="value">{{ user.email|default:"-" }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Right column: info, quick links, skills -->
-      <div class="col-lg-8">
-        <!-- Personal info -->
-        <div class="card-custom mb-4">
-          <div class="profile-section-title">
-            <span class="icon">🪪</span>
-            اطلاعات فردی
+      <!-- ===== Quick Links ===== -->
+      {% if grouped_shortcuts %}
+        <div class="content-card">
+          <div class="card-header-custom">
+            <h3><span class="icon">⚡</span> دسترسی سریع</h3>
+            <span class="badge-count">{{ grouped_shortcuts|length }} گروه</span>
           </div>
-          <div class="row g-3">
-            <div class="col-md-6 profile-field">
-              نام و نام خانوادگی:
-              <strong>{{ user.profile.first_name }} {{ user.profile.last_name }}</strong>
+
+          {% for category, items in grouped_shortcuts.items %}
+            <div style="font-size:13px; font-weight:700; color:#6b7a8f; margin-bottom:8px; padding-right:4px; border-right:3px solid #5850ec; padding-right:10px;">
+              {{ category }}
             </div>
-            <div class="col-md-6 profile-field">
-              سمت شغل:
-              <strong>{{ user.profile.job_position.persian_name }}</strong>
+            <div class="quick-links-grid" style="margin-bottom:16px;">
+              {% for sc in items %}
+                <a href="{{ sc.url }}" class="quick-link-item">
+                  <span class="ql-icon">{{ sc.icon|default:"🔗" }}</span>
+                  <div class="ql-content">
+                    <div class="ql-title">{{ sc.title }}</div>
+                    {% if sc.content %}
+                      <div class="ql-desc">{{ sc.content|truncatechars:60 }}</div>
+                    {% endif %}
+                  </div>
+                  <span class="ql-arrow">→</span>
+                </a>
+              {% endfor %}
             </div>
-            <div class="col-md-6 profile-field">
-              تلفن:
-              <strong>{{ user.profile.phone }}</strong>
-            </div>
-            <div class="col-md-6 profile-field">
-              آدرس:
-              <strong>{{ user.profile.address }}</strong>
-            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- ===== Leave & Presence ===== -->
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h3><span class="icon">🗓️</span> مرخصی و حضور</h3>
+        </div>
+
+        <div class="leave-stats">
+          <div class="leave-stat primary">
+            <span class="number">{{ user.last_month_performance|default:"۰" }}%</span>
+            <span class="label">عملکرد ماه گذشته</span>
+          </div>
+          <div class="leave-stat warning">
+            <span class="number">{{ user.used_leave_days|default:"۰" }}</span>
+            <span class="label">مرخصی استفاده‌شده</span>
+          </div>
+          <div class="leave-stat success">
+            <span class="number">{{ user.allowed_leave_days|default:"۰" }}</span>
+            <span class="label">مرخصی مجاز</span>
           </div>
         </div>
 
-        <!-- Quick links from ProfileShortcuts (grouped by category) -->
-        {% if grouped_shortcuts %}
-          <div class="card-custom mb-4">
-            <div class="profile-section-title">
-              <span class="icon">⚡</span>
-              دسترسی سریع
-            </div>
-
-            {% for category, items in grouped_shortcuts.items %}
-              <div class="shortcut-category-label">
-                {{ category }}
-              </div>
-
-              <div class="quick-links mb-3">
-                {% for sc in items %}
-                  <a href="{{ sc.url }}">
-                    <span class="shortcut-icon">{{ sc.icon }}</span>
-                    <div class="shortcut-text">
-                      <div class="shortcut-title">{{ sc.title }}</div>
-                      {% if sc.content %}
-                        <div class="shortcut-desc">
-                          {{ sc.content|truncatechars:70 }}
-                        </div>
-                      {% endif %}
-                    </div>
-                  </a>
-                {% endfor %}
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        <!-- Leave & presence -->
-        <div class="card-custom mb-4">
-          <div class="profile-section-title">
-            <span class="icon">🗓️</span>
-            مرخصی و حضور
-          </div>
-          <div class="row g-3 mb-2">
-            <div class="col-md-4 profile-field">
-              عملکرد ماه گذشته:
-              <strong>{{ user.last_month_performance }}%</strong>
-            </div>
-            <div class="col-md-4 profile-field">
-              مرخصی استفاده‌شده:
-              <strong>{{ user.used_leave_days }} روز</strong>
-            </div>
-            <div class="col-md-4 profile-field">
-              مرخصی مجاز:
-              <strong>{{ user.allowed_leave_days }} روز</strong>
-            </div>
-          </div>
-          <div class="mt-2">
-            <input type="text" id="leave-date" class="form-control mb-2" placeholder="تاریخ مرخصی (تقویم فارسی)">
-            <button type="button" id="open-calendar" class="btn btn-warning w-100" style="border-radius: 14px;">
-              درخواست مرخصی
-            </button>
-          </div>
+        <div class="leave-input-group">
+          <input type="text" id="leave-date" placeholder="📅 انتخاب تاریخ مرخصی">
+          <button type="button" id="open-calendar" class="btn-modern btn-primary-modern" style="border-radius:10px; padding:10px 24px;">
+            📨 درخواست مرخصی
+          </button>
         </div>
-
-        <!-- Skills -->
-        {% if user.skills %}
-          <div class="card-custom">
-            <div class="profile-section-title">
-              <span class="icon">🎯</span>
-              مهارت‌ها
-            </div>
-            {% for skill in user.skills %}
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="skill-name">{{ skill.name }}</span>
-                  <span class="skill-percent">{{ skill.level }}%</span>
-                </div>
-                <div class="progress rounded" style="height: 9px;">
-                  <div class="progress-bar" style="width: {{ skill.level }}%"></div>
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
       </div>
+
+      <!-- ===== Skills ===== -->
+      {% if user.skills %}
+        <div class="content-card">
+          <div class="card-header-custom">
+            <h3><span class="icon">🎯</span> مهارت‌ها</h3>
+            <span class="badge-count">{{ user.skills|length }} مهارت</span>
+          </div>
+
+          {% for skill in user.skills %}
+            <div class="skill-item">
+              <div class="skill-header">
+                <span class="skill-name">{{ skill.name }}</span>
+                <span class="skill-level">{{ skill.level }}%</span>
+              </div>
+              <div class="skill-bar">
+                <div class="fill" style="width: {{ skill.level }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
     </div>
   </div>
 </div>
 
 <script>
   $(document).ready(function() {
-    if ($("#leave-date").length) {
+    // Persian Datepicker
+    if ($("#leave-date").length && $.fn.pDatepicker) {
       $("#leave-date").pDatepicker({
         format: 'YYYY/MM/DD',
         autoClose: true,
@@ -494,6 +805,17 @@
         $("#leave-date").focus();
       });
     }
+
+    // Animate skill bars on load
+    setTimeout(function() {
+      document.querySelectorAll('.skill-bar .fill').forEach(function(bar) {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(function() {
+          bar.style.width = width;
+        }, 100);
+      });
+    }, 300);
   });
 </script>
 {% endblock %}

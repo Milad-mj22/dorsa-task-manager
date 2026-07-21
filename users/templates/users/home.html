@@ -1,150 +1,786 @@
 {% extends "users/base.html" %}
-{% block title %}صفحه اصلی{% endblock title %}
+{% block title %}داشبورد حرفهای{% endblock title %}
 {% load static %}
 {% block content %}
 <style>
-    .modern-jumbotron {
-        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-        border-radius: 20px;
-        padding: 40px;
-        margin-top: 40px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
+    /* ===== Font & Base ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    * {
+        box-sizing: border-box;
     }
 
-    .modern-jumbotron h1 {
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #0a0e1a;
+        color: #e8edf5;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ===== Animated Background ===== */
+    .dashboard-wrapper {
+        position: relative;
+        min-height: 100vh;
+        padding: 24px 32px 60px;
+        background: radial-gradient(ellipse at 0% 0%, #1a1f3a 0%, #0a0e1a 100%);
+        overflow: hidden;
+    }
+
+    .dashboard-wrapper::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(88, 80, 236, 0.08) 0%, transparent 70%);
+        animation: floatGlow 15s infinite alternate ease-in-out;
+        pointer-events: none;
+    }
+
+    .dashboard-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(236, 80, 180, 0.06) 0%, transparent 70%);
+        animation: floatGlow 20s infinite alternate-reverse ease-in-out;
+        pointer-events: none;
+    }
+
+    @keyframes floatGlow {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+        100% { transform: translate(60px, -40px) scale(1.3); opacity: 1; }
+    }
+
+    /* ===== Container ===== */
+    .dashboard-container {
+        max-width: 1360px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* ===== Top Bar ===== */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0 28px;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .brand-icon {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, #5850ec, #c850c0);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
         font-weight: 700;
-        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 8px 32px rgba(88, 80, 236, 0.3);
     }
 
-    .modern-jumbotron p.lead {
-        font-size: 1.25rem;
-        margin-bottom: 30px;
+    .greeting {
+        font-size: 22px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff, #a8b2d1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .btn-lg {
-        padding: 12px 24px;
-        font-size: 1.1rem;
-        margin: 8px;
+    .greeting span {
+        font-weight: 400;
+        color: #6b7a9f;
+        -webkit-text-fill-color: #6b7a9f;
+    }
+
+    .company-badge {
+        font-size: 13px;
+        color: #6b7a9f;
+        background: rgba(255,255,255,0.04);
+        padding: 4px 14px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.06);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .company-badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #4ade80;
+        display: inline-block;
+        animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .top-bar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ===== Glow Buttons ===== */
+    .glow-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border: none;
         border-radius: 12px;
-        transition: all 0.3s ease-in-out;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        color: #fff;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.06);
+        backdrop-filter: blur(10px);
     }
 
-    .btn-lg:hover {
+    .glow-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
 
-    /* کارت راهنمای نصب و راهنمای سیستم */
-    #install-hint,
-    #system-guide {
-        direction: rtl;
-        text-align: right;
-        font-family: Vazirmatn, sans-serif;
+    .glow-btn-primary {
+        background: linear-gradient(135deg, #5850ec, #7c3aed);
+        border-color: transparent;
+        box-shadow: 0 4px 20px rgba(88, 80, 236, 0.3);
     }
 
-    #install-hint-title {
-        font-weight: 600;
+    .glow-btn-primary:hover {
+        box-shadow: 0 8px 35px rgba(88, 80, 236, 0.5);
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    .glow-btn-success {
+        background: linear-gradient(135deg, #22d3ee, #3b82f6);
+        border-color: transparent;
+        box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
+    }
+
+    .glow-btn-success:hover {
+        box-shadow: 0 8px 35px rgba(34, 211, 238, 0.4);
+        transform: translateY(-2px) scale(1.02);
+    }
+
+    .glow-btn-success.active {
+        background: rgba(74, 222, 128, 0.15);
+        border-color: rgba(74, 222, 128, 0.3);
+        color: #4ade80;
+    }
+
+    .glow-btn-outline {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .glow-btn-outline:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.15);
+    }
+
+    .glow-btn .icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    /* ===== Stats Grid ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 32px;
+    }
+
+    .stat-card-glass {
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        padding: 22px 24px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+        pointer-events: none;
+    }
+
+    .stat-card-glass:hover {
+        transform: translateY(-6px);
+        border-color: rgba(255,255,255,0.12);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .stat-card-glass .stat-number {
+        font-size: 32px;
+        font-weight: 800;
+        display: block;
+        line-height: 1.2;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, #fff, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-card-glass .stat-label {
+        font-size: 13px;
+        color: #6b7a9f;
         display: flex;
         align-items: center;
-        gap: .4rem;
-        margin-bottom: .5rem;
+        gap: 8px;
+        font-weight: 500;
     }
 
-    #install-hint-title span.icon {
-        font-size: 1.4rem;
+    .stat-card-glass .stat-icon {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        font-size: 32px;
+        opacity: 0.08;
+        line-height: 1;
     }
 
-    #system-guide-title {
-        font-weight: 600;
+    .stat-trend {
+        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 20px;
+        background: rgba(74, 222, 128, 0.12);
+        color: #4ade80;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .stat-trend.down {
+        background: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+    }
+
+    /* ===== Main Content Grid ===== */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    /* ===== Glass Cards ===== */
+    .glass-card {
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+        border-color: rgba(255,255,255,0.1);
+        box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+    }
+
+    .glass-card-header {
+        padding: 20px 24px;
         display: flex;
         align-items: center;
-        gap: .4rem;
-        margin-bottom: .5rem;
+        justify-content: space-between;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
     }
 
-    #system-guide-title span.icon {
-        font-size: 1.4rem;
+    .glass-card-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #e8edf5;
     }
 
-    #system-guide ul {
-        padding-right: 1.2rem;
-        margin-bottom: 0;
+    .glass-card-header h3 .emoji {
+        font-size: 20px;
+    }
+
+    .glass-card-header .badge-count {
+        font-size: 12px;
+        color: #6b7a9f;
+        background: rgba(255,255,255,0.04);
+        padding: 2px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .glass-card-body {
+        padding: 20px 24px 24px;
+    }
+
+    /* ===== Guide List ===== */
+    .guide-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .guide-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        transition: all 0.2s ease;
+    }
+
+    .guide-list li:last-child {
+        border-bottom: none;
+    }
+
+    .guide-list li:hover {
+        padding-left: 4px;
+    }
+
+    .guide-list .step-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        background: rgba(88, 80, 236, 0.15);
+        color: #8b83f0;
+        border: 1px solid rgba(88, 80, 236, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .guide-list li:hover .step-circle {
+        background: rgba(88, 80, 236, 0.25);
+        transform: scale(1.05);
+    }
+
+    .guide-list .step-circle.active {
+        background: linear-gradient(135deg, #5850ec, #7c3aed);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(88, 80, 236, 0.3);
+    }
+
+    .guide-list .item-content {
+        flex: 1;
+    }
+
+    .guide-list .item-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #e8edf5;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .guide-list .item-desc {
+        font-size: 13px;
+        color: #6b7a9f;
+        line-height: 1.4;
+    }
+
+    /* ===== Install Steps ===== */
+    .install-steps {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .install-steps li {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        font-size: 14px;
+        color: #c8d0e0;
+        line-height: 1.5;
+    }
+
+    .install-steps li:last-child {
+        border-bottom: none;
+    }
+
+    .install-steps .num {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(255,255,255,0.04);
+        color: #6b7a9f;
+        border: 1px solid rgba(255,255,255,0.06);
+        flex-shrink: 0;
+    }
+
+    .install-steps li strong {
+        color: #e8edf5;
+        font-weight: 600;
+    }
+
+    .platform-badge {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(88, 80, 236, 0.15);
+        color: #8b83f0;
+        border: 1px solid rgba(88, 80, 236, 0.15);
+        margin-left: 6px;
+    }
+
+    .platform-badge.ios {
+        background: rgba(34, 211, 238, 0.12);
+        color: #22d3ee;
+        border-color: rgba(34, 211, 238, 0.15);
+    }
+
+    .platform-badge.android {
+        background: rgba(74, 222, 128, 0.12);
+        color: #4ade80;
+        border-color: rgba(74, 222, 128, 0.15);
+    }
+
+    .platform-badge.desktop {
+        background: rgba(251, 146, 60, 0.12);
+        color: #fb923c;
+        border-color: rgba(251, 146, 60, 0.15);
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+        text-align: center;
+        padding: 12px 0 4px;
+    }
+
+    .empty-state .icon {
+        font-size: 40px;
+        display: block;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: 13px;
+        color: #6b7a9f;
+        margin: 0;
+    }
+
+    /* ===== Toast ===== */
+    .toast-glass {
+        background: rgba(20, 25, 50, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        padding: 14px 20px;
+        min-width: 320px;
+    }
+
+    .toast-glass .toast-body {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: #e8edf5;
+        font-weight: 500;
+    }
+
+    .toast-glass .toast-body .toast-icon {
+        font-size: 22px;
+        line-height: 1;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     @media (max-width: 768px) {
-        .modern-jumbotron {
-            padding: 30px 20px;
+        .dashboard-wrapper {
+            padding: 16px 16px 40px;
         }
 
-        .btn-lg {
-            width: 100%;
+        .top-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
         }
+
+        .top-bar-right {
+            flex-wrap: wrap;
+        }
+
+        .greeting {
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card-glass {
+            padding: 16px 18px;
+        }
+
+        .stat-card-glass .stat-number {
+            font-size: 24px;
+        }
+
+        .glass-card-header {
+            padding: 16px 18px;
+        }
+
+        .glass-card-body {
+            padding: 16px 18px 18px;
+        }
+
+        .glow-btn {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .top-bar-right .glow-btn {
+            flex: 1;
+            justify-content: center;
+        }
+    }
+
+    /* ===== Scrollbar ===== */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.02);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.08);
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.15);
     }
 </style>
 
-<div class="container">
-    <div class="modern-jumbotron">
-        <h1 class="display-5">👋 خوش آمدید، {{ user.profile.first_name|default:"مهمان" }}</h1>
-        <p class="lead">
-            این سامانه برای <strong>{{ company_name }}</strong> جهت استفاده از ابزارهای توسعه‌یافته ایجاد شده است.
-        </p>
-        <hr>
-        {% if user.is_authenticated %}
+<div class="dashboard-wrapper">
+    <div class="dashboard-container">
 
-            <!-- دکمه‌های اعلان -->
-            <button id="subscribe-btn" class="btn btn-outline-success btn-lg">
-                <i class="bi bi-bell"></i> فعال‌سازی اعلان‌ها
-            </button>
-
-            <button id="send-notif-btn" class="btn btn-outline-warning btn-lg mt-2">
-                <i class="bi bi-send"></i> ارسال اعلان تستی
-            </button>
-
-            <!-- بلوک راهنمای نصب + راهنمای سیستم -->
-            <div class="row mt-4 g-3 justify-content-center">
-                <div class="col-12 col-lg-6">
-                    <!-- راهنمای Add to Home Screen -->
-                    <div id="install-hint" class="alert alert-info shadow-sm d-none">
-                        <!-- متن با جاوااسکریپت پر می‌شود -->
+        <!-- ===== TOP BAR ===== -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="brand-icon">⚡</div>
+                <div>
+                    <div class="greeting">
+                        👋 {{ user.profile.first_name|default:"کاربر" }}
+                        <span>·</span>
+                        <span style="font-weight:400;">داشبورد</span>
                     </div>
-                </div>
-                <div class="col-12 col-lg-6">
-                    <!-- راهنمای سامانه -->
-                    <div id="system-guide" class="alert alert-light border shadow-sm">
-                        <div id="system-guide-title">
-                            <span class="icon">🧭</span>
-                            <span>راهنمای سامانه</span>
-                        </div>
-                        <small class="text-muted d-block mb-2">
-                            برای شروع کار با سامانه، می‌توانید از موارد زیر استفاده کنید:
-                        </small>
-                        <ul>
-                            <li>از منوی سمت راست/بالا، به بخش «داشبورد» بروید تا وضعیت کلی کارها و اعلان‌ها را ببینید.</li>
-                            <li>در بخش «وظایف» (Tasks)، لیست فعالیت‌های خود را مشاهده، و زمان صرف‌شده را ثبت کنید.</li>
-                            <li>از طریق دکمه «فعال‌سازی اعلان‌ها» در بالا، پیام‌ها و اعلان‌های سیستمی را به‌صورت آنی دریافت کنید.</li>
-                            <li>در صورت نیاز به پشتیبانی، از گزینه «تماس با پشتیبانی» یا «راهنما» در منو استفاده کنید.</li>
-                        </ul>
+                    <div class="company-badge">
+                        <span class="dot"></span>
+                        {{ company_name }}
                     </div>
                 </div>
             </div>
+            <div class="top-bar-right">
+                <button id="subscribe-btn" class="glow-btn glow-btn-outline">
+                    <span class="icon">🔔</span>
+                    <span id="sub-btn-text">فعال‌سازی اعلان</span>
+                </button>
+                <button id="send-notif-btn" class="glow-btn glow-btn-outline">
+                    <span class="icon">📨</span>
+                    تست اعلان
+                </button>
+                <button class="glow-btn glow-btn-primary">
+                    <span class="icon">+</span>
+                    وظیفه جدید
+                </button>
+            </div>
+        </div>
 
-        {% endif %}
+        <!-- ===== STATS ===== -->
+        <div class="stats-grid">
+            <div class="stat-card-glass">
+                <span class="stat-icon">📋</span>
+                <span class="stat-number">24</span>
+                <span class="stat-label">
+                    در حال انجام
+                    <span class="stat-trend">+4 ↑</span>
+                </span>
+            </div>
+            <div class="stat-card-glass">
+                <span class="stat-icon">✅</span>
+                <span class="stat-number">18</span>
+                <span class="stat-label">
+                    تکمیل شده
+                    <span class="stat-trend">+12 ↑</span>
+                </span>
+            </div>
+            <div class="stat-card-glass">
+                <span class="stat-icon">⏳</span>
+                <span class="stat-number">7</span>
+                <span class="stat-label">
+                    در انتظار
+                    <span class="stat-trend down">-2 ↓</span>
+                </span>
+            </div>
+            <div class="stat-card-glass">
+                <span class="stat-icon">💡</span>
+                <span class="stat-number">5</span>
+                <span class="stat-label">
+                    اعلان جدید
+                    <span class="stat-trend">+3 ↑</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- ===== CONTENT GRID ===== -->
+        <div class="content-grid">
+
+            <!-- ===== CARD: راهنمای سامانه ===== -->
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h3>
+                        <span class="emoji">🚀</span>
+                        راهنمای سامانه
+                    </h3>
+                    <span class="badge-count">نسخه 2.4</span>
+                </div>
+                <div class="glass-card-body">
+                    <ul class="guide-list">
+                        <li>
+                            <span class="step-circle active">1</span>
+                            <div class="item-content">
+                                <span class="item-title">داشبورد مدیریت</span>
+                                <span class="item-desc">وضعیت کلی، آمار و اعلان‌ها را مشاهده کنید</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-circle">2</span>
+                            <div class="item-content">
+                                <span class="item-title">مدیریت وظایف</span>
+                                <span class="item-desc">لیست فعالیت‌ها، زمان‌بندی و اولویت‌بندی</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-circle">3</span>
+                            <div class="item-content">
+                                <span class="item-title">اعلان‌های هوشمند</span>
+                                <span class="item-desc">دریافت پیام‌های سیستمی به‌صورت لحظه‌ای</span>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-circle">4</span>
+                            <div class="item-content">
+                                <span class="item-title">پشتیبانی تخصصی</span>
+                                <span class="item-desc">ارتباط مستقیم با تیم پشتیبانی</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- ===== CARD: نصب روی دستگاه ===== -->
+            <div class="glass-card" id="install-hint">
+                <div class="glass-card-header">
+                    <h3>
+                        <span class="emoji">📱</span>
+                        نصب روی دستگاه
+                        <span class="platform-badge" id="platform-badge">—</span>
+                    </h3>
+                    <span class="badge-count">PWA</span>
+                </div>
+                <div class="glass-card-body" id="install-content">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+        </div>
+
     </div>
+</div>
 
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-        <div id="notif-toast" class="toast align-items-center text-white bg-success border-0" role="alert">
-            <div class="d-flex">
-                <!-- <div class="toast-body" id="notif-toast-body">اعلان فعال شد</div> -->
-                <!-- <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button> -->
+<!-- ===== TOAST ===== -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="notif-toast" class="toast-glass toast" role="alert">
+        <div class="d-flex">
+            <div class="toast-body" id="notif-toast-body">
+                <span class="toast-icon">✅</span>
+                <span>اعلان با موفقیت فعال شد</span>
             </div>
+            <button type="button" class="btn-close btn-close-white ms-3 me-0" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
 
 <script>
     const vapidPublicKey = "{{ vapid_public_key }}";
-    console.log("VAPID key from backend:", vapidPublicKey);
 
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -154,170 +790,169 @@
     }
 
     function showToast(message, success = true) {
-        return
         const toastEl = document.getElementById('notif-toast');
-        const toastBody = document.getElementById('notif-toast-body');
-        toastBody.textContent = message;
-        toastEl.className = `toast align-items-center text-white ${success ? 'bg-success' : 'bg-danger'} border-0`;
+        const body = document.getElementById('notif-toast-body');
+        body.innerHTML = `
+            <span class="toast-icon">${success ? '✅' : '❌'}</span>
+            <span>${message}</span>
+        `;
+        toastEl.className = `toast-glass toast`;
         new bootstrap.Toast(toastEl).show();
     }
 
     async function checkExistingSubscription() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-
         try {
             const registration = await navigator.serviceWorker.getRegistration("{% static 'js/sw.js' %}");
             if (!registration) return;
-
             const sub = await registration.pushManager.getSubscription();
             if (sub) {
                 const btn = document.getElementById('subscribe-btn');
-                if (!btn) return;
-                btn.classList.add('btn-success');
-                btn.innerHTML = '<i class="bi bi-bell-fill"></i> اعلان فعال است';
+                if (btn) {
+                    btn.classList.add('glow-btn-success', 'active');
+                    document.getElementById('sub-btn-text').textContent = '✅ اعلان فعال';
+                }
             }
         } catch (err) {
-            console.error("checkExistingSubscription error:", err);
+            console.error(err);
         }
     }
 
-    // --- تشخیص نصب PWA و سیستم‌عامل ---
     function isStandalonePWA() {
-        // iOS
-        if ('standalone' in window.navigator && window.navigator.standalone) {
-            return true;
-        }
-        // سایر مرورگرها
-        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-            return true;
-        }
+        if ('standalone' in window.navigator && window.navigator.standalone) return true;
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
         return false;
     }
 
     function detectPlatform() {
         const ua = navigator.userAgent.toLowerCase();
-
-        if (/iphone|ipad|ipod/.test(ua)) {
-            return 'ios';
-        }
-        if (/android/.test(ua)) {
-            return 'android';
-        }
-        if (/windows/.test(ua) || /macintosh/.test(ua) || /linux/.test(ua)) {
-            return 'desktop';
-        }
+        if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+        if (/android/.test(ua)) return 'android';
+        if (/windows/.test(ua) || /macintosh/.test(ua) || /linux/.test(ua)) return 'desktop';
         return 'unknown';
     }
 
-    function showInstallHintIfNeeded() {
-        const hintEl = document.getElementById('install-hint');
-        if (!hintEl) return;
+    function getPlatformLabel(platform) {
+        const map = {
+            'ios': 'iOS',
+            'android': 'Android',
+            'desktop': 'Desktop',
+            'unknown': '—'
+        };
+        return map[platform] || '—';
+    }
 
-        // اگر اپ به صورت PWA نصب شده، چیزی نشان نده
+    function getPlatformClass(platform) {
+        const map = {
+            'ios': 'ios',
+            'android': 'android',
+            'desktop': 'desktop',
+            'unknown': ''
+        };
+        return map[platform] || '';
+    }
+
+    function showInstallHint() {
+        const hintEl = document.getElementById('install-hint');
+        const container = document.getElementById('install-content');
+        const badge = document.getElementById('platform-badge');
+
+        if (!hintEl || !container) return;
+
         if (isStandalonePWA()) {
+            hintEl.style.display = 'none';
             return;
         }
 
         const platform = detectPlatform();
-        let platformMessage = "";
+        badge.textContent = getPlatformLabel(platform);
+        badge.className = 'platform-badge ' + getPlatformClass(platform);
 
+        let steps = [];
         if (platform === 'android') {
-            platformMessage = `
-                ۱) روی دکمه منو (<strong>⋮</strong>) در بالای مرورگر بزنید.
-                <br>
-                ۲) گزینه <strong>"Add to Home screen"</strong> یا <strong>"نصب برنامه"</strong> را انتخاب کنید.
-                <br>
-                ۳) نام را تأیید کرده و روی <strong>افزودن</strong> بزنید.
-            `;
+            steps = [
+                'دکمه منو <strong>⋮</strong> را در بالای مرورگر بزنید',
+                'گزینه <strong>"Add to Home screen"</strong> را انتخاب کنید',
+                'نام را تأیید کرده و روی <strong>افزودن</strong> بزنید'
+            ];
         } else if (platform === 'ios') {
-            platformMessage = `
-                ۱) در Safari دکمه <strong>Share</strong> (مربع با فلش رو به بالا) را بزنید.
-                <br>
-                ۲) به پایین اسکرول کنید و گزینه <strong>"Add to Home Screen"</strong> یا
-                <strong>"افزودن به صفحه‌اصلی"</strong> را انتخاب کنید.
-                <br>
-                ۳) نام را تأیید کرده و روی <strong>Add</strong> بزنید.
-            `;
+            steps = [
+                'دکمه <strong>Share</strong> (مربع با فلش) را بزنید',
+                'گزینه <strong>"Add to Home Screen"</strong> را انتخاب کنید',
+                'نام را تأیید کرده و روی <strong>Add</strong> بزنید'
+            ];
         } else if (platform === 'desktop') {
-            platformMessage = `
-                ۱) در مرورگر Chrome / Edge در نوار آدرس، روی آیکن <strong>"Install app"</strong> یا
-                نماد <strong>+</strong> کلیک کنید.
-                <br>
-                ۲) در پنجره بازشده روی <strong>Install</strong> یا <strong>نصب</strong> بزنید.
-            `;
+            steps = [
+                'روی آیکن <strong>"Install"</strong> در نوار آدرس کلیک کنید',
+                'در پنجره بازشده روی <strong>Install</strong> بزنید'
+            ];
         } else {
-            platformMessage = `
-                از گزینه‌های <strong>Add to Home Screen</strong> یا <strong>Install app</strong>
-                در مرورگر خود استفاده کنید.
-            `;
+            steps = [
+                'از گزینه <strong>"Add to Home Screen"</strong> استفاده کنید',
+                'یا گزینه <strong>"Install app"</strong> را پیدا کنید'
+            ];
         }
 
-        hintEl.innerHTML = `
-            <div id="install-hint-title">
-                <span class="icon">📱</span>
-                <span>نصب روی صفحه‌اصلی برای استفاده بهتر از سامانه</span>
+        container.innerHTML = `
+            <p style="font-size:13px; color:#6b7a9f; margin:0 0 12px;">
+                برای دریافت اعلان‌های لحظه‌ای و تجربه بهتر، سامانه را نصب کنید:
+            </p>
+            <ul class="install-steps">
+                ${steps.map((step, i) => `
+                    <li>
+                        <span class="num">${i+1}</span>
+                        <span>${step}</span>
+                    </li>
+                `).join('')}
+            </ul>
+            <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.04); font-size:12px; color:#6b7a9f;">
+                ⚡ پس از نصب، اعلان‌ها به‌صورت خودکار دریافت می‌شوند
             </div>
-            <small class="text-muted d-block mb-2">
-                جهت استفاده از اعلان‌ها و پیام‌ها، پیشنهاد می‌شود این سامانه را مانند یک اپلیکیشن روی دستگاه خود نصب کنید.
-                سپس بر اساس نوع سیستم‌عامل خود، مراحل زیر را انجام دهید:
-            </small>
-            <div>${platformMessage}</div>
         `;
-        hintEl.classList.remove('d-none');
+
+        hintEl.style.display = 'block';
     }
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        console.log("DOM fully loaded");
+    // ===== DOM Ready =====
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🚀 Dashboard initialized');
 
         const subscribeBtn = document.getElementById('subscribe-btn');
-        const sendNotifBtn = document.getElementById('send-notif-btn');
+        const sendBtn = document.getElementById('send-notif-btn');
 
-        // Service Worker ثبت
+        // Register Service Worker
         if ('serviceWorker' in navigator && 'PushManager' in window) {
             try {
-                const registration = await navigator.serviceWorker.register("{% static 'js/sw.js' %}");
-                console.log("Service Worker registered:", registration);
-            } catch (err) {
-                console.error("Service Worker registration failed:", err);
-                showToast("ثبت سرویس‌ورکر ناموفق بود", false);
+                await navigator.serviceWorker.register("{% static 'js/sw.js' %}");
+                console.log('✅ Service Worker registered');
+            } catch (e) {
+                console.error('❌ SW register failed', e);
             }
-        } else {
-            console.warn("Service Worker / PushManager not supported");
         }
 
-        // چک اشتراک اعلان
         await checkExistingSubscription();
+        showInstallHint();
 
-        // نمایش راهنمای Add to Home Screen بر اساس سیستم عامل
-        showInstallHintIfNeeded();
-
-        // دکمه سابسکرایب
+        // Subscribe
         if (subscribeBtn) {
-            console.log("Subscribe button found");
-
             subscribeBtn.addEventListener('click', async () => {
-                console.log("Subscribe button clicked");
-
                 if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                    showToast("مرورگر شما از اعلان‌ها پشتیبانی نمی‌کند", false);
+                    showToast('مرورگر شما از اعلان پشتیبانی نمی‌کند', false);
                     return;
                 }
 
                 try {
-                    const registration = await navigator.serviceWorker.register("{% static 'js/sw.js' %}");
-                    console.log("Service Worker registered", registration);
+                    const reg = await navigator.serviceWorker.register("{% static 'js/sw.js' %}");
+                    const perm = await Notification.requestPermission();
 
-                    const permission = await Notification.requestPermission();
-
-                    if (permission !== "granted") {
-                        showToast("دسترسی اعلان رد شد", false);
+                    if (perm !== 'granted') {
+                        showToast('دسترسی اعلان رد شد', false);
                         return;
                     }
 
-                    let subscription = await registration.pushManager.getSubscription();
-
-                    if (!subscription) {
-                        subscription = await registration.pushManager.subscribe({
+                    let sub = await reg.pushManager.getSubscription();
+                    if (!sub) {
+                        sub = await reg.pushManager.subscribe({
                             userVisibleOnly: true,
                             applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
                         });
@@ -329,34 +964,29 @@
                             'Content-Type': 'application/json',
                             'X-CSRFToken': '{{ csrf_token }}'
                         },
-                        body: JSON.stringify(subscription)
+                        body: JSON.stringify(sub)
                     });
 
                     if (res.ok) {
-                        showToast("اعلان با موفقیت فعال شد 🎉");
-                        subscribeBtn.classList.add('btn-success');
-                        subscribeBtn.innerHTML = '<i class="bi bi-bell-fill"></i> اعلان فعال است';
+                        showToast('🎉 اعلان با موفقیت فعال شد');
+                        subscribeBtn.classList.add('glow-btn-success', 'active');
+                        document.getElementById('sub-btn-text').textContent = '✅ اعلان فعال';
                     } else {
-                        const txt = await res.text();
-                        console.error("Subscribe save failed:", txt);
-                        showToast("ذخیره‌سازی اشتراک موفق نبود", false);
+                        showToast('خطا در ذخیره‌سازی اشتراک', false);
                     }
-                } catch (error) {
-                    console.error("Subscription error:", error);
-                    showToast("خطا در فعال‌سازی اعلان", false);
+                } catch (e) {
+                    console.error(e);
+                    showToast('خطا در فعال‌سازی اعلان', false);
                 }
             });
         }
 
-        // دکمه ارسال اعلان تستی
-        if (sendNotifBtn) {
-            sendNotifBtn.addEventListener('click', async () => {
-                console.log("🔔 send-notif-btn clicked");
-
+        // Send Test
+        if (sendBtn) {
+            sendBtn.addEventListener('click', async () => {
                 try {
                     const res = await fetch("{% url 'send_test_notification' %}", {
                         method: 'POST',
-                        credentials: 'same-origin',
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRFToken': '{{ csrf_token }}'
@@ -364,22 +994,17 @@
                         body: JSON.stringify({ test: true })
                     });
 
-                    console.log("send_test_notification status:", res.status);
-                    const text = await res.text();
-                    console.log("send_test_notification response body:", text);
-
                     if (res.ok) {
-                        showToast("اعلان تستی ارسال شد ✅");
+                        showToast('✅ اعلان تستی با موفقیت ارسال شد');
                     } else {
-                        showToast("ارسال اعلان تستی ناموفق بود", false);
+                        showToast('ارسال اعلان تستی ناموفق بود', false);
                     }
-                } catch (err) {
-                    console.error("Notification send failed:", err);
-                    showToast("خطا در ارسال اعلان", false);
+                } catch (e) {
+                    console.error(e);
+                    showToast('خطا در ارسال اعلان', false);
                 }
             });
         }
-
     });
 </script>
 
