@@ -6,7 +6,7 @@ from sms_ir import SmsIr #pip install smsir-python
 def send_sms(template_obj:SMS_Template,phone_number,vars,text=None):
 
     ret = False
-    
+    print('func send_sms')
     if template_obj.service.sms_panel == SMSServiceName_Enum.SMS_IR:
         ret = sms_ir(template_obj,phone_number,vars,text)
 
@@ -27,10 +27,12 @@ def sms_ir(template_obj:SMS_Template,phone_number,vars,text= None):
             parameters.append(parms)
         sms_ir = SmsIr(api_key,linenumber,)
         ret = sms_ir.send_verify_code(phone_number,template_id,parameters,)
+      
         return ret.ok
     else:
         sms_ir = SmsIr(api_key,linenumber,)
         ret = sms_ir.send_sms(phone_number,text,linenumber,)
+
         return ret.ok
 
 
