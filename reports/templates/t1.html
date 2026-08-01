@@ -1,0 +1,919 @@
+{% extends 'users/base.html' %}
+{% load static %}
+{% load jalali_tags %}  <!-- Make sure to load jalali_tags -->
+
+{% block title %}گزارش روزانه کاری{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ===== CSS Variables ===== */
+    :root {
+        --primary: #6C63FF;
+        --primary-dark: #5A52D5;
+        --primary-light: #8B83FF;
+        --success: #00C9A7;
+        --warning: #FFB74D;
+        --danger: #FF6B6B;
+        --gray-50: #F8F9FE;
+        --gray-100: #F1F3F9;
+        --gray-200: #E4E7F0;
+        --gray-300: #CDD2E0;
+        --gray-400: #9BA3B8;
+        --gray-500: #6C7A93;
+        --gray-600: #4A5568;
+        --gray-700: #2D3748;
+        --shadow-sm: 0 2px 8px rgba(108, 99, 255, 0.06);
+        --shadow-md: 0 4px 20px rgba(108, 99, 255, 0.08);
+        --shadow-lg: 0 8px 40px rgba(108, 99, 255, 0.12);
+        --radius: 12px;
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== Base ===== */
+    .page-wrapper {
+        background: var(--gray-50);
+        min-height: 100vh;
+        padding: 1.5rem;
+    }
+
+    /* ===== Modern Card ===== */
+    .modern-card {
+        background: #ffffff;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .modern-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    /* ===== Header ===== */
+    .card-header-modern {
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #6C63FF 0%, #5A52D5 100%);
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header-modern::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+
+    .card-header-modern h4 {
+        color: white;
+        font-weight: 600;
+        font-size: 1.25rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .card-header-modern h4 small {
+        font-weight: 400;
+        opacity: 0.8;
+        font-size: 0.85rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+        flex-wrap: wrap;
+    }
+
+    .btn-export {
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: var(--transition);
+        background: rgba(255,255,255,0.15);
+        color: white;
+        backdrop-filter: blur(10px);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .btn-export:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-export.csv:hover {
+        background: #28a745;
+    }
+
+    .btn-export.excel:hover {
+        background: #17a2b8;
+    }
+
+    /* ===== Stats Bar ===== */
+    .stats-bar {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1rem 2rem;
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--gray-600);
+    }
+
+    .stat-item .value {
+        font-weight: 700;
+        color: var(--gray-700);
+        font-size: 1rem;
+    }
+
+    .stat-item .icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+    }
+
+    .stat-item .icon.primary {
+        background: rgba(108, 99, 255, 0.1);
+        color: var(--primary);
+    }
+
+    .stat-item .icon.success {
+        background: rgba(0, 201, 167, 0.1);
+        color: var(--success);
+    }
+
+    .stat-item .icon.warning {
+        background: rgba(255, 183, 77, 0.1);
+        color: var(--warning);
+    }
+
+    /* ===== Date Picker & Calendar ===== */
+    .controls-wrapper {
+        padding: 1.25rem 2rem;
+        background: white;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .date-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .date-picker-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--gray-50);
+        padding: 0.25rem;
+        border-radius: 50px;
+        border: 1px solid var(--gray-200);
+    }
+
+    .date-picker-group input[type="date"] {
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        background: transparent;
+        font-size: 0.85rem;
+        color: var(--gray-700);
+        outline: none;
+        min-width: 140px;
+    }
+
+    .date-picker-group input[type="date"]:focus {
+        box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
+    }
+
+    .date-picker-group button {
+        border: none;
+        padding: 0.5rem 1.25rem;
+        border-radius: 50px;
+        background: var(--primary);
+        color: white;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .date-picker-group button:hover {
+        background: var(--primary-dark);
+        transform: scale(1.02);
+    }
+
+    .today-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid var(--gray-200);
+        border-radius: 50px;
+        background: white;
+        color: var(--gray-600);
+        font-size: 0.8rem;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .today-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    /* ===== 30-Day Grid ===== */
+    .days-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        background: white;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .day-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem 0.25rem;
+        border-radius: 8px;
+        border: 1px solid var(--gray-200);
+        background: white;
+        transition: var(--transition);
+        cursor: pointer;
+        text-decoration: none;
+        min-width: 60px;
+    }
+
+    .day-item:hover {
+        border-color: var(--primary);
+        background: rgba(108, 99, 255, 0.04);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .day-item.active {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+    }
+
+    .day-item.active .day-number,
+    .day-item.active .day-name {
+        color: white;
+    }
+
+    .day-item .day-number {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        line-height: 1.2;
+    }
+
+    .day-item .day-name {
+        font-size: 0.65rem;
+        color: var(--gray-400);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .day-item .day-hours {
+        font-size: 0.6rem;
+        color: var(--gray-400);
+        margin-top: 0.15rem;
+    }
+
+    .day-item.active .day-hours {
+        color: rgba(255,255,255,0.7);
+    }
+
+    .day-item.has-data {
+        border-color: var(--success);
+    }
+
+    .day-item.has-data .day-number {
+        color: var(--success);
+    }
+
+    .day-item.active.has-data {
+        border-color: var(--primary);
+        background: var(--primary);
+    }
+
+    .day-item.active.has-data .day-number {
+        color: white;
+    }
+
+    /* ===== Table ===== */
+    .table-wrapper {
+        padding: 1.5rem 2rem;
+        overflow-x: auto;
+    }
+
+    .table-minimal {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+
+    .table-minimal thead th {
+        padding: 0.75rem 0.75rem;
+        text-align: right;
+        font-weight: 600;
+        color: var(--gray-500);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--gray-200);
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 5;
+    }
+
+    .table-minimal tbody td {
+        padding: 0.6rem 0.75rem;
+        border-bottom: 1px solid var(--gray-100);
+        vertical-align: middle;
+        color: var(--gray-700);
+    }
+
+    .table-minimal tbody tr {
+        transition: var(--transition);
+    }
+
+    .table-minimal tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Group Headers */
+    .group-user td {
+        background: var(--gray-50) !important;
+        font-weight: 600;
+        padding: 0.5rem 0.75rem !important;
+        border-bottom: 2px solid var(--gray-200);
+        color: var(--gray-700);
+    }
+
+    .group-user td .badge-total {
+        background: var(--primary);
+        color: white;
+        padding: 0.15rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .group-project td {
+        background: white !important;
+        padding: 0.4rem 0.75rem !important;
+        border-bottom: 1px solid var(--gray-200);
+        color: var(--gray-600);
+        font-weight: 500;
+        font-size: 0.8rem;
+    }
+
+    .group-project td .wbs-list {
+        display: inline-flex;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+    }
+
+    .wbs-tag {
+        background: var(--gray-100);
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 500;
+        color: var(--gray-600);
+        font-family: monospace;
+    }
+
+    /* Task Row */
+    .task-title {
+        font-weight: 500;
+        color: var(--gray-700);
+    }
+
+    .story-title {
+        font-size: 0.75rem;
+        color: var(--gray-400);
+    }
+
+    .hours-badge-mini {
+        background: var(--success);
+        color: white;
+        padding: 0.15rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .hours-badge-mini.total {
+        background: var(--primary);
+    }
+
+    .priority-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-left: 0.3rem;
+    }
+
+    .priority-dot.high {
+        background: var(--danger);
+    }
+    .priority-dot.medium {
+        background: var(--warning);
+    }
+    .priority-dot.low {
+        background: var(--success);
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .empty-state .icon {
+        font-size: 3rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h5 {
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    .empty-state p {
+        color: var(--gray-400);
+        font-size: 0.9rem;
+    }
+
+    /* ===== Footer ===== */
+    .table-footer {
+        background: var(--gray-50);
+        font-weight: 600;
+        padding: 0.75rem 2rem !important;
+        border-top: 2px solid var(--gray-200);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .table-footer .total-label {
+        color: var(--gray-600);
+        font-size: 0.85rem;
+    }
+
+    .table-footer .total-value {
+        font-size: 1.1rem;
+        color: var(--primary);
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+        .page-wrapper {
+            padding: 0.5rem;
+        }
+
+        .card-header-modern {
+            padding: 1rem 1.25rem;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .card-header-modern h4 {
+            font-size: 1rem;
+        }
+
+        .card-header-modern h4 small {
+            display: block;
+            font-size: 0.75rem;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn-export {
+            flex: 1;
+            justify-content: center;
+            font-size: 0.75rem;
+            padding: 0.35rem 0.75rem;
+        }
+
+        .stats-bar {
+            padding: 0.75rem 1.25rem;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            font-size: 0.75rem;
+        }
+
+        .controls-wrapper {
+            padding: 0.75rem 1.25rem;
+        }
+
+        .date-controls {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .date-picker-group {
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+
+        .date-picker-group input[type="date"] {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .days-grid {
+            grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+            padding: 0.75rem 1.25rem;
+            gap: 0.35rem;
+        }
+
+        .day-item {
+            padding: 0.35rem 0.15rem;
+            min-width: 45px;
+        }
+
+        .day-item .day-number {
+            font-size: 0.8rem;
+        }
+
+        .day-item .day-name {
+            font-size: 0.55rem;
+        }
+
+        .table-wrapper {
+            padding: 0.75rem 1.25rem;
+        }
+
+        .table-minimal {
+            font-size: 0.75rem;
+        }
+
+        .table-minimal thead th {
+            padding: 0.5rem 0.4rem;
+            font-size: 0.6rem;
+        }
+
+        .table-minimal tbody td {
+            padding: 0.4rem 0.4rem;
+        }
+
+        .hours-badge-mini {
+            font-size: 0.65rem;
+            min-width: 40px;
+        }
+
+        .table-footer {
+            padding: 0.75rem 1.25rem !important;
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .days-grid {
+            grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+        }
+
+        .day-item .day-number {
+            font-size: 0.7rem;
+        }
+
+        .day-item .day-name {
+            font-size: 0.5rem;
+        }
+    }
+
+    /* ===== Print ===== */
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .modern-card {
+            border: 1px solid #ddd;
+            box-shadow: none !important;
+        }
+
+        .card-header-modern {
+            background: #f8f9fa !important;
+            color: #000 !important;
+        }
+
+        .card-header-modern h4 {
+            color: #000 !important;
+        }
+
+        .card-header-modern h4 small {
+            color: #666 !important;
+        }
+
+        .card-header-modern::before {
+            display: none;
+        }
+
+        .day-item.active {
+            background: #f0f0f0 !important;
+            border-color: #999 !important;
+        }
+
+        .day-item.active .day-number {
+            color: #000 !important;
+        }
+
+        .table-minimal tbody tr:hover {
+            background: transparent !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+    <div class="modern-card">
+        <!-- ===== Header ===== -->
+        <div class="card-header-modern">
+            <h4>
+                <i class="fas fa-chart-bar"></i>
+                گزارش روزانه کاری
+                <small>| {{ selected_date|jalali:'%d %B %Y' }}</small>
+            </h4>
+            <div class="header-actions no-print">
+                <a href="{% url 'export_daily_csv' %}?date={{ selected_date|date:'Y-m-d' }}" 
+                   class="btn-export csv">
+                    <i class="fas fa-file-csv"></i> CSV
+                </a>
+                <a href="{% url 'export_daily_excel' %}?date={{ selected_date|date:'Y-m-d' }}" 
+                   class="btn-export excel">
+                    <i class="fas fa-file-excel"></i> Excel
+                </a>
+                <button onclick="window.print()" class="btn-export">
+                    <i class="fas fa-print"></i> چاپ
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== Stats ===== -->
+        <div class="stats-bar no-print">
+            <div class="stat-item">
+                <span class="icon primary"><i class="fas fa-users"></i></span>
+                <span>کاربران: <span class="value">{{ total_users }}</span></span>
+            </div>
+            <div class="stat-item">
+                <span class="icon success"><i class="fas fa-clock"></i></span>
+                <span>کل ساعت: <span class="value">{{ total_hours|floatformat:2 }}</span></span>
+            </div>
+            <div class="stat-item">
+                <span class="icon warning"><i class="fas fa-tasks"></i></span>
+                <span>تسک‌ها: <span class="value">{{ total_tasks|default:0 }}</span></span>
+            </div>
+        </div>
+
+        <!-- ===== Controls ===== -->
+        <div class="controls-wrapper no-print">
+            <div class="date-controls">
+                <div class="date-picker-group">
+                    <input type="date" name="date" id="datePicker" 
+                           value="{{ selected_date|date:'Y-m-d' }}"
+                           max="{{ today|date:'Y-m-d' }}">
+                    <button onclick="goToDate()">
+                        <i class="fas fa-search"></i> نمایش
+                    </button>
+                </div>
+                <button class="today-btn" onclick="goToday()">
+                    <i class="fas fa-calendar-day"></i> امروز
+                </button>
+                <span style="font-size:0.8rem;color:var(--gray-400);margin-right:auto;">
+                    <i class="fas fa-arrow-left"></i> ۳۰ روز اخیر
+                </span>
+            </div>
+        </div>
+
+        <!-- ===== 30-Day Grid (Jalali) ===== -->
+        <div class="days-grid no-print" id="daysGrid">
+            {% for day in last_30_days %}
+                <a href="?date={{ day.gregorian|date:'Y-m-d' }}" 
+                   class="day-item {% if day.is_selected %}active{% endif %} {% if day.has_data %}has-data{% endif %}"
+                   title="{{ day.jalali }} | {{ day.gregorian|date:'Y-m-d' }}">
+                    <span class="day-number">{{ day.jalali_day }}</span>
+                    <span class="day-name">{{ day.jalali_month_short }}</span>
+                    {% if day.has_data %}
+                        <span class="day-hours">{{ day.total_hours|floatformat:1 }}h</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- ===== Table ===== -->
+        <div class="table-wrapper">
+            {% if report_data %}
+                <table class="table-minimal">
+                    <thead>
+                        <tr>
+                            <th style="width:14%">کاربر</th>
+                            <th style="width:16%">پروژه</th>
+                            <th style="width:10%">WBS</th>
+                            <th style="width:24%">تسک</th>
+                            <th style="width:20%">داستان</th>
+                            <th style="width:10%">ساعت</th>
+                            <th style="width:6%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, user_data in report_data.items %}
+                            <!-- User Group -->
+                            <tr class="group-user">
+                                <td colspan="7">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                                        <span>
+                                            <i class="fas fa-user-circle" style="color:var(--primary);"></i>
+                                            {{ user.get_full_name|default:user.username }}
+                                            <span style="font-size:0.75rem;color:var(--gray-400);">@{{ user.username }}</span>
+                                        </span>
+                                        <span class="badge-total">
+                                            <i class="fas fa-hourglass-half"></i>
+                                            {{ user_data.total_user_hours|floatformat:2 }}h
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {% for project_name, project_data in user_data.projects.items %}
+                                <!-- Project Group -->
+                                <tr class="group-project">
+                                    <td></td>
+                                    <td colspan="6">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                                            <span>
+                                                <i class="fas fa-folder" style="color:var(--primary-light);"></i>
+                                                {{ project_name }}
+                                                {% if project_data.wbs_rows %}
+                                                    <span class="wbs-list">
+                                                        {% for wbs in project_data.wbs_rows|slice:":3" %}
+                                                            <span class="wbs-tag">{{ wbs }}</span>
+                                                        {% endfor %}
+                                                        {% if project_data.wbs_rows|length > 3 %}
+                                                            <span class="wbs-tag">+{{ project_data.wbs_rows|length|add:"-3" }}</span>
+                                                        {% endif %}
+                                                    </span>
+                                                {% endif %}
+                                            </span>
+                                            <span style="font-size:0.75rem;color:var(--gray-500);">
+                                                {{ project_data.project_total|floatformat:2 }}h
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Tasks -->
+                                {% for task_key, task_data in project_data.tasks.items %}
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <span class="wbs-tag">{{ task_data.wbs_row|default:"-" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="task-title">{{ task_data.task.title }}</span>
+                                            {% if task_data.task.priority > 0 %}
+                                                <span class="priority-dot 
+                                                    {% if task_data.task.priority >= 3 %}high
+                                                    {% elif task_data.task.priority >= 2 %}medium
+                                                    {% else %}low{% endif %}">
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="story-title">
+                                                <i class="fas fa-book-open" style="font-size:0.6rem;"></i>
+                                                {{ task_data.task.story.title|truncatechars:30 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="hours-badge-mini">
+                                                {{ task_data.hours|floatformat:2 }}h
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'task_detail_modal' task_data.task.id %}" 
+                                               style="color:var(--gray-400);transition:var(--transition);"
+                                               onmouseover="this.style.color='var(--primary)'"
+                                               onmouseout="this.style.color='var(--gray-400)'">
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Footer -->
+                <div class="table-footer">
+                    <span class="total-label">
+                        <i class="fas fa-calculator"></i> جمع کل
+                    </span>
+                    <span class="total-value">
+                        {{ total_hours|floatformat:2 }} ساعت
+                    </span>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="icon"><i class="fas fa-inbox"></i></div>
+                    <h5>هیچ ورودی زمانی یافت نشد</h5>
+                    <p>برای تاریخ <strong>{{ selected_date|jalali:'%d %B %Y' }}</strong> هیچ فعالیتی ثبت نشده است.</p>
+                    <a href="#" class="btn-export" style="background:var(--primary);color:white;padding:0.5rem 1.5rem;border-radius:50px;display:inline-block;margin-top:0.5rem;text-decoration:none;">
+                        <i class="fas fa-plus"></i> ثبت زمان
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+    // Go to selected date
+    function goToDate() {
+        const date = document.getElementById('datePicker').value;
+        if (date) {
+            window.location.href = '?date=' + date;
+        }
+    }
+
+    // Go to today
+    function goToday() {
+        const today = new Date().toISOString().split('T')[0];
+        window.location.href = '?date=' + today;
+    }
+
+    // Enter key on date picker
+    document.getElementById('datePicker')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            goToDate();
+        }
+    });
+
+    // Animate rows on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('.table-minimal tbody tr:not(.group-user):not(.group-project)');
+        rows.forEach((row, i) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-10px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.2s ease';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, 30 * i);
+        });
+    });
+</script>
+{% endblock %}

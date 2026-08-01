@@ -3,8 +3,10 @@ from django.urls import path
 
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import data_dashboard_view, selective_dashboard, team_dashboard, team_overview_view, team_timeline_view, users_task_dashboard
 
+
+from .views import data_dashboard_view, selective_dashboard, team_dashboard, team_overview_view, team_timeline_view, users_task_dashboard
+from . import views
 
 urlpatterns = [
 
@@ -14,6 +16,10 @@ urlpatterns = [
     path('team-overview/', team_overview_view, name='team_overview'),  # ✅ new
     path('team-timeline/', team_timeline_view, name='team_timeline'),
     path('users_task_dashboard/', users_task_dashboard, name='users_task_dashboard'),
+
+    path('wbs-overview/', views.daily_work_report, name='daily_work_report'),
+    path('daily-report/export/csv/', views.export_daily_report_csv, name='export_daily_csv'),
+    path('daily-report/export/excel/', views.export_daily_report_excel, name='export_daily_excel'),
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

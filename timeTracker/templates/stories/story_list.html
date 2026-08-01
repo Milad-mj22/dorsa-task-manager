@@ -3,213 +3,652 @@
 
 {% block content %}
 <style>
-    /* RTL support */
+    /* ===== Global Reset & RTL ===== */
     body, html {
         direction: rtl;
         text-align: right;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    .stories-card {
-        max-width: 900px;
-        margin: 40px auto;
-        background: #ffffff;
-        border-radius: 16px;
-        padding: 25px;
-        box-shadow: 0 7px 25px rgba(0,0,0,0.08);
+    /* ===== Main Container ===== */
+    .stories-container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
     }
 
+    /* ===== Header Section ===== */
     .stories-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 20px;
         flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px 30px;
+        border-radius: 16px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     }
 
     .stories-header h2 {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
+        font-weight: 700;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .new-story-btn,
-    .assign-btn {
-        background: #2563eb;
-        padding: 8px 16px;
-        color: white;
-        text-decoration: none;
-        border-radius: 8px;
-        transition: 0.2s;
-        white-space: nowrap;
-    }
-
-    .new-story-btn:hover,
-    .assign-btn:hover {
-        background: #1d4ed8;
-    }
-
-    .filter-box {
+    .header-actions {
         display: flex;
         gap: 10px;
-        margin-bottom: 20px;
         flex-wrap: wrap;
     }
 
-    .filter-box input,
-    .filter-box select {
-        padding: 8px 12px;
-        border-radius: 8px;
-        border: 1px solid #d1d5db;
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
+    .btn-primary {
+        background: white;
+        color: #667eea;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .btn-success {
+        background: #10b981;
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+        background: #059669;
+        transform: translateY(-2px);
+    }
+
+    /* ===== Filter Section ===== */
+    .filter-section {
+        background: white;
+        padding: 20px 25px;
+        border-radius: 14px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-row input,
+    .filter-row select {
+        padding: 10px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: #fafafa;
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .filter-row select {
+        flex: 0.5;
+        min-width: 140px;
+        cursor: pointer;
+    }
+
+    .filter-row .btn-search {
+        background: #667eea;
+        color: white;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-row .btn-search:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    /* ===== Stats Summary ===== */
+    .stats-summary {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        background: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        border-right: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .stat-item .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .stat-item .stat-label {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+
+    .stat-item.total { border-right-color: #667eea; }
+    .stat-item.active { border-right-color: #10b981; }
+    .stat-item.completed { border-right-color: #f59e0b; }
+
+    /* ===== Story List ===== */
     .story-list {
-        max-height: 420px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 25px;
+        max-height: 500px;
         overflow-y: auto;
-        padding-right: 6px;
+        padding-left: 4px;
+    }
+
+    .story-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .story-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .story-list::-webkit-scrollbar-thumb {
+        background: #c4c4c4;
+        border-radius: 10px;
     }
 
     .story-item {
-        background: #f8fafc;
-        padding: 14px;
-        border-radius: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #e2e8f0;
-        transition: 0.2s;
+        background: white;
+        padding: 18px 22px;
+        border-radius: 14px;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
 
     .story-item:hover {
-        background: #eef2ff;
+        transform: translateX(-4px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-color: #667eea;
     }
 
     .story-title {
-        font-size: 1.15rem;
-        font-weight: bold;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .tag {
-        display: inline-block;
-        background: #e0e7ff;
-        color: #4338ca;
+    .story-title .story-id {
         font-size: 0.75rem;
-        padding: 3px 8px;
-        border-radius: 6px;
-        margin-left: 5px;
+        background: #e5e7eb;
+        color: #6b7280;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 600;
     }
 
-    .story-actions a {
-        margin-left: 10px;
-        color: #2563eb;
-        text-decoration: none;
+    /* ===== Story Meta Grid ===== */
+    .story-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px 20px;
+        margin: 8px 0 12px 0;
+        padding: 12px 16px;
+        background: #f8fafc;
+        border-radius: 10px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+    }
+
+    .meta-item .icon {
+        font-size: 1rem;
+    }
+
+    .meta-item .label {
+        color: #6b7280;
         font-weight: 500;
     }
 
-    .story-actions a:hover {
-        text-decoration: underline;
+    .meta-item .value {
+        color: #1f2937;
+        font-weight: 600;
+        padding: 2px 10px;
+        border-radius: 6px;
+        background: white;
     }
 
-    /* Pagination */
+    /* Color coding for values */
+    .meta-item .value.project {
+        color: #7c3aed;
+        background: #ede9fe;
+    }
+
+    .meta-item .value.wbs {
+        color: #059669;
+        background: #d1fae5;
+    }
+
+    .meta-item .value.team {
+        color: #2563eb;
+        background: #dbeafe;
+    }
+
+    .meta-item .value.sprint {
+        color: #d97706;
+        background: #fef3c7;
+    }
+
+    /* ===== Tags ===== */
+    .story-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 6px 0 10px 0;
+    }
+
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .tag-blue { background: #dbeafe; color: #1e40af; }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-yellow { background: #fef3c7; color: #92400e; }
+    .tag-red { background: #fee2e2; color: #991b1b; }
+    .tag-purple { background: #ede9fe; color: #5b21b6; }
+    .tag-gray { background: #f3f4f6; color: #4b5563; }
+
+    /* ===== Story Actions ===== */
+    .story-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 10px;
+        padding-top: 12px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .story-actions a {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .action-edit {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .action-edit:hover {
+        background: #bfdbfe;
+        transform: translateY(-1px);
+    }
+
+    .action-delete {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .action-delete:hover {
+        background: #fecaca;
+        transform: translateY(-1px);
+    }
+
+    .action-view {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .action-view:hover {
+        background: #e5e7eb;
+        transform: translateY(-1px);
+    }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 14px;
+        border: 2px dashed #e5e7eb;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+        font-size: 1.5rem;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    /* ===== Pagination ===== */
     .pagination {
-        margin-top: 20px;
         display: flex;
         justify-content: center;
-        gap: 5px;
+        gap: 6px;
+        margin-top: 25px;
+        flex-wrap: wrap;
     }
 
     .page-btn {
-        padding: 6px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
+        padding: 8px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
         text-decoration: none;
-        color: #374151;
-        transition: 0.2s;
+        color: #4b5563;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        min-width: 40px;
+        text-align: center;
     }
 
     .page-btn:hover {
-        background: #e5e7eb;
+        background: #f3f4f6;
+        border-color: #667eea;
+        transform: translateY(-2px);
     }
 
     .page-active {
-        background: #2563eb;
+        background: #667eea;
         color: white;
-        border-color: #2563eb;
+        border-color: #667eea;
+    }
+
+    .page-active:hover {
+        background: #5a67d8;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+        .stories-header {
+            padding: 15px 20px;
+            flex-direction: column;
+            align-items: stretch;
+            text-align: center;
+        }
+
+        .header-actions {
+            justify-content: center;
+        }
+
+        .stories-header h2 {
+            font-size: 1.4rem;
+            justify-content: center;
+        }
+
+        .filter-row {
+            flex-direction: column;
+        }
+
+        .filter-row input,
+        .filter-row select {
+            width: 100%;
+            min-width: unset;
+        }
+
+        .filter-row .btn-search {
+            width: 100%;
+        }
+
+        .story-meta-grid {
+            grid-template-columns: 1fr 1fr;
+            padding: 10px;
+        }
+
+        .story-item {
+            padding: 14px 16px;
+        }
+
+        .story-actions {
+            flex-wrap: wrap;
+        }
+
+        .stats-summary {
+            flex-direction: column;
+        }
+
+        .stat-item {
+            min-width: unset;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .story-meta-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .story-title {
+            font-size: 1rem;
+        }
     }
 </style>
 
-<div class="stories-card">
+<div class="stories-container">
 
-    <!-- Header with buttons -->
+    <!-- ===== Header ===== -->
     <div class="stories-header">
-        <h2> لیست استوری‌ها</h2>
-
-        <div style="display: flex; gap: 10px;">
-            <a href="{% url 'select_sprint' %}" class="assign-btn">📌 اتصال استوری‌ها به پروژه</a>
-            <a href="{% url 'story_create' %}" class="new-story-btn">+ استوری جدید</a>
+        <h2>
+            <span>📋</span> لیست استوری‌ها
+        </h2>
+        <div class="header-actions">
+            <a href="{% url 'select_sprint' %}" class="btn btn-success">
+                📌 اتصال به پروژه
+            </a>
+            <a href="{% url 'story_create' %}" class="btn btn-primary">
+                ➕ استوری جدید
+            </a>
         </div>
     </div>
 
-    <!-- Filters -->
-    <form method="get" class="filter-box">
-        <!-- Search -->
-        <input 
-            type="text" 
-            name="search" 
-            placeholder="جستجو در عنوان استوری..." 
-            value="{{ request.GET.search }}"
-            style="flex: 1;"
-        >
+    <!-- ===== Statistics ===== -->
+    <div class="stats-summary">
+        <div class="stat-item total">
+            <div class="stat-number">{{ stories.paginator.count|default:0 }}</div>
+            <div class="stat-label">📊 کل استوری‌ها</div>
+        </div>
+        <div class="stat-item active">
+            <div class="stat-number">{{ active_count|default:0 }}</div>
+            <div class="stat-label">🟢 فعال</div>
+        </div>
+        <div class="stat-item completed">
+            <div class="stat-number">{{ completed_count|default:0 }}</div>
+            <div class="stat-label">✅ تکمیل شده</div>
+        </div>
+    </div>
 
-        <!-- Team Filter -->
-        <select name="team" onchange="this.form.submit()">
-            <option value="">همه تیم‌ها</option>
-            {% for team in admin_teams %}
-                <option value="{{ team.id }}" {% if selected_team and selected_team.id == team.id %}selected{% endif %}>
-                    {{ team.name }}
-                </option>
-            {% endfor %}
-        </select>
+    <!-- ===== Filters ===== -->
+    <div class="filter-section">
+        <form method="get" class="filter-row">
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="🔍 جستجو در عنوان استوری..." 
+                value="{{ request.GET.search }}"
+            >
+            <select name="team">
+                <option value="">🏢 همه تیم‌ها</option>
+                {% for team in admin_teams %}
+                    <option value="{{ team.id }}" {% if selected_team and selected_team.id == team.id %}selected{% endif %}>
+                        {{ team.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn-search">جستجو</button>
+        </form>
+    </div>
 
-        <button style="display:none"></button>
-    </form>
-
-    <!-- Story List -->
+    <!-- ===== Story List ===== -->
     <div class="story-list">
         {% if stories %}
             {% for story in stories %}
                 <div class="story-item">
-                    <div class="story-title">{{ story.title }}</div>
-
-                    <div style="margin-top: 5px;">
-                        <span class="tag">{{ story.team.name }}</span>
-                        <span class="tag">{{ story.sprint.name }}</span>
+                    <!-- Title -->
+                    <div class="story-title">
+                        {{ story.title }}
+                        <span class="story-id">#{{ story.id }}</span>
                     </div>
 
-                    <div class="story-actions" style="margin-top: 8px;">
-                        <a href="{% url 'story_edit' story.pk %}">ویرایش</a>
-                        <a href="{% url 'story_delete' story.pk %}">حذف</a>
+                    <!-- Meta Grid -->
+                    <div class="story-meta-grid">
+                        <div class="meta-item">
+                            <span class="icon">🏷️</span>
+                            <span class="label">تیم:</span>
+                            <span class="value team">{{ story.team.name }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="icon">🔄</span>
+                            <span class="label">اسپرینت:</span>
+                            <span class="value sprint">{{ story.sprint.name }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="icon">📁</span>
+                            <span class="label">پروژه:</span>
+                            <span class="value project">{{ story.project_name|default:"—" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="icon">📋</span>
+                            <span class="label">WBS:</span>
+                            <span class="value wbs">{{ story.wbs_task_title|default:"—" }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="story-tags">
+                        {% if story.priority %}
+                            {% if story.priority == 'بالا' %}
+                                <span class="tag tag-red">🔴 {{ story.priority }}</span>
+                            {% elif story.priority == 'متوسط' %}
+                                <span class="tag tag-yellow">🟡 {{ story.priority }}</span>
+                            {% else %}
+                                <span class="tag tag-blue">🔵 {{ story.priority }}</span>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if story.assigned_to %}
+                            <span class="tag tag-purple">👤 {{ story.assigned_to }}</span>
+                        {% endif %}
+
+                        {% if story.estimated_hours %}
+                            <span class="tag tag-green">⏱️ {{ story.estimated_hours }} ساعت</span>
+                        {% endif %}
+
+                        {% if story.status %}
+                            {% if story.status == 'انجام شده' %}
+                                <span class="tag tag-green">✅ {{ story.status }}</span>
+                            {% elif story.status == 'در حال انجام' %}
+                                <span class="tag tag-yellow">🔄 {{ story.status }}</span>
+                            {% else %}
+                                <span class="tag tag-gray">📌 {{ story.status }}</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="story-actions">
+                        <a href="{% url 'story_edit' story.pk %}" class="action-edit">✏️ ویرایش</a>
+                        <a href="{% url 'story_delete' story.pk %}" class="action-delete" 
+                           onclick="return confirm('آیا از حذف این استوری اطمینان دارید؟');">🗑️ حذف</a>
                     </div>
                 </div>
             {% endfor %}
         {% else %}
-            <p>هیچ استوری‌ای یافت نشد.</p>
+            <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>هیچ استوری‌ای یافت نشد</h3>
+                <p>برای شروع، یک استوری جدید ایجاد کنید یا فیلترهای جستجو را تغییر دهید.</p>
+                <a href="{% url 'story_create' %}" class="btn btn-primary" style="margin-top: 15px; display: inline-block;">
+                    ➕ ایجاد استوری جدید
+                </a>
+            </div>
         {% endif %}
     </div>
 
-    <!-- Pagination -->
+    <!-- ===== Pagination ===== -->
     {% if stories.has_other_pages %}
     <div class="pagination">
         {% if stories.has_previous %}
-            <a class="page-btn" href="?page={{ stories.previous_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">قبلی</a>
+            <a class="page-btn" href="?page={{ stories.previous_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">‹ قبلی</a>
         {% endif %}
 
         {% for i in stories.paginator.page_range %}
-            <a class="page-btn {% if stories.number == i %}page-active{% endif %}" 
-               href="?page={{ i }}&team={{ request.GET.team }}&search={{ request.GET.search }}">
-               {{ i }}
-            </a>
+            {% if i == stories.number %}
+                <span class="page-btn page-active">{{ i }}</span>
+            {% elif i > stories.number|add:'-3' and i < stories.number|add:'3' %}
+                <a class="page-btn" href="?page={{ i }}&team={{ request.GET.team }}&search={{ request.GET.search }}">{{ i }}</a>
+            {% endif %}
         {% endfor %}
 
         {% if stories.has_next %}
-            <a class="page-btn" href="?page={{ stories.next_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">بعدی</a>
+            <a class="page-btn" href="?page={{ stories.next_page_number }}&team={{ request.GET.team }}&search={{ request.GET.search }}">بعدی ›</a>
         {% endif %}
     </div>
     {% endif %}

@@ -14,7 +14,8 @@ from .utils import detect_gender, fix_persian_text
 import pandas as pd
 from django.shortcuts import render
 from .forms import CSVUploadForm, ProjectTicketForm, ProjectTicketMessageForm
-from users.models import Buyer, Inventory, MaterialComposition, Warehouse , mother_material , raw_material , mode_raw_materials
+from users.models import Buyer, Inventory, MaterialComposition, Projects, Warehouse , mother_material , raw_material , mode_raw_materials
+from Projects.models import Project
 
 
 
@@ -509,6 +510,11 @@ def import_tasks_csv(request):
                 assigned_name = str(row.get('مجری', '')).strip()
                 status = str(row.get('وضعیت', '')).strip().lower()
                 description = str(row.get('توضیحات', '')).strip()
+                project = str(row.get('پروژه', '')).strip()
+                wbs_row = str(row.get('عنوان تسک در WBS', '')).strip()
+
+
+                prject_obj,status = Project.objects.get_or_create(name=project)
 
                 # If تخمین is empty, this is a Story
                 if not estimate_raw or estimate_raw == 'nan':
@@ -518,7 +524,8 @@ def import_tasks_csv(request):
                             description=description,
                             team=team,
                             sprint=sprint,
-                            priority = priority
+                            priority = priority,
+                            project=prject_obj
                         )
                         created_stories += 1
                     continue
@@ -544,6 +551,7 @@ def import_tasks_csv(request):
                     goal_time=goal_time,
                     assigned_to=user,
                     status=status if status in ['todo', 'doing', 'done'] else 'todo',
+                    wbs_row=wbs_row,
                 )
                 created_tasks += 1
 
@@ -636,7 +644,6 @@ def ticket_detail(request, ticket_id):
 
 
 
-from Projects.models import Project
 
 @login_required
 def project_ticket_list(request):
