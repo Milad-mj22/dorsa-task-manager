@@ -71,6 +71,9 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+    wbs_row = models.CharField(max_length=100,null= True,blank=True)
+
+
     is_delete = models.BooleanField(default=False)
     user_delete = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,related_name='user_deleted')
 

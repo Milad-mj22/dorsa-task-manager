@@ -356,11 +356,11 @@ class cities(models.Model):
 
 class Projects(models.Model):
     name = models.CharField(max_length=200)
-    persian_name = models.CharField(max_length=200)
-    short_name = models.CharField(max_length=10,unique=True)
-    start_date = models.DateTimeField(null=False)
+    persian_name = models.CharField(max_length=200,null=True,blank=True)
+    short_name = models.CharField(max_length=10,unique=True,null=True,blank=True)
+    start_date = models.DateTimeField(null=True)
     project_maanger = models.ForeignKey(User, on_delete= models.CASCADE,related_name='project_manager',default=1,blank=True,null=True)
-    city = models.ForeignKey(cities, on_delete= models.CASCADE,related_name='project_city',default=1,blank=True,null=False)
+    city = models.ForeignKey(cities, on_delete= models.CASCADE,related_name='project_city',default=1,blank=True,null=True)
     describe = models.CharField(max_length=800)
 
     def __str__(self):

@@ -3,8 +3,6 @@
 {% block content %}
 
 <style>
-
-
   .upload-wrapper {
     display: flex;
     justify-content: center;
@@ -65,6 +63,11 @@
     margin: 30px 0;
     border-top: 1px solid #ddd;
   }
+
+  .required-star {
+    color: #dc3545;
+    margin-right: 4px;
+  }
 </style>
 
 <div class="container upload-wrapper" dir="rtl">
@@ -78,75 +81,105 @@
     <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
+      <!-- فایل -->
       <div class="mb-4">
-        <label for="file" class="form-label"  style="text-align: right; display: block;">فایل Tasks</label>
+        <label for="file" class="form-label" style="text-align: right; display: block;">
+          فایل Tasks <span class="required-star">*</span>
+        </label>
         <input type="file" name="file" accept=".csv" class="form-control" required>
       </div>
 
+      <!-- تیم و اسپرینت -->
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <label for="team_name" class="form-label" style="text-align: right; display: block;">
+            نام تیم <span class="required-star">*</span>
+          </label>
+          <select name="team_name" class="form-control" required>
+            <option value="">انتخاب کنید</option>
+            {% for team in teams %}
+              <option value="{{ team.name }}" {% if team.name == selected_team %}selected{% endif %}>
+                {{ team.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
+        <div class="col-md-6 mb-4">
+          <label for="sprint_name" class="form-label" style="text-align: right; display: block;">
+            نام اسپرینت <span class="required-star">*</span>
+          </label>
+          <select name="sprint_name" class="form-control" required>
+            <option value="">انتخاب کنید</option>
+            {% for sprint in sprints %}
+              <option value="{{ sprint.name }}" {% if sprint.name == selected_sprint %}selected{% endif %}>
+                {{ sprint.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
 
-
-<div class="row">
-  <!-- Team Dropdown -->
-  <div class="col-md-6 mb-4">
-    <label for="team_name" class="form-label" style="text-align: right; display: block;">نام تیم</label>
-    <select name="team_name" class="form-control" required>
-      <option value="">انتخاب کنید</option>
-      {% for team in teams %}
-        <option value="{{ team.name }}" {% if team.name == selected_team %}selected{% endif %}>
-          {{ team.name }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Sprint Dropdown -->
-  <div class="col-md-6 mb-4">
-    <label for="sprint_name" class="form-label" style="text-align: right; display: block;">نام اسپرینت</label>
-    <select name="sprint_name" class="form-control" required>
-      <option value="">انتخاب کنید</option>
-      {% for sprint in sprints %}
-        <option value="{{ sprint.name }}" {% if sprint.name == selected_sprint %}selected{% endif %}>
-          {{ sprint.name }}
-        </option>
-      {% endfor %}
-    </select>
-  </div>
-</div>
-
-
-
-
+      <!-- تنظیمات ستون‌ها -->
       <div class="form-section">
         <hr>
 
         <div class="row">
           <div class="col-md-4 mb-4">
-            <label for="col_task_name" class="form-label"  style="text-align: right; display: block;">نام ستون برای عنوان تسک</label>
-            <input type="text" name="col_task_name" class="form-control" placeholder="مثلاً: عنوان داستان / تسک" required value="عنوان داستان / تسک">
+            <label for="col_task_name" class="form-label" style="text-align: right; display: block;">
+              نام ستون برای عنوان تسک <span class="required-star">*</span>
+            </label>
+            <input type="text" name="col_task_name" class="form-control" 
+                   placeholder="مثلاً: عنوان داستان / تسک" required value="عنوان داستان / تسک">
           </div>
 
           <div class="col-md-4 mb-4">
-            <label for="col_order" class="form-label"  style="text-align: right; display: block;">نام ستون برای اولویت</label>
-            <input type="text" name="col_order" class="form-control" placeholder="مثلاً: اولویت" required value="اولویت">
+            <label for="col_order" class="form-label" style="text-align: right; display: block;">
+              نام ستون برای اولویت <span class="required-star">*</span>
+            </label>
+            <input type="text" name="col_order" class="form-control" 
+                   placeholder="مثلاً: اولویت" required value="اولویت">
           </div>
 
           <div class="col-md-4 mb-4">
-            <label for="col_user" class="form-label"  style="text-align: right; display: block;">نام ستون برای مجری</label>
-            <input type="text" name="col_user" class="form-control" placeholder="مثلاً: مجری" required value="مجری">
+            <label for="col_user" class="form-label" style="text-align: right; display: block;">
+              نام ستون برای مجری <span class="required-star">*</span>
+            </label>
+            <input type="text" name="col_user" class="form-control" 
+                   placeholder="مثلاً: مجری" required value="مجری">
+          </div>
+        </div>
+
+        <!-- ردیف دوم: پروژه، عنوان تسک در WBS، تخمین -->
+        <div class="row">
+          <div class="col-md-4 mb-4">
+            <label for="project_name" class="form-label" style="text-align: right; display: block;">
+              پروژه <span class="required-star">*</span>
+            </label>
+            <input type="text" name="project_name" id="project_name" class="form-control" 
+                   placeholder="مثلاً: پروژه الف" required value="پروژه">
           </div>
 
           <div class="col-md-4 mb-4">
-            <label for="col_hour" class="form-label"  style="text-align: right; display: block;">نام ستون برای تخمین</label>
-            <input type="text" name="col_hour" class="form-control" placeholder="مثلاً: تخمین" required value="تخمین">
+            <label for="wbs_task_title" class="form-label" style="text-align: right; display: block;">
+              عنوان تسک در WBS <span class="required-star">*</span>
+            </label>
+            <input type="text" name="wbs_task_title" id="wbs_task_title" class="form-control" 
+                   placeholder="مثلاً: طراحی پایگاه داده" required value="عنوان تسک در WBS">
           </div>
 
-
+          <div class="col-md-4 mb-4">
+            <label for="col_hour" class="form-label" style="text-align: right; display: block;">
+              نام ستون برای تخمین <span class="required-star">*</span>
+            </label>
+            <input type="text" name="col_hour" class="form-control" 
+                   placeholder="مثلاً: تخمین" required value="تخمین">
+          </div>
         </div>
       </div>
 
       <div class="text-center mt-4">
-        <button type="submit" class="btn btn-upload"> بارگذاری و ذخیره</button>
+        <button type="submit" class="btn btn-upload">بارگذاری و ذخیره</button>
       </div>
     </form>
   </div>
