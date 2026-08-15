@@ -1014,7 +1014,6 @@ def add_persian_font(fig):
     return fig
 
 
-
 @login_required
 def google_sheets_dashboard(request):
     """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
@@ -1033,43 +1032,63 @@ def google_sheets_dashboard(request):
     
     # پردازش داده‌ها
     try:
-        # تبدیل ستون‌های عددی
-        # فرض می‌کنیم ستون‌های زیر در شیت وجود دارند:
-        # - Project: نام پروژه
-        # - User: نام کاربر
-        # - Hours: ساعت صرف شده
-        # - Date: تاریخ فعالیت
+        # ========== تغییر نام ستون‌ها به انگلیسی ==========
+        column_mapping = {
+            'Timestamp': 'timestamp',
+            'نام و نام خانوادگی': 'full_name',
+            ' (میلادی) تاریخ فعالیت': 'date',
+            'عنوان پروژه': 'project',
+            'WBS عنوان تسک ': 'wbs',
+            'شرح فعالیت انجام شده': 'description',
+            'نتیجه/خروجی فعالیت': 'result',
+            ' (ساعت) زمان صرف شده در این فعالیت': 'hours',
+            'مانع یا مشکل پیرامون انجام این تسک': 'obstacle',
+            'Email Address': 'email',
+            # اگر نام‌های دیگری دارید
+            'Project': 'project',
+            'User': 'user',
+            'Hours': 'hours',
+            'Date': 'date',
+        }
+        
+        # تغییر نام ستون‌ها
+        df = df.rename(columns=column_mapping)
+        
+        # همچنین می‌توانید از این روش برای ستون‌های ناشناخته استفاده کنید
+        # df.columns = [col.strip() for col in df.columns]  # حذف فاصله‌های اضافی
+        
+        # ========== پردازش داده‌ها با نام‌های انگلیسی ==========
         
         # تبدیل تاریخ
-        if 'Date' in df.columns:
-            df['Date'] = pd.to_datetime(df['Date'])
+        if 'date' in df.columns:
+            df['date'] = pd.to_datetime(df['date'])
         
         # تبدیل ساعت به عدد
-        if 'Hours' in df.columns:
-            df['Hours'] = pd.to_numeric(df['Hours'], errors='coerce')
+        if 'hours' in df.columns:
+            df['hours'] = pd.to_numeric(df['hours'], errors='coerce')
         
         # ========== محاسبات آماری ==========
         
         # 1. مجموع کل ساعات
-        total_hours = df['Hours'].sum() if 'Hours' in df.columns else 0
+        total_hours = df['hours'].sum() if 'hours' in df.columns else 0
         
         # 2. ساعات هر پروژه
-        if 'Project' in df.columns and 'Hours' in df.columns:
-            hours_per_project = df.groupby('Project')['Hours'].sum().sort_values(ascending=False)
+        if 'project' in df.columns and 'hours' in df.columns:
+            hours_per_project = df.groupby('project')['hours'].sum().sort_values(ascending=False)
             hours_per_project_dict = hours_per_project.to_dict()
         else:
             hours_per_project_dict = {}
         
         # 3. نفر-ساعت (مجموع ساعات هر نفر)
-        if 'User' in df.columns and 'Hours' in df.columns:
-            hours_per_user = df.groupby('User')['Hours'].sum().sort_values(ascending=False)
+        if 'full_name' in df.columns and 'hours' in df.columns:
+            hours_per_user = df.groupby('full_name')['hours'].sum().sort_values(ascending=False)
             hours_per_user_dict = hours_per_user.to_dict()
         else:
             hours_per_user_dict = {}
         
         # 4. میانگین ساعات روزانه
-        if 'Date' in df.columns and 'Hours' in df.columns:
-            daily_hours = df.groupby(df['Date'].dt.date)['Hours'].sum()
+        if 'date' in df.columns and 'hours' in df.columns:
+            daily_hours = df.groupby(df['date'].dt.date)['hours'].sum()
             avg_daily_hours = daily_hours.mean() if not daily_hours.empty else 0
         else:
             avg_daily_hours = 0
@@ -1078,10 +1097,10 @@ def google_sheets_dashboard(request):
         total_records = len(df)
         
         # 6. تعداد پروژه‌های فعال
-        active_projects = df['Project'].nunique() if 'Project' in df.columns else 0
+        active_projects = df['project'].nunique() if 'project' in df.columns else 0
         
         # 7. تعداد کاربران فعال
-        active_users = df['User'].nunique() if 'User' in df.columns else 0
+        active_users = df['full_name'].nunique() if 'full_name' in df.columns else 0
         
         # ========== ساخت نمودارها ==========
         
@@ -1124,8 +1143,8 @@ def google_sheets_dashboard(request):
             chart2_json = None
         
         # نمودار 3: روند ساعات روزانه (خطی)
-        if 'Date' in df.columns and 'Hours' in df.columns and not df.empty:
-            daily_trend = df.groupby(df['Date'].dt.date)['Hours'].sum().reset_index()
+        if 'date' in df.columns and 'hours' in df.columns and not df.empty:
+            daily_trend = df.groupby(df['date'].dt.date)['hours'].sum().reset_index()
             daily_trend.columns = ['Date', 'Total Hours']
             
             fig3 = px.line(
