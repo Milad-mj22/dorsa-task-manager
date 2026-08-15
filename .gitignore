@@ -16,7 +16,7 @@ media/preinvoices/
 
 cameras/ai/Face/models/*
 cameras/ai/Face/models/
-
+credentials/
 models/
 
 /db.sqlite3
