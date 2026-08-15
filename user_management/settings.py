@@ -383,3 +383,11 @@ PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static/js', 'serviceworker.js'
 CRONJOBS = [
     ('0 19 * * *', 'timeTracker.management.commands.send_reminder_sms.Command', '>> /var/log/django_cron.log 2>&1'),
 ]
+
+
+
+# Google Sheets Settings
+GOOGLE_SHEET_ID = '1GcJeQljGDe4eN5J1uYRHTtHZ-FttBXb7S_zU6kpywoQ'  # از URL شیت بگیرید
+
+# مسیر credentials
+GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, 'credentials', 'google_sheets_credentials.json')

@@ -685,15 +685,36 @@
                 گزارش روزانه کاری
                 <small>| {{ selected_date|jalali:'%d %B %Y' }}</small>
             </h4>
+            <!-- In the header actions section, replace the existing Excel export buttons with this -->
             <div class="header-actions no-print">
                 <a href="{% url 'export_daily_csv' %}?date={{ selected_date|date:'Y-m-d' }}" 
-                   class="btn-export csv">
+                class="btn-export csv">
                     <i class="fas fa-file-csv"></i> CSV
                 </a>
+                
+                <!-- Modified Excel export with days range input -->
+                <div class="excel-export-group" style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,0.1);padding:0.2rem 0.5rem;border-radius:50px;">
+                    <input type="number" 
+                        id="excelDaysRange" 
+                        value="1" 
+                        min="1" 
+                        max="30" 
+                        style="width:50px;padding:0.2rem 0.3rem;border:none;border-radius:4px;background:rgba(255,255,255,0.2);color:white;text-align:center;font-size:0.8rem;"
+                        placeholder="1">
+                    <span style="color:rgba(255,255,255,0.7);font-size:0.7rem;">روز</span>
+                    <a href="#" 
+                    onclick="exportExcelWithRange('khani')" 
+                    class="btn-export excel" 
+                    style="background:rgba(255,255,255,0.15);padding:0.3rem 0.8rem;border-radius:50px;color:white;text-decoration:none;font-size:0.75rem;cursor:pointer;">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+                </div>
+
                 <a href="{% url 'export_daily_excel' %}?date={{ selected_date|date:'Y-m-d' }}" 
-                   class="btn-export excel">
-                    <i class="fas fa-file-excel"></i> Excel
+                class="btn-export excel">
+                    <i class="fas fa-file-excel"></i> Excel (Single Day)
                 </a>
+
                 <button onclick="window.print()" class="btn-export">
                     <i class="fas fa-print"></i> چاپ
                 </button>
@@ -915,5 +936,32 @@
             }, 30 * i);
         });
     });
+
+
+
+// Add this to your existing JavaScript section
+function exportExcelWithRange(format) {
+    const days = document.getElementById('excelDaysRange').value || 1;
+    const currentDate = document.getElementById('datePicker').value || new Date().toISOString().split('T')[0];
+    
+    // Validate days range
+    if (days < 1 || days > 30) {
+        alert('لطفاً تعداد روزها را بین 1 تا 30 وارد کنید');
+        return;
+    }
+    
+    // Redirect to export view with range parameter
+    window.location.href = `{% url 'export_daily_excel_khani' %}?date=${currentDate}&days=${days}`;
+}
+
+// Optional: Add keyboard support for the input
+document.getElementById('excelDaysRange')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        exportExcelWithRange('khani');
+    }
+});
+
+
+
 </script>
 {% endblock %}

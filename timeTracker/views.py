@@ -353,17 +353,11 @@ def api_update_task_status(request, pk):
     if sms_template.exists():
         sms_template = sms_template.first()
         recievers = SMS_Recievers.objects.filter(template=sms_template)
-        
-        if len(task.title) > 25:
-            truncated_title = task.title[:22] + '...'
-        else:
-            truncated_title = task.title
-        
         for r in recievers:
             task_name = f'{task.story.title} : {task.title}'
             user_name = f'{user.profile.first_name} {user.profile.last_name}'
             goal_time = f'{str(int(float(task.goal_time)))} ساعت'
-            ret = send_sms(sms_template,phone_number=r.persons.phone,vars={OTPVar_Enum.TITLE:truncated_title,OTPVar_Enum.NAME:user_name,OTPVar_Enum.OLDSTATUS:old_status,OTPVar_Enum.NEWSTATUS:new_status,OTPVar_Enum.HOUR:goal_time,OTPVar_Enum.HOUR2:total_hours,})
+            ret = send_sms(sms_template,phone_number=r.persons.phone,vars={OTPVar_Enum.TITLE:task.title,OTPVar_Enum.NAME:user_name,OTPVar_Enum.OLDSTATUS:old_status,OTPVar_Enum.NEWSTATUS:new_status,OTPVar_Enum.HOUR:goal_time,OTPVar_Enum.HOUR2:total_hours,})
             print(ret)
 
 

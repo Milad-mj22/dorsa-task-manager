@@ -20,7 +20,8 @@ urlpatterns = [
     path('wbs-overview/', views.daily_work_report, name='daily_work_report'),
     path('daily-report/export/csv/', views.export_daily_report_csv, name='export_daily_csv'),
     path('daily-report/export/excel/', views.export_daily_report_excel, name='export_daily_excel'),
-
+    path('daily-report/export/excel_khani/', views.export_daily_report_excel_khani, name='export_daily_excel_khani'),
+    path('google-sheets-dashboard/', views.google_sheets_dashboard, name='google_sheets_dashboard'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

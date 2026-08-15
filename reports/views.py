@@ -704,6 +704,8 @@ def export_daily_report_excel(request):
     
     return response
 
+
+
 @login_required
 def export_daily_report_excel(request):
     """Export daily report as Excel"""
@@ -784,3 +786,428 @@ def export_daily_report_excel(request):
     wb.save(response)
     
     return response
+
+
+
+@login_required
+def export_daily_report_excel_khani(request):
+    """Export daily report as Excel with optional date range"""
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from datetime import datetime, timedelta
+    from django.utils import timezone
+    
+    # Get date parameter
+    selected_date = request.GET.get('date')
+    if selected_date:
+        try:
+            selected_date = datetime.strptime(selected_date, '%Y-%m-%d').date()
+        except ValueError:
+            selected_date = timezone.now().date()
+    else:
+        selected_date = timezone.now().date()
+    
+    # Get days range parameter (default: 1 day)
+    days_range = int(request.GET.get('days', 1))
+    
+    # Ensure days_range is between 1 and 30
+    days_range = max(1, min(days_range, 30))
+    
+    # Calculate date range
+    start_date = selected_date - timedelta(days=days_range - 1)
+    end_date = selected_date
+    
+    # Create Excel workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Daily Report'
+    
+    # New headers based on your requirements
+    headers = [
+        'Timestamp',
+        'نام و نام خانوادگی',
+        'تاریخ فعالیت (میلادی)',
+        'عنوان پروژه',
+        'WBS عنوان تسک',
+        'شرح فعالیت انجام شده',
+        'نتیجه/خروجی فعالیت',
+        'زمان صرف شده در این فعالیت (ساعت)',
+        'مانع یا مشکل پیرامون انجام این تسک',
+        'Email Address'
+    ]
+    
+    # Style headers
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='4F81BD', end_color='4F81BD', fill_type='solid')
+    header_alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+    
+    # Set column widths
+    column_widths = {
+        'A': 20,  # Timestamp
+        'B': 22,  # نام و نام خانوادگی
+        'C': 18,  # تاریخ فعالیت
+        'D': 25,  # عنوان پروژه
+        'E': 30,  # WBS عنوان تسک
+        'F': 40,  # شرح فعالیت
+        'G': 35,  # نتیجه/خروجی
+        'H': 20,  # زمان صرف شده
+        'I': 35,  # مانع یا مشکل
+        'J': 25,  # Email
+    }
+    
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+    
+    # Get data for date range
+    time_entries = TimeEntry.objects.filter(
+        datetime__date__gte=start_date,
+        datetime__date__lte=end_date
+    ).select_related(
+        'task',
+        'task__story',
+        'task__story__project',
+        'task__story__team',
+        'task__story__sprint',
+        'user'
+    ).order_by('datetime', 'user__first_name', 'user__last_name')
+    
+    # Helper functions for cross-platform date formatting
+    def format_date_mdy(date_obj):
+        """Format date as M/D/YYYY without leading zeros (cross-platform)"""
+        if not date_obj:
+            return ''
+        month = str(date_obj.month)
+        day = str(date_obj.day)
+        year = str(date_obj.year)
+        return f"{month}/{day}/{year}"
+    
+    def format_datetime_mdy(dt_obj):
+        """Format datetime as M/D/YYYY H:MM without leading zeros (cross-platform)"""
+        if not dt_obj:
+            return ''
+        month = str(dt_obj.month)
+        day = str(dt_obj.day)
+        year = str(dt_obj.year)
+        hour = str(dt_obj.hour)
+        minute = f"{dt_obj.minute:02d}"
+        return f"{month}/{day}/{year} {hour}:{minute}"
+    
+    row_num = 2
+    for entry in time_entries:
+        user = entry.user
+        task = entry.task
+        story = task.story if hasattr(task, 'story') else None
+        project = story.project if story and hasattr(story, 'project') else None
+        
+        # Format timestamp as M/D/YYYY H:MM
+        timestamp = format_datetime_mdy(entry.datetime)
+        
+        # Format date as M/D/YYYY
+        date_str = format_date_mdy(entry.datetime.date())
+        
+        # Get full name
+        full_name = f"{user.profile.first_name} {user.profile.last_name}".strip() or user.username
+        
+        # Get WBS row (assuming it exists on Task model)
+        wbs_row = getattr(task, 'wbs_row', 'N/A')
+        
+        # Get description
+        description = getattr(task, 'title', '') or getattr(task, 'description', '')
+        
+        # Get result/output
+        result = getattr(entry, 'result', '') or getattr(entry, 'output', '') or '-'
+        
+        # Get obstacle/problem
+        obstacle = getattr(entry, 'obstacle', '') or getattr(entry, 'problem', '') or '-'
+        
+        ws.cell(row=row_num, column=1, value=timestamp)
+        ws.cell(row=row_num, column=2, value=full_name)
+        ws.cell(row=row_num, column=3, value=date_str)
+        ws.cell(row=row_num, column=4, value=project.name if project else 'No Project')
+        ws.cell(row=row_num, column=5, value=wbs_row)
+        ws.cell(row=row_num, column=6, value=description)
+        ws.cell(row=row_num, column=7, value=result)
+        ws.cell(row=row_num, column=8, value=float(entry.hours_spent))
+        ws.cell(row=row_num, column=9, value=obstacle)
+        ws.cell(row=row_num, column=10, value=user.email)
+        
+        # Apply text wrap and alignment for long text columns
+        for col_num in [6, 7, 9]:  # Description, Result, Obstacle columns
+            cell = ws.cell(row=row_num, column=col_num)
+            cell.alignment = Alignment(wrap_text=True, vertical='top')
+        
+        # Center align numeric and date columns
+        for col_num in [1, 3, 8]:  # Timestamp, Date, Hours
+            cell = ws.cell(row=row_num, column=col_num)
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+        
+        # Set number format for hours
+        hours_cell = ws.cell(row=row_num, column=8)
+        hours_cell.number_format = '0.00'
+        
+        row_num += 1
+    
+    # Add summary sheet for date range
+    ws_summary = wb.create_sheet('Summary')
+    ws_summary.cell(row=1, column=1, value='Date Range Report')
+    ws_summary.cell(row=1, column=1).font = Font(bold=True, size=14)
+    
+    ws_summary.cell(row=3, column=1, value='Start Date:')
+    ws_summary.cell(row=3, column=2, value=format_date_mdy(start_date))
+    ws_summary.cell(row=4, column=1, value='End Date:')
+    ws_summary.cell(row=4, column=2, value=format_date_mdy(end_date))
+    ws_summary.cell(row=5, column=1, value='Days Range:')
+    ws_summary.cell(row=5, column=2, value=f"{days_range} days")
+    ws_summary.cell(row=6, column=1, value='Total Entries:')
+    ws_summary.cell(row=6, column=2, value=time_entries.count())
+    ws_summary.cell(row=7, column=1, value='Total Hours:')
+    ws_summary.cell(row=7, column=2, value=sum(float(entry.hours_spent) for entry in time_entries))
+    
+    # Create response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"daily_work_report_{start_date.strftime('%Y%m%d')}_to_{end_date.strftime('%Y%m%d')}"
+    response['Content-Disposition'] = f'attachment; filename="{filename}.xlsx"'
+    wb.save(response)
+    
+    return response
+
+
+
+
+
+
+
+
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.utils import timezone
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.utils import PlotlyJSONEncoder
+import json
+from .google_sheets_integration import GoogleSheetsManager
+
+# در views.py، بعد از importها اضافه کنید
+import plotly.io as pio
+pio.templates.default = "plotly_white"
+
+# برای تنظیم فونت فارسی در تمام نمودارها
+def add_persian_font(fig):
+    fig.update_layout(
+        font=dict(
+            family="IRANSans, Vazir, Tahoma, Arial, sans-serif",
+            size=12
+        )
+    )
+    return fig
+
+
+
+@login_required
+def google_sheets_dashboard(request):
+    """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
+    
+    # ایجاد نمونه از مدیریت Google Sheets
+    gs_manager = GoogleSheetsManager()
+    
+    # دریافت داده‌ها
+    df = gs_manager.get_sheet_data()
+    
+    if df is None or df.empty:
+        context = {
+            'error': 'امکان اتصال به Google Sheets وجود ندارد یا داده‌ای وجود ندارد'
+        }
+        return render(request, 'google_sheets_dashboard.html', context)
+    
+    # پردازش داده‌ها
+    try:
+        # تبدیل ستون‌های عددی
+        # فرض می‌کنیم ستون‌های زیر در شیت وجود دارند:
+        # - Project: نام پروژه
+        # - User: نام کاربر
+        # - Hours: ساعت صرف شده
+        # - Date: تاریخ فعالیت
+        
+        # تبدیل تاریخ
+        if 'Date' in df.columns:
+            df['Date'] = pd.to_datetime(df['Date'])
+        
+        # تبدیل ساعت به عدد
+        if 'Hours' in df.columns:
+            df['Hours'] = pd.to_numeric(df['Hours'], errors='coerce')
+        
+        # ========== محاسبات آماری ==========
+        
+        # 1. مجموع کل ساعات
+        total_hours = df['Hours'].sum() if 'Hours' in df.columns else 0
+        
+        # 2. ساعات هر پروژه
+        if 'Project' in df.columns and 'Hours' in df.columns:
+            hours_per_project = df.groupby('Project')['Hours'].sum().sort_values(ascending=False)
+            hours_per_project_dict = hours_per_project.to_dict()
+        else:
+            hours_per_project_dict = {}
+        
+        # 3. نفر-ساعت (مجموع ساعات هر نفر)
+        if 'User' in df.columns and 'Hours' in df.columns:
+            hours_per_user = df.groupby('User')['Hours'].sum().sort_values(ascending=False)
+            hours_per_user_dict = hours_per_user.to_dict()
+        else:
+            hours_per_user_dict = {}
+        
+        # 4. میانگین ساعات روزانه
+        if 'Date' in df.columns and 'Hours' in df.columns:
+            daily_hours = df.groupby(df['Date'].dt.date)['Hours'].sum()
+            avg_daily_hours = daily_hours.mean() if not daily_hours.empty else 0
+        else:
+            avg_daily_hours = 0
+        
+        # 5. تعداد کل رکوردها
+        total_records = len(df)
+        
+        # 6. تعداد پروژه‌های فعال
+        active_projects = df['Project'].nunique() if 'Project' in df.columns else 0
+        
+        # 7. تعداد کاربران فعال
+        active_users = df['User'].nunique() if 'User' in df.columns else 0
+        
+        # ========== ساخت نمودارها ==========
+        
+        # نمودار 1: ساعات هر پروژه (میله‌ای)
+        if hours_per_project_dict:
+            fig1 = px.bar(
+                x=list(hours_per_project_dict.keys()),
+                y=list(hours_per_project_dict.values()),
+                title='ساعات صرف شده بر اساس پروژه',
+                labels={'x': 'پروژه', 'y': 'ساعت'},
+                color=list(hours_per_project_dict.values()),
+                color_continuous_scale='Blues'
+            )
+            fig1.update_layout(
+                template='plotly_white',
+                height=400,
+                font=dict(family="IRANSans, Arial, sans-serif")
+            )
+            chart1_json = json.dumps(fig1, cls=PlotlyJSONEncoder)
+        else:
+            chart1_json = None
+        
+        # نمودار 2: نفر-ساعت (میله‌ای)
+        if hours_per_user_dict:
+            fig2 = px.bar(
+                x=list(hours_per_user_dict.keys()),
+                y=list(hours_per_user_dict.values()),
+                title='نفر-ساعت بر اساس کاربر',
+                labels={'x': 'کاربر', 'y': 'ساعت'},
+                color=list(hours_per_user_dict.values()),
+                color_continuous_scale='Greens'
+            )
+            fig2.update_layout(
+                template='plotly_white',
+                height=400,
+                font=dict(family="IRANSans, Arial, sans-serif")
+            )
+            chart2_json = json.dumps(fig2, cls=PlotlyJSONEncoder)
+        else:
+            chart2_json = None
+        
+        # نمودار 3: روند ساعات روزانه (خطی)
+        if 'Date' in df.columns and 'Hours' in df.columns and not df.empty:
+            daily_trend = df.groupby(df['Date'].dt.date)['Hours'].sum().reset_index()
+            daily_trend.columns = ['Date', 'Total Hours']
+            
+            fig3 = px.line(
+                daily_trend,
+                x='Date',
+                y='Total Hours',
+                title='روند ساعات کاری روزانه',
+                labels={'Date': 'تاریخ', 'Total Hours': 'مجموع ساعات'}
+            )
+            fig3.update_layout(
+                template='plotly_white',
+                height=400,
+                font=dict(family="IRANSans, Arial, sans-serif")
+            )
+            chart3_json = json.dumps(fig3, cls=PlotlyJSONEncoder)
+        else:
+            chart3_json = None
+        
+        # نمودار 4: توزیع ساعات بین پروژه‌ها (دایره‌ای)
+        if hours_per_project_dict:
+            fig4 = px.pie(
+                values=list(hours_per_project_dict.values()),
+                names=list(hours_per_project_dict.keys()),
+                title='توزیع ساعات بین پروژه‌ها',
+                hole=0.3
+            )
+            fig4.update_layout(
+                template='plotly_white',
+                height=400,
+                font=dict(family="IRANSans, Arial, sans-serif")
+            )
+            chart4_json = json.dumps(fig4, cls=PlotlyJSONEncoder)
+        else:
+            chart4_json = None
+        
+        # ========== محاسبه رتبه‌بندی ==========
+        
+        # کاربران برتر از نظر ساعت
+        top_users = []
+        if hours_per_user_dict:
+            sorted_users = sorted(hours_per_user_dict.items(), key=lambda x: x[1], reverse=True)
+            top_users = [
+                {'name': name, 'hours': hours, 'rank': idx + 1}
+                for idx, (name, hours) in enumerate(sorted_users[:10])
+            ]
+        
+        # پروژه‌های برتر
+        top_projects = []
+        if hours_per_project_dict:
+            sorted_projects = sorted(hours_per_project_dict.items(), key=lambda x: x[1], reverse=True)
+            top_projects = [
+                {'name': name, 'hours': hours, 'rank': idx + 1}
+                for idx, (name, hours) in enumerate(sorted_projects[:10])
+            ]
+        
+        # ========== آماده‌سازی context ==========
+        context = {
+            'stats': {
+                'total_hours': round(total_hours, 2),
+                'total_records': total_records,
+                'active_projects': active_projects,
+                'active_users': active_users,
+                'avg_daily_hours': round(avg_daily_hours, 2),
+                'last_updated': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            },
+            'charts': {
+                'project_hours': chart1_json,
+                'user_hours': chart2_json,
+                'daily_trend': chart3_json,
+                'project_distribution': chart4_json,
+            },
+            'rankings': {
+                'top_users': top_users,
+                'top_projects': top_projects,
+            },
+            'data_preview': df.head(20).to_html(classes='table table-striped', index=False) if not df.empty else None,
+        }
+        
+        return render(request, 'google_sheets_dashboard.html', context)
+        
+    except Exception as e:
+        context = {
+            'error': f'خطا در پردازش داده‌ها: {str(e)}'
+        }
+        return render(request, 'google_sheets_dashboard.html', context)
