@@ -1013,23 +1013,65 @@ def add_persian_font(fig):
     )
     return fig
 
+import re
+import json
+import pandas as pd
+import plotly.express as px
+from plotly.utils import PlotlyJSONEncoder
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 
+# اگر GoogleSheetsManager در فایل دیگری تعریف شده، این خط را با import صحیح جایگزین کنید
+# from .utils import GoogleSheetsManager
+
+
+def normalize_persian_text(value):
+    """
+    یکسان‌سازی متن فارسی/عربی برای جلوگیری از تشخیص اشتباه نام‌های
+    تکراری به‌عنوان مقادیر متفاوت (به‌خاطر نیم‌فاصله، حروف عربی، فاصله اضافه و ...)
+    """
+    if pd.isna(value):
+        return value
+
+    s = str(value)
+
+    # حذف نیم‌فاصله و کاراکترهای جهت‌دهی نامرئی متن (RTL/LTR marks)
+    s = s.replace('\u200c', ' ')  # نیم‌فاصله (ZWNJ)
+    s = s.replace('\u200f', '')   # RTL mark
+    s = s.replace('\u200e', '')   # LTR mark
+
+    # یکسان‌سازی حروف عربی به معادل فارسی
+    s = s.replace('ي', 'ی')
+    s = s.replace('ك', 'ک')
+    s = s.replace('ة', 'ه')
+    s = s.replace('ۀ', 'ه')
+
+    # حذف اعداد عربی/فارسی اضافی در انتهای اسم و کاراکترهای کنترلی احتمالی
+    s = s.replace('\u064b', '').replace('\u064c', '').replace('\u064d', '')
+    s = s.replace('\u064e', '').replace('\u064f', '').replace('\u0650', '')
+    s = s.replace('\u0651', '').replace('\u0652', '')
+
+    # یکسان‌سازی چند فاصله پشت‌سرهم و حذف فاصله ابتدا/انتها
+    s = re.sub(r'\s+', ' ', s).strip()
+
+    return s
 @login_required
 def google_sheets_dashboard(request):
     """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
-    
+
     # ایجاد نمونه از مدیریت Google Sheets
     gs_manager = GoogleSheetsManager()
-    
+
     # دریافت داده‌ها
     df = gs_manager.get_sheet_data()
-    
+
     if df is None or df.empty:
         context = {
             'error': 'امکان اتصال به Google Sheets وجود ندارد یا داده‌ای وجود ندارد'
         }
         return render(request, 'google_sheets_dashboard.html', context)
-    
+
     # پردازش داده‌ها
     try:
         # ========== تغییر نام ستون‌ها به انگلیسی ==========
@@ -1044,162 +1086,181 @@ def google_sheets_dashboard(request):
             ' (ساعت) زمان صرف شده در این فعالیت': 'hours',
             'مانع یا مشکل پیرامون انجام این تسک': 'obstacle',
             'Email Address': 'email',
-            # اگر نام‌های دیگری دارید
             'Project': 'project',
             'User': 'user',
             'Hours': 'hours',
             'Date': 'date',
         }
-        
+
         # تغییر نام ستون‌ها
         df = df.rename(columns=column_mapping)
-        
-        # همچنین می‌توانید از این روش برای ستون‌های ناشناخته استفاده کنید
-        # df.columns = [col.strip() for col in df.columns]  # حذف فاصله‌های اضافی
-        
-        # ========== پردازش داده‌ها با نام‌های انگلیسی ==========
-        
+        df.columns = [col.strip() for col in df.columns]
+
+        # ========== نرمال‌سازی متن ==========
+        if 'full_name' in df.columns:
+            df['full_name'] = df['full_name'].apply(normalize_persian_text)
+        if 'project' in df.columns:
+            df['project'] = df['project'].apply(normalize_persian_text)
+
+        # ========== پاکسازی داده‌ها ==========
+        df = df.drop_duplicates()
+        if 'hours' in df.columns and 'project' in df.columns:
+            df = df.dropna(subset=['hours', 'project'])
+
         # تبدیل تاریخ
         if 'date' in df.columns:
-            df['date'] = pd.to_datetime(df['date'])
-        
+            try:
+                df['date'] = pd.to_datetime(df['date'], errors='coerce')
+                df = df.dropna(subset=['date'])
+            except Exception as e:
+                print(f"خطا در تبدیل تاریخ: {e}")
+
         # تبدیل ساعت به عدد
         if 'hours' in df.columns:
             df['hours'] = pd.to_numeric(df['hours'], errors='coerce')
-        
-        # ========== محاسبات آماری ==========
-        
+            df = df[df['hours'] > 0]
+
+        # پر کردن مقادیر خالی
+        if 'full_name' in df.columns:
+            df['full_name'] = df['full_name'].fillna('ناشناس')
+        if 'project' in df.columns:
+            df['project'] = df['project'].fillna('بدون پروژه')
+
+        # ========== محاسبات اصلی ==========
+
         # 1. مجموع کل ساعات
         total_hours = df['hours'].sum() if 'hours' in df.columns else 0
-        
+
         # 2. ساعات هر پروژه
         if 'project' in df.columns and 'hours' in df.columns:
             hours_per_project = df.groupby('project')['hours'].sum().sort_values(ascending=False)
             hours_per_project_dict = hours_per_project.to_dict()
         else:
             hours_per_project_dict = {}
-        
-        # 3. نفر-ساعت (مجموع ساعات هر نفر)
+
+        # 3. ساعات هر کاربر
         if 'full_name' in df.columns and 'hours' in df.columns:
             hours_per_user = df.groupby('full_name')['hours'].sum().sort_values(ascending=False)
             hours_per_user_dict = hours_per_user.to_dict()
         else:
             hours_per_user_dict = {}
-        
-        # 4. میانگین ساعات روزانه
-        if 'date' in df.columns and 'hours' in df.columns:
-            daily_hours = df.groupby(df['date'].dt.date)['hours'].sum()
-            avg_daily_hours = daily_hours.mean() if not daily_hours.empty else 0
-        else:
-            avg_daily_hours = 0
-        
-        # 5. تعداد کل رکوردها
-        total_records = len(df)
-        
-        # 6. تعداد پروژه‌های فعال
-        active_projects = df['project'].nunique() if 'project' in df.columns else 0
-        
-        # 7. تعداد کاربران فعال
-        active_users = df['full_name'].nunique() if 'full_name' in df.columns else 0
-        
-        # ========== ساخت نمودارها ==========
-        
-        # نمودار 1: ساعات هر پروژه (میله‌ای)
-        if hours_per_project_dict:
-            fig1 = px.bar(
-                x=list(hours_per_project_dict.keys()),
-                y=list(hours_per_project_dict.values()),
-                title='ساعات صرف شده بر اساس پروژه',
-                labels={'x': 'پروژه', 'y': 'ساعت'},
-                color=list(hours_per_project_dict.values()),
-                color_continuous_scale='Blues'
-            )
-            fig1.update_layout(
-                template='plotly_white',
-                height=400,
-                font=dict(family="IRANSans, Arial, sans-serif")
-            )
-            chart1_json = json.dumps(fig1, cls=PlotlyJSONEncoder)
-        else:
-            chart1_json = None
-        
-        # نمودار 2: نفر-ساعت (میله‌ای)
-        if hours_per_user_dict:
-            fig2 = px.bar(
-                x=list(hours_per_user_dict.keys()),
-                y=list(hours_per_user_dict.values()),
-                title='نفر-ساعت بر اساس کاربر',
-                labels={'x': 'کاربر', 'y': 'ساعت'},
-                color=list(hours_per_user_dict.values()),
-                color_continuous_scale='Greens'
-            )
-            fig2.update_layout(
-                template='plotly_white',
-                height=400,
-                font=dict(family="IRANSans, Arial, sans-serif")
-            )
-            chart2_json = json.dumps(fig2, cls=PlotlyJSONEncoder)
-        else:
-            chart2_json = None
-        
-        # نمودار 3: روند ساعات روزانه (خطی)
-        if 'date' in df.columns and 'hours' in df.columns and not df.empty:
-            daily_trend = df.groupby(df['date'].dt.date)['hours'].sum().reset_index()
-            daily_trend.columns = ['Date', 'Total Hours']
-            
-            fig3 = px.line(
-                daily_trend,
-                x='Date',
-                y='Total Hours',
-                title='روند ساعات کاری روزانه',
-                labels={'Date': 'تاریخ', 'Total Hours': 'مجموع ساعات'}
-            )
-            fig3.update_layout(
-                template='plotly_white',
-                height=400,
-                font=dict(family="IRANSans, Arial, sans-serif")
-            )
-            chart3_json = json.dumps(fig3, cls=PlotlyJSONEncoder)
-        else:
-            chart3_json = None
-        
-        # نمودار 4: توزیع ساعات بین پروژه‌ها (دایره‌ای)
-        if hours_per_project_dict:
-            fig4 = px.pie(
-                values=list(hours_per_project_dict.values()),
-                names=list(hours_per_project_dict.keys()),
-                title='توزیع ساعات بین پروژه‌ها',
-                hole=0.3
-            )
-            fig4.update_layout(
-                template='plotly_white',
-                height=400,
-                font=dict(family="IRANSans, Arial, sans-serif")
-            )
-            chart4_json = json.dumps(fig4, cls=PlotlyJSONEncoder)
-        else:
-            chart4_json = None
-        
-        # ========== محاسبه رتبه‌بندی ==========
-        
-        # کاربران برتر از نظر ساعت
-        top_users = []
-        if hours_per_user_dict:
-            sorted_users = sorted(hours_per_user_dict.items(), key=lambda x: x[1], reverse=True)
-            top_users = [
-                {'name': name, 'hours': hours, 'rank': idx + 1}
-                for idx, (name, hours) in enumerate(sorted_users[:10])
-            ]
-        
-        # پروژه‌های برتر
+
+        # ========== ایجاد رتبه‌بندی (منبع واحد) ==========
+
+        # رتبه‌بندی پروژه‌ها (با درصد)
         top_projects = []
         if hours_per_project_dict:
             sorted_projects = sorted(hours_per_project_dict.items(), key=lambda x: x[1], reverse=True)
             top_projects = [
-                {'name': name, 'hours': hours, 'rank': idx + 1}
-                for idx, (name, hours) in enumerate(sorted_projects[:10])
+                {
+                    'name': name,
+                    'hours': round(hours, 2),
+                    'rank': idx + 1,
+                    'percentage': round((hours / total_hours * 100), 1) if total_hours > 0 else 0
+                }
+                for idx, (name, hours) in enumerate(sorted_projects)
             ]
+
+        # رتبه‌بندی کاربران (با درصد)
+        top_users = []
+        if hours_per_user_dict:
+            sorted_users = sorted(hours_per_user_dict.items(), key=lambda x: x[1], reverse=True)
+            top_users = [
+                {
+                    'name': name,
+                    'hours': round(hours, 2),
+                    'rank': idx + 1,
+                    'percentage': round((hours / total_hours * 100), 1) if total_hours > 0 else 0
+                }
+                for idx, (name, hours) in enumerate(sorted_users)
+            ]
+
+        # ========== آماده‌سازی داده‌های نمودارها به صورت لیست (مانند Ranking) ==========
         
+        # داده‌های نمودار ساعات پروژه‌ها (میله‌ای)
+        chart_project_hours_data = []
+        for project in top_projects[:10]:  # 10 پروژه برتر
+            chart_project_hours_data.append({
+                'name': project['name'],
+                'hours': project['hours'],
+                'rank': project['rank'],
+                'percentage': project['percentage']
+            })
+
+        # داده‌های نمودار نفر-ساعت (میله‌ای)
+        chart_user_hours_data = []
+        for user in top_users[:10]:  # 10 کاربر برتر
+            chart_user_hours_data.append({
+                'name': user['name'],
+                'hours': user['hours'],
+                'rank': user['rank'],
+                'percentage': user['percentage']
+            })
+
+        # داده‌های نمودار روند روزانه
+        chart_daily_trend_data = []
+        if 'date' in df.columns and 'hours' in df.columns and not df.empty:
+            daily_trend = df.groupby(df['date'].dt.date)['hours'].sum().reset_index()
+            daily_trend.columns = ['date', 'hours']
+            daily_trend = daily_trend.sort_values('date')
+            
+            # محاسبه میانگین متحرک
+            if len(daily_trend) > 7:
+                daily_trend['ma7'] = daily_trend['hours'].rolling(window=7, min_periods=1).mean()
+            else:
+                daily_trend['ma7'] = daily_trend['hours']
+            
+            chart_daily_trend_data = daily_trend.to_dict('records')
+
+        # داده‌های نمودار توزیع ساعات (دایره‌ای)
+        chart_distribution_data = []
+        MAX_PROJECTS_PIE = 8
+        if top_projects:
+            if len(top_projects) > MAX_PROJECTS_PIE:
+                pie_projects = top_projects[:MAX_PROJECTS_PIE]
+                other_hours = sum(p['hours'] for p in top_projects[MAX_PROJECTS_PIE:])
+                
+                for project in pie_projects:
+                    chart_distribution_data.append({
+                        'name': project['name'],
+                        'hours': project['hours'],
+                        'percentage': project['percentage']
+                    })
+                chart_distribution_data.append({
+                    'name': 'سایر',
+                    'hours': round(other_hours, 2),
+                    'percentage': round((other_hours / total_hours * 100), 1) if total_hours > 0 else 0
+                })
+            else:
+                for project in top_projects:
+                    chart_distribution_data.append({
+                        'name': project['name'],
+                        'hours': project['hours'],
+                        'percentage': project['percentage']
+                    })
+
+        # ========== آمارهای دیگر ==========
+
+        if 'date' in df.columns and 'hours' in df.columns:
+            daily_hours = df.groupby(df['date'].dt.date)['hours'].sum()
+            avg_daily_hours = daily_hours.mean() if not daily_hours.empty else 0
+            std_daily_hours = daily_hours.std() if len(daily_hours) > 1 else 0
+        else:
+            avg_daily_hours = 0
+            std_daily_hours = 0
+
+        active_projects = df['project'].nunique() if 'project' in df.columns else 0
+        active_users = df['full_name'].nunique() if 'full_name' in df.columns else 0
+        total_records = len(df)
+
+        if 'date' in df.columns and not df.empty:
+            date_range = {
+                'start': df['date'].min().strftime('%Y-%m-%d'),
+                'end': df['date'].max().strftime('%Y-%m-%d')
+            }
+        else:
+            date_range = {'start': 'نامشخص', 'end': 'نامشخص'}
+
         # ========== آماده‌سازی context ==========
         context = {
             'stats': {
@@ -1208,24 +1269,33 @@ def google_sheets_dashboard(request):
                 'active_projects': active_projects,
                 'active_users': active_users,
                 'avg_daily_hours': round(avg_daily_hours, 2),
+                'std_daily_hours': round(std_daily_hours, 2),
+                'date_range': date_range,
                 'last_updated': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
             },
-            'charts': {
-                'project_hours': chart1_json,
-                'user_hours': chart2_json,
-                'daily_trend': chart3_json,
-                'project_distribution': chart4_json,
-            },
             'rankings': {
-                'top_users': top_users,
-                'top_projects': top_projects,
+                'top_users': top_users[:10],
+                'top_projects': top_projects[:10],
+                'all_users': top_users,
+                'all_projects': top_projects,
             },
-            'data_preview': df.head(20).to_html(classes='table table-striped', index=False) if not df.empty else None,
+            # داده‌های نمودارها به صورت لیست (مانند Ranking)
+            'chart_data': {
+                'project_hours': chart_project_hours_data,
+                'user_hours': chart_user_hours_data,
+                'daily_trend': chart_daily_trend_data,
+                'distribution': chart_distribution_data,
+            },
+            'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
+            'total_data_rows': len(df),
         }
-        
+
         return render(request, 'google_sheets_dashboard.html', context)
-        
+
     except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"خطا در پردازش داده‌ها: {error_detail}")
         context = {
             'error': f'خطا در پردازش داده‌ها: {str(e)}'
         }

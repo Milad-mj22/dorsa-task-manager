@@ -5,50 +5,146 @@
 
 {% block extra_css %}
 <style>
+    /* ========== فونت‌ها ========== */
+    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+        font-family: 'Vazirmatn', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    /* ========== کارت‌های داشبورد ========== */
     .dashboard-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(108, 99, 255, 0.08);
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(108, 99, 255, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #6C63FF, #A78BFA, #6C63FF);
+        background-size: 200% 100%;
+        animation: gradientMove 3s ease-in-out infinite;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .dashboard-card:hover::before {
+        opacity: 1;
+    }
+    
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
     
     .dashboard-card:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(108, 99, 255, 0.12);
+        transform: translateY(-4px);
+        border-color: rgba(108, 99, 255, 0.15);
     }
     
+    /* ========== آمار ========== */
     .stat-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #6C63FF;
-        line-height: 1.2;
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.1;
+        font-family: 'Inter', 'Vazirmatn', sans-serif;
+        letter-spacing: -0.02em;
     }
     
     .stat-label {
         font-size: 0.9rem;
+        font-weight: 500;
         color: #6C7A93;
         margin-top: 0.25rem;
+        letter-spacing: 0.02em;
     }
     
     .stat-icon {
-        font-size: 2rem;
+        font-size: 2.2rem;
         color: #CDD2E0;
+        opacity: 0.6;
+        transition: all 0.3s ease;
     }
     
-    .chart-container {
+    .dashboard-card:hover .stat-icon {
+        opacity: 1;
+        transform: scale(1.1) rotate(-5deg);
+    }
+    
+    /* ========== عنوان کارت‌ها ========== */
+    .dashboard-card h5 {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #1A202C;
+        letter-spacing: -0.01em;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .dashboard-card h5 i {
+        font-size: 1.1rem;
+    }
+    
+    /* ========== نمودارها ========== */
+    .chart-wrapper {
         width: 100%;
         height: 400px;
-        margin-bottom: 1rem;
+        position: relative;
     }
     
+    .chart-wrapper canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    
+    .pie-chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .pie-chart-wrapper {
+        width: 100%;
+        max-width: 350px;
+        height: 350px;
+        margin: 0 auto;
+    }
+    
+    /* ========== رتبه‌بندی ========== */
     .ranking-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.5rem 0;
+        padding: 0.65rem 0.5rem;
         border-bottom: 1px solid #F1F3F9;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+    
+    .ranking-item:hover {
+        background: #F8F9FE;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
     }
     
     .ranking-item:last-child {
@@ -56,113 +152,378 @@
     }
     
     .ranking-number {
-        width: 30px;
-        height: 30px;
-        background: #F8F9FE;
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #F8F9FE, #EEF0F8);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 600;
-        color: #6C7A93;
+        font-weight: 700;
         font-size: 0.8rem;
+        color: #6C7A93;
+        flex-shrink: 0;
+        font-family: 'Inter', 'Vazirmatn', sans-serif;
+    }
+    
+    .ranking-item:first-child .ranking-number {
+        background: linear-gradient(135deg, #FFD700, #FFC107);
+        color: #7B6B00;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+    }
+    
+    .ranking-item:nth-child(2) .ranking-number {
+        background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+        color: #555;
+        box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+    }
+    
+    .ranking-item:nth-child(3) .ranking-number {
+        background: linear-gradient(135deg, #CD7F32, #B87333);
+        color: #7B3F00;
+        box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
     }
     
     .ranking-name {
         flex: 1;
         margin: 0 0.75rem;
         color: #2D3748;
+        font-weight: 500;
+        font-size: 0.95rem;
     }
     
     .ranking-hours {
-        font-weight: 600;
+        font-weight: 700;
         color: #6C63FF;
+        font-size: 0.95rem;
+        font-family: 'Inter', 'Vazirmatn', sans-serif;
+    }
+    
+    .ranking-hours-label {
+        font-size: 0.8rem;
+        color: #6C7A93;
+        font-weight: 400;
     }
     
     .ranking-badge {
-        background: #6C63FF;
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
         color: white;
-        padding: 0.15rem 0.5rem;
+        padding: 0.15rem 0.6rem;
         border-radius: 50px;
         font-size: 0.7rem;
         font-weight: 600;
+        letter-spacing: 0.02em;
     }
     
-    .error-message {
-        background: #FFF5F5;
-        border: 1px solid #FED7D7;
-        color: #E53E3E;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
+    /* ========== هدر ========== */
+    .page-header h2 {
+        font-weight: 800;
+        font-size: 1.75rem;
+        color: #1A202C;
+        letter-spacing: -0.02em;
     }
     
+    .page-header h2 i {
+        color: #6C63FF;
+    }
+    
+    .last-updated {
+        font-weight: 400;
+        font-size: 0.85rem;
+        color: #6C7A93;
+    }
+    
+    .last-updated i {
+        color: #6C63FF;
+    }
+    
+    /* ========== دکمه بروزرسانی ========== */
     .refresh-btn {
-        background: #6C63FF;
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
         color: white;
         border: none;
-        padding: 0.5rem 1.5rem;
+        padding: 0.55rem 1.5rem;
         border-radius: 50px;
         transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        box-shadow: 0 4px 12px rgba(108, 99, 255, 0.25);
     }
     
     .refresh-btn:hover {
-        background: #5A52D5;
+        background: linear-gradient(135deg, #5A52D5, #7A6BE7);
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(108, 99, 255, 0.35);
         color: white;
     }
     
+    .refresh-btn:active {
+        transform: translateY(0px);
+    }
+    
+    .refresh-btn i {
+        margin-left: 0.5rem;
+    }
+    
+    /* ========== خطا ========== */
+    .error-message {
+        background: #FFF5F5;
+        border: 1px solid #FED7D7;
+        border-right: 4px solid #E53E3E;
+        color: #E53E3E;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        font-weight: 500;
+    }
+    
+    .error-message i {
+        margin-left: 0.75rem;
+        font-size: 1.2rem;
+    }
+    
+    /* ========== پیش‌نمایش داده ========== */
     .data-preview {
         max-height: 400px;
         overflow-y: auto;
+        border-radius: 8px;
+        border: 1px solid #F1F3F9;
     }
     
     .data-preview table {
         font-size: 0.85rem;
+        font-weight: 400;
+        margin-bottom: 0;
     }
     
-    .data-preview table th {
+    .data-preview table thead th {
         position: sticky;
         top: 0;
-        background: #F8F9FE;
+        background: linear-gradient(180deg, #F8F9FE, #EEF0F8);
         z-index: 10;
+        font-weight: 700;
+        color: #2D3748;
+        border-bottom: 2px solid #E2E8F0;
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
     }
     
+    .data-preview table tbody td {
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid #F1F3F9;
+        color: #4A5568;
+    }
+    
+    .data-preview table tbody tr:hover {
+        background: #F8F9FE;
+    }
+    
+    .data-preview::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    .data-preview::-webkit-scrollbar-track {
+        background: #F1F3F9;
+        border-radius: 10px;
+    }
+    
+    .data-preview::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
+        border-radius: 10px;
+    }
+    
+    .data-preview::-webkit-scrollbar-thumb:hover {
+        background: #5A52D5;
+    }
+    
+    /* ========== وضعیت خالی ========== */
+    .empty-state {
+        text-align: center;
+        padding: 2rem 0;
+        color: #A0AEC0;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .empty-state p {
+        font-weight: 400;
+        font-size: 0.95rem;
+    }
+    
+    /* ========== بادج ========== */
+    .badge-soft-primary {
+        background: rgba(108, 99, 255, 0.1);
+        color: #6C63FF;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    
+    /* ========== انیمیشن ورود ========== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .dashboard-card {
+        animation: fadeInUp 0.6s ease both;
+    }
+    
+    .dashboard-card:nth-child(2) { animation-delay: 0.05s; }
+    .dashboard-card:nth-child(3) { animation-delay: 0.1s; }
+    .dashboard-card:nth-child(4) { animation-delay: 0.15s; }
+    .dashboard-card:nth-child(5) { animation-delay: 0.2s; }
+    .dashboard-card:nth-child(6) { animation-delay: 0.25s; }
+    
+    /* ========== ریسپانسیو ========== */
     @media (max-width: 768px) {
         .stat-number {
-            font-size: 1.8rem;
+            font-size: 2rem;
         }
         
         .dashboard-card {
-            padding: 1rem;
+            padding: 1.25rem;
         }
         
-        .chart-container {
-            height: 300px;
+        .chart-wrapper {
+            height: 280px;
         }
+        
+        .pie-chart-wrapper {
+            height: 250px;
+            max-width: 250px;
+        }
+        
+        .page-header h2 {
+            font-size: 1.4rem;
+        }
+        
+        .refresh-btn {
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+        }
+        
+        .ranking-name {
+            font-size: 0.85rem;
+        }
+        
+        .ranking-hours {
+            font-size: 0.85rem;
+        }
+        
+        .dashboard-card h5 {
+            font-size: 0.95rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .stat-number {
+            font-size: 1.6rem;
+        }
+        
+        .stat-icon {
+            font-size: 1.6rem;
+        }
+        
+        .chart-wrapper {
+            height: 220px;
+        }
+        
+        .pie-chart-wrapper {
+            height: 200px;
+            max-width: 200px;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 0.75rem;
+        }
+        
+        .page-header .d-flex {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .last-updated {
+            font-size: 0.75rem;
+        }
+    }
+    
+    /* ========== رنگ‌های خاص ========== */
+    .text-primary-gradient {
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .pie-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .pie-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.75rem;
+        color: #4A5568;
+        padding: 0.2rem 0.5rem;
+        background: #F8F9FE;
+        border-radius: 50px;
+        border: 1px solid #E2E8F0;
+    }
+    
+    .pie-legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- ========== Header ========== -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 page-header">
         <h2>
-            <i class="fas fa-chart-pie text-primary"></i>
+            <i class="fas fa-chart-pie"></i>
             داشبورد Google Sheets
         </h2>
-        <div>
-            <span class="text-muted me-3">
+        <div class="d-flex align-items-center gap-3">
+            <span class="last-updated">
                 <i class="fas fa-clock"></i>
                 آخرین بروزرسانی: {{ stats.last_updated }}
             </span>
             <button onclick="location.reload()" class="refresh-btn">
-                <i class="fas fa-sync-alt"></i> بروزرسانی
+                <i class="fas fa-sync-alt"></i>
+                بروزرسانی
             </button>
         </div>
     </div>
     
+    <!-- ========== Error ========== -->
     {% if error %}
         <div class="error-message">
             <i class="fas fa-exclamation-circle"></i>
@@ -170,13 +531,13 @@
         </div>
     {% else %}
     
-    <!-- Statistics Cards -->
+    <!-- ========== Statistics Cards ========== -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="dashboard-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="stat-number">{{ stats.total_hours }}</div>
+                        <div class="stat-number">{{ stats.total_hours|floatformat:1 }}</div>
                         <div class="stat-label">مجموع ساعات</div>
                     </div>
                     <div class="stat-icon">
@@ -194,7 +555,7 @@
                         <div class="stat-label">تعداد رکوردها</div>
                     </div>
                     <div class="stat-icon">
-                        <i class="fas fa-list"></i>
+                        <i class="fas fa-list-ul"></i>
                     </div>
                 </div>
             </div>
@@ -229,75 +590,113 @@
         </div>
     </div>
     
-    <!-- Charts Row 1 -->
+    <!-- ========== Charts Row 1 ========== -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-lg-6">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-chart-bar text-primary"></i>
                     ساعات پروژه‌ها
+                    <span class="badge-soft-primary me-auto">
+                        {{ chart_data.project_hours|length }} پروژه
+                    </span>
                 </h5>
-                {% if charts.project_hours %}
-                    <div id="chart-project-hours" class="chart-container"></div>
+                {% if chart_data.project_hours %}
+                    <div class="chart-wrapper">
+                        <canvas id="chart-project-hours"></canvas>
+                    </div>
                 {% else %}
-                    <p class="text-muted text-center py-4">داده‌ای برای نمایش وجود ندارد</p>
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
         
         <div class="col-12 col-lg-6">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-user-clock text-success"></i>
                     نفر-ساعت
+                    <span class="badge-soft-primary me-auto">
+                        {{ chart_data.user_hours|length }} کاربر
+                    </span>
                 </h5>
-                {% if charts.user_hours %}
-                    <div id="chart-user-hours" class="chart-container"></div>
+                {% if chart_data.user_hours %}
+                    <div class="chart-wrapper">
+                        <canvas id="chart-user-hours"></canvas>
+                    </div>
                 {% else %}
-                    <p class="text-muted text-center py-4">داده‌ای برای نمایش وجود ندارد</p>
+                    <div class="empty-state">
+                        <i class="fas fa-user-clock"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Charts Row 2 -->
+    <!-- ========== Charts Row 2 ========== -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-lg-7">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-chart-line text-info"></i>
                     روند روزانه
+                    <span class="badge-soft-primary me-auto">
+                        {{ chart_data.daily_trend|length }} روز
+                    </span>
                 </h5>
-                {% if charts.daily_trend %}
-                    <div id="chart-daily-trend" class="chart-container"></div>
+                {% if chart_data.daily_trend %}
+                    <div class="chart-wrapper">
+                        <canvas id="chart-daily-trend"></canvas>
+                    </div>
                 {% else %}
-                    <p class="text-muted text-center py-4">داده‌ای برای نمایش وجود ندارد</p>
+                    <div class="empty-state">
+                        <i class="fas fa-chart-line"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
         
         <div class="col-12 col-lg-5">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-chart-pie text-warning"></i>
                     توزیع ساعات
+                    <span class="badge-soft-primary me-auto">
+                        {{ chart_data.distribution|length }} بخش
+                    </span>
                 </h5>
-                {% if charts.project_distribution %}
-                    <div id="chart-project-distribution" class="chart-container"></div>
+                {% if chart_data.distribution %}
+                    <div class="pie-chart-container">
+                        <div class="pie-chart-wrapper">
+                            <canvas id="chart-distribution"></canvas>
+                        </div>
+                        <div class="pie-legend" id="pie-legend"></div>
+                    </div>
                 {% else %}
-                    <p class="text-muted text-center py-4">داده‌ای برای نمایش وجود ندارد</p>
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Rankings -->
+    <!-- ========== Rankings ========== -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-lg-6">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-trophy text-warning"></i>
                     کاربران برتر
+                    <span class="badge-soft-primary me-auto">
+                        {{ rankings.top_users|length }} نفر برتر
+                    </span>
                 </h5>
                 {% if rankings.top_users %}
                     {% for user in rankings.top_users %}
@@ -307,22 +706,29 @@
                                 <div class="ranking-name">{{ user.name }}</div>
                             </div>
                             <div>
-                                <span class="ranking-hours">{{ user.hours|floatformat:2 }}</span>
-                                <span class="text-muted ms-1">ساعت</span>
+                                <span class="ranking-hours">{{ user.hours|floatformat:1 }}</span>
+                                <span class="ranking-hours-label">ساعت</span>
+                                <span class="ranking-badge me-1">{{ user.percentage }}%</span>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p class="text-muted text-center py-3">داده‌ای موجود نیست</p>
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>داده‌ای موجود نیست</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
         
         <div class="col-12 col-lg-6">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-fire text-danger"></i>
                     پروژه‌های برتر
+                    <span class="badge-soft-primary me-auto">
+                        {{ rankings.top_projects|length }} پروژه برتر
+                    </span>
                 </h5>
                 {% if rankings.top_projects %}
                     {% for project in rankings.top_projects %}
@@ -332,32 +738,42 @@
                                 <div class="ranking-name">{{ project.name }}</div>
                             </div>
                             <div>
-                                <span class="ranking-hours">{{ project.hours|floatformat:2 }}</span>
-                                <span class="text-muted ms-1">ساعت</span>
+                                <span class="ranking-hours">{{ project.hours|floatformat:1 }}</span>
+                                <span class="ranking-hours-label">ساعت</span>
+                                <span class="ranking-badge me-1">{{ project.percentage }}%</span>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p class="text-muted text-center py-3">داده‌ای موجود نیست</p>
+                    <div class="empty-state">
+                        <i class="fas fa-project-diagram"></i>
+                        <p>داده‌ای موجود نیست</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
     
-    <!-- Data Preview -->
+    <!-- ========== Data Preview ========== -->
     <div class="row">
         <div class="col-12">
             <div class="dashboard-card">
-                <h5 class="mb-3">
+                <h5>
                     <i class="fas fa-table text-primary"></i>
                     پیش‌نمایش داده‌ها
+                    <span class="badge-soft-primary me-auto">
+                        {{ total_data_rows }} رکورد
+                    </span>
                 </h5>
                 {% if data_preview %}
                     <div class="data-preview">
                         {{ data_preview|safe }}
                     </div>
                 {% else %}
-                    <p class="text-muted text-center py-3">داده‌ای برای نمایش وجود ندارد</p>
+                    <div class="empty-state">
+                        <i class="fas fa-table"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -366,43 +782,396 @@
     {% endif %}
 </div>
 
-<!-- Plotly JS -->
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- ========== داده‌ها به صورت JSON (با json_script) ========== -->
+{{ chart_data|json_script:"chart-data" }}
+{{ rankings|json_script:"rankings-data" }}
+
+<!-- ========== Chart.js ========== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // بارگذاری نمودارها
-        {% if charts.project_hours %}
-            Plotly.newPlot('chart-project-hours', {{ charts.project_hours|safe }});
-        {% endif %}
+        // ================================================
+        // خواندن داده‌ها از تگ‌های json_script
+        // ================================================
         
-        {% if charts.user_hours %}
-            Plotly.newPlot('chart-user-hours', {{ charts.user_hours|safe }});
-        {% endif %}
+        let chartData = null;
+        let rankingsData = null;
         
-        {% if charts.daily_trend %}
-            Plotly.newPlot('chart-daily-trend', {{ charts.daily_trend|safe }});
-        {% endif %}
+        try {
+            const chartDataEl = document.getElementById('chart-data');
+            const rankingsDataEl = document.getElementById('rankings-data');
+            
+            if (chartDataEl) {
+                chartData = JSON.parse(chartDataEl.textContent);
+            }
+            if (rankingsDataEl) {
+                rankingsData = JSON.parse(rankingsDataEl.textContent);
+            }
+        } catch (e) {
+            console.error('خطا در خواندن داده‌ها:', e);
+        }
         
-        {% if charts.project_distribution %}
-            Plotly.newPlot('chart-project-distribution', {{ charts.project_distribution|safe }});
-        {% endif %}
+        // بررسی وجود داده
+        if (!chartData) {
+            console.error('داده‌های نمودار موجود نیست');
+            return;
+        }
         
-        // تنظیم سایز نمودارها برای نمایش بهتر
-        window.addEventListener('resize', function() {
-            {% if charts.project_hours %}
-                Plotly.Plots.resize('chart-project-hours');
-            {% endif %}
-            {% if charts.user_hours %}
-                Plotly.Plots.resize('chart-user-hours');
-            {% endif %}
-            {% if charts.daily_trend %}
-                Plotly.Plots.resize('chart-daily-trend');
-            {% endif %}
-            {% if charts.project_distribution %}
-                Plotly.Plots.resize('chart-project-distribution');
-            {% endif %}
-        });
+        // ================================================
+        // تنظیمات کلی Chart.js
+        // ================================================
+        
+        Chart.defaults.font.family = "'Vazirmatn', 'Inter', 'Tahoma', sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#4A5568';
+        
+        // ثبت پلاگین DataLabels
+        Chart.register(ChartDataLabels);
+        
+        // ================================================
+        // 1. نمودار ساعات پروژه‌ها (میله‌ای)
+        // ================================================
+        
+        const projectHoursContainer = document.getElementById('chart-project-hours');
+        if (projectHoursContainer && chartData.project_hours && chartData.project_hours.length > 0) {
+            const ctx1 = projectHoursContainer.getContext('2d');
+            
+            const projectData = chartData.project_hours;
+            const colors1 = projectData.map((_, i) => {
+                const intensity = 0.3 + (0.7 * (1 - i / projectData.length));
+                return `rgba(108, 99, 255, ${intensity})`;
+            });
+            
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: projectData.map(d => d.name),
+                    datasets: [{
+                        label: 'ساعت',
+                        data: projectData.map(d => d.hours),
+                        backgroundColor: colors1,
+                        borderColor: '#6C63FF',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const data = projectData[context.dataIndex];
+                                    return [
+                                        `ساعت: ${data.hours}`,
+                                        `درصد: ${data.percentage}%`,
+                                        `رتبه: ${data.rank}`
+                                    ];
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#6C63FF',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            },
+                            formatter: function(value) {
+                                return value.toFixed(1);
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'ساعت'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 30
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+        
+        // ================================================
+        // 2. نمودار نفر-ساعت (میله‌ای)
+        // ================================================
+        
+        const userHoursContainer = document.getElementById('chart-user-hours');
+        if (userHoursContainer && chartData.user_hours && chartData.user_hours.length > 0) {
+            const ctx2 = userHoursContainer.getContext('2d');
+            
+            const userData = chartData.user_hours;
+            const colors2 = userData.map((_, i) => {
+                const intensity = 0.3 + (0.7 * (1 - i / userData.length));
+                return `rgba(46, 204, 113, ${intensity})`;
+            });
+            
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: userData.map(d => d.name),
+                    datasets: [{
+                        label: 'ساعت',
+                        data: userData.map(d => d.hours),
+                        backgroundColor: colors2,
+                        borderColor: '#2ECC71',
+                        borderWidth: 1,
+                        borderRadius: 6,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const data = userData[context.dataIndex];
+                                    return [
+                                        `ساعت: ${data.hours}`,
+                                        `درصد: ${data.percentage}%`,
+                                        `رتبه: ${data.rank}`
+                                    ];
+                                }
+                            }
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#2ECC71',
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            },
+                            formatter: function(value) {
+                                return value.toFixed(1);
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'ساعت'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 30
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+        }
+        
+        // ================================================
+        // 3. نمودار روند روزانه (خطی)
+        // ================================================
+        
+        const dailyTrendContainer = document.getElementById('chart-daily-trend');
+        if (dailyTrendContainer && chartData.daily_trend && chartData.daily_trend.length > 0) {
+            const ctx3 = dailyTrendContainer.getContext('2d');
+            
+            const dailyData = chartData.daily_trend;
+            const dates = dailyData.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('fa-IR');
+            });
+            
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'مجموع ساعات',
+                        data: dailyData.map(d => d.hours),
+                        borderColor: '#6C63FF',
+                        backgroundColor: 'rgba(108, 99, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#6C63FF',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }, {
+                        label: 'میانگین متحرک 7 روزه',
+                        data: dailyData.map(d => d.ma7 !== undefined ? d.ma7 : null),
+                        borderColor: '#E53E3E',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#E53E3E',
+                        pointBorderColor: '#E53E3E'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.parsed.y !== null && context.parsed.y !== undefined) {
+                                        return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} ساعت`;
+                                    }
+                                    return `${context.dataset.label}: داده موجود نیست`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'ساعت'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1);
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 30,
+                                font: {
+                                    size: 9
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ================================================
+        // 4. نمودار توزیع ساعات (دایره‌ای)
+        // ================================================
+        
+        const distributionContainer = document.getElementById('chart-distribution');
+        if (distributionContainer && chartData.distribution && chartData.distribution.length > 0) {
+            const ctx4 = distributionContainer.getContext('2d');
+            
+            const distData = chartData.distribution;
+            const pieColors = [
+                '#6C63FF', '#A78BFA', '#8B5CF6', '#7C3AED',
+                '#5B21B6', '#4C1D95', '#6D28D9', '#7E22CE',
+                '#A855F7', '#D946EF', '#EC4899', '#F472B6'
+            ];
+            
+            new Chart(ctx4, {
+                type: 'doughnut',
+                data: {
+                    labels: distData.map(d => d.name),
+                    datasets: [{
+                        data: distData.map(d => d.hours),
+                        backgroundColor: distData.map((_, i) => 
+                            pieColors[i % pieColors.length]
+                        ),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '40%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const data = distData[context.dataIndex];
+                                    return [
+                                        `ساعت: ${data.hours.toFixed(1)}`,
+                                        `درصد: ${data.percentage}%`
+                                    ];
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value, context) {
+                                const percentage = distData[context.dataIndex].percentage;
+                                if (percentage > 5) {
+                                    return `${percentage}%`;
+                                }
+                                return '';
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
+            });
+            
+            // ساخت Legend دستی
+            const legendContainer = document.getElementById('pie-legend');
+            if (legendContainer) {
+                legendContainer.innerHTML = '';
+                distData.forEach((d, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'pie-legend-item';
+                    item.innerHTML = `
+                        <span class="pie-legend-color" style="background: ${pieColors[i % pieColors.length]}"></span>
+                        <span>${d.name}</span>
+                        <span style="font-weight: 700; color: #6C63FF;">${d.percentage}%</span>
+                    `;
+                    legendContainer.appendChild(item);
+                });
+            }
+        }
     });
 </script>
 {% endblock %}
