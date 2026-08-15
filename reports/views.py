@@ -1056,6 +1056,9 @@ def normalize_persian_text(value):
     s = re.sub(r'\s+', ' ', s).strip()
 
     return s
+
+
+
 @login_required
 def google_sheets_dashboard(request):
     """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
@@ -1144,6 +1147,36 @@ def google_sheets_dashboard(request):
             hours_per_user_dict = hours_per_user.to_dict()
         else:
             hours_per_user_dict = {}
+
+        # ========== محاسبه ۳ پروژه برتر هر کاربر ==========
+        user_top_projects_data = []
+        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
+            # گروه‌بندی بر اساس کاربر و پروژه
+            user_project_hours = df.groupby(['full_name', 'project'])['hours'].sum().reset_index()
+            
+            # برای هر کاربر، ۳ پروژه برتر را پیدا کن
+            for user in user_project_hours['full_name'].unique():
+                user_data = user_project_hours[user_project_hours['full_name'] == user]
+                top_3 = user_data.nlargest(3, 'hours')
+                
+                user_top_projects_data.append({
+                    'user': user,
+                    'projects': [
+                        {
+                            'name': row['project'],
+                            'hours': round(row['hours'], 2)
+                        }
+                        for _, row in top_3.iterrows()
+                    ],
+                    'total_hours': round(top_3['hours'].sum(), 2) if not top_3.empty else 0
+                })
+            
+            # مرتب‌سازی بر اساس مجموع ساعات ۳ پروژه برتر (نزولی)
+            user_top_projects_data = sorted(
+                user_top_projects_data, 
+                key=lambda x: x['total_hours'], 
+                reverse=True
+            )
 
         # ========== ایجاد رتبه‌بندی (منبع واحد) ==========
 
@@ -1285,6 +1318,7 @@ def google_sheets_dashboard(request):
                 'user_hours': chart_user_hours_data,
                 'daily_trend': chart_daily_trend_data,
                 'distribution': chart_distribution_data,
+                'user_top_projects': user_top_projects_data,  # داده جدید
             },
             'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
             'total_data_rows': len(df),

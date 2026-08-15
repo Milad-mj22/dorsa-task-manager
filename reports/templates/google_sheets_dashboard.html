@@ -500,6 +500,140 @@
         border-radius: 50%;
         flex-shrink: 0;
     }
+
+
+
+/* ========== کارت‌های ۳ پروژه برتر هر کاربر ========== */
+.user-projects-card {
+    background: #FAFBFF;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #E8ECF4;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.user-projects-card:hover {
+    border-color: #6C63FF;
+    box-shadow: 0 4px 16px rgba(108, 99, 255, 0.08);
+}
+
+.user-projects-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #E8ECF4;
+    margin-bottom: 0.75rem;
+}
+
+.user-projects-header i {
+    font-size: 1.5rem;
+    color: #6C63FF;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2D3748;
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.user-total-badge {
+    background: linear-gradient(135deg, #6C63FF, #8B7BF7);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.user-projects-list {
+    margin-bottom: 0.75rem;
+}
+
+.project-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #F1F3F9;
+}
+
+.project-item:last-child {
+    border-bottom: none;
+}
+
+.project-rank {
+    width: 22px;
+    height: 22px;
+    background: #E8ECF4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6C7A93;
+    flex-shrink: 0;
+}
+
+.project-item:first-child .project-rank {
+    background: #FFD700;
+    color: #7B6B00;
+}
+
+.project-item:nth-child(2) .project-rank {
+    background: #C0C0C0;
+    color: #555;
+}
+
+.project-item:nth-child(3) .project-rank {
+    background: #CD7F32;
+    color: #7B3F00;
+}
+
+.project-name {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #4A5568;
+}
+
+.project-hours {
+    font-weight: 700;
+    color: #6C63FF;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.chart-wrapper-small {
+    width: 100%;
+    height: 60px;
+    margin-top: 0.5rem;
+}
+
+.chart-wrapper-small canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ریسپانسیو */
+@media (max-width: 768px) {
+    .user-projects-card {
+        padding: 0.75rem;
+    }
+    
+    .user-name {
+        font-size: 0.85rem;
+    }
+    
+    .chart-wrapper-small {
+        height: 45px;
+    }
+}
+
+
+
 </style>
 {% endblock %}
 
@@ -687,6 +821,55 @@
         </div>
     </div>
     
+
+    <!-- ========== Charts Row 3: 3 پروژه برتر هر کاربر ========== -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h5>
+                    <i class="fas fa-user-graduate text-primary"></i>
+                    ۳ پروژه برتر هر کاربر
+                    <span class="badge-soft-primary me-auto">
+                        {{ chart_data.user_top_projects|length }} کاربر
+                    </span>
+                </h5>
+                {% if chart_data.user_top_projects %}
+                    <div class="row g-4">
+                        {% for user_data in chart_data.user_top_projects|slice:":6" %}
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="user-projects-card">
+                                    <div class="user-projects-header">
+                                        <i class="fas fa-user-circle"></i>
+                                        <span class="user-name">{{ user_data.user }}</span>
+                                        <span class="user-total-badge">{{ user_data.total_hours }} ساعت</span>
+                                    </div>
+                                    <div class="user-projects-list">
+                                        {% for project in user_data.projects %}
+                                            <div class="project-item">
+                                                <span class="project-rank">{{ forloop.counter }}</span>
+                                                <span class="project-name">{{ project.name }}</span>
+                                                <span class="project-hours">{{ project.hours }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="chart-wrapper-small">
+                                        <canvas id="user-top-projects-{{ forloop.counter0 }}"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-user-graduate"></i>
+                        <p>داده‌ای برای نمایش وجود ندارد</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
     <!-- ========== Rankings ========== -->
     <div class="row g-4 mb-4">
         <div class="col-12 col-lg-6">
