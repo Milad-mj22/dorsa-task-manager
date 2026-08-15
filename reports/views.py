@@ -1,4 +1,6 @@
 
+import os
+
 from django.shortcuts import render
 from django.db.models import Sum
 from django.shortcuts import render
@@ -1057,17 +1059,63 @@ def normalize_persian_text(value):
 
     return s
 
-
-
+from django.conf import settings
 @login_required
 def google_sheets_dashboard(request):
     """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
 
     # ایجاد نمونه از مدیریت Google Sheets
-    gs_manager = GoogleSheetsManager()
+    # اگر حالت Debug فعال باشد و flag استفاده از فایل محلی True باشد
+    if settings.DEBUG and getattr(settings, 'USE_LOCAL_EXCEL_FOR_DEBUG', False):
+        try:
+            # Read data from local Excel file
+            excel_path = getattr(settings, 'LOCAL_EXCEL_PATH', None)
+            
+            if excel_path and os.path.exists(excel_path):
+                print(f"[DEBUG] Reading data from local file: {excel_path}")
+                
+                # Read Excel file based on format
+                if excel_path.endswith('.xlsx'):
+                    df = pd.read_excel(excel_path, engine='openpyxl')
+                elif excel_path.endswith('.xls'):
+                    df = pd.read_excel(excel_path, engine='xlrd')
+                elif excel_path.endswith('.csv'):
+                    df = pd.read_csv(excel_path, encoding='utf-8')
+                else:
+                    raise ValueError(f"Unsupported file format: {excel_path}")
+                
+                print(f"[DEBUG] Successfully loaded {len(df)} records from local file")
+                data_source = f"Local file ({os.path.basename(excel_path)})"
+            else:
+                print(f"[DEBUG] Local file not found: {excel_path}")
+                print("[DEBUG] Falling back to Google Sheets...")
+                
+                # Fallback to Google Sheets
+                gs_manager = GoogleSheetsManager()
+                df = gs_manager.get_sheet_data()
+                data_source = "Google Sheets (Fallback)"
+                
+        except Exception as e:
+            print(f"[DEBUG] Error reading local file: {e}")
+            print("[DEBUG] Falling back to Google Sheets...")
+            
+            # Fallback to Google Sheets in case of error
+            gs_manager = GoogleSheetsManager()
+            df = gs_manager.get_sheet_data()
+            data_source = "Google Sheets (Fallback after error)"
+    else:
+        # Normal mode - connect to Google Sheets
+        print("[INFO] Connecting to Google Sheets...")
+        gs_manager = GoogleSheetsManager()
+        df = gs_manager.get_sheet_data()
+        data_source = "Google Sheets"
 
-    # دریافت داده‌ها
-    df = gs_manager.get_sheet_data()
+    # بررسی داده‌ها
+    if df is None or df.empty:
+        context = {
+            'error': 'امکان اتصال به Google Sheets وجود ندارد یا داده‌ای وجود ندارد'
+        }
+        return render(request, 'google_sheets_dashboard.html', context)
 
     if df is None or df.empty:
         context = {
@@ -1151,10 +1199,8 @@ def google_sheets_dashboard(request):
         # ========== محاسبه ۳ پروژه برتر هر کاربر ==========
         user_top_projects_data = []
         if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
-            # گروه‌بندی بر اساس کاربر و پروژه
             user_project_hours = df.groupby(['full_name', 'project'])['hours'].sum().reset_index()
             
-            # برای هر کاربر، ۳ پروژه برتر را پیدا کن
             for user in user_project_hours['full_name'].unique():
                 user_data = user_project_hours[user_project_hours['full_name'] == user]
                 top_3 = user_data.nlargest(3, 'hours')
@@ -1171,12 +1217,30 @@ def google_sheets_dashboard(request):
                     'total_hours': round(top_3['hours'].sum(), 2) if not top_3.empty else 0
                 })
             
-            # مرتب‌سازی بر اساس مجموع ساعات ۳ پروژه برتر (نزولی)
             user_top_projects_data = sorted(
                 user_top_projects_data, 
                 key=lambda x: x['total_hours'], 
                 reverse=True
             )
+
+        # ========== محاسبه ساعات هر کاربر در هر پروژه (برای مودال) ==========
+        project_user_details = {}
+        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
+            # گروه‌بندی بر اساس پروژه و کاربر
+            project_user_data = df.groupby(['project', 'full_name'])['hours'].sum().reset_index()
+            
+            for project in project_user_data['project'].unique():
+                project_data = project_user_data[project_user_data['project'] == project]
+                project_user_details[project] = {
+                    'users': [
+                        {
+                            'name': row['full_name'],
+                            'hours': round(row['hours'], 2)
+                        }
+                        for _, row in project_data.iterrows()
+                    ],
+                    'total_hours': round(project_data['hours'].sum(), 2)
+                }
 
         # ========== ایجاد رتبه‌بندی (منبع واحد) ==========
 
@@ -1237,7 +1301,6 @@ def google_sheets_dashboard(request):
             daily_trend.columns = ['date', 'hours']
             daily_trend = daily_trend.sort_values('date')
             
-            # محاسبه میانگین متحرک
             if len(daily_trend) > 7:
                 daily_trend['ma7'] = daily_trend['hours'].rolling(window=7, min_periods=1).mean()
             else:
@@ -1318,7 +1381,8 @@ def google_sheets_dashboard(request):
                 'user_hours': chart_user_hours_data,
                 'daily_trend': chart_daily_trend_data,
                 'distribution': chart_distribution_data,
-                'user_top_projects': user_top_projects_data,  # داده جدید
+                'user_top_projects': user_top_projects_data,
+                'project_user_details': project_user_details,  # داده جدید برای مودال
             },
             'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
             'total_data_rows': len(df),

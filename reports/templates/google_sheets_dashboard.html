@@ -632,7 +632,143 @@
     }
 }
 
+/* ========== مودال جزئیات پروژه ========== */
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
 
+.modal-header {
+    border-bottom: 1px solid #F1F3F9;
+    padding: 1.25rem 1.5rem;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+    color: #1A202C;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #F1F3F9;
+    padding: 1rem 1.5rem;
+}
+
+.project-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid #F1F3F9;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.project-detail-item:hover {
+    background: #F8F9FE;
+}
+
+.project-detail-item:last-child {
+    border-bottom: none;
+}
+
+.project-detail-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.project-detail-user i {
+    color: #6C63FF;
+    font-size: 1rem;
+}
+
+.project-detail-user .user-name {
+    font-weight: 500;
+    color: #2D3748;
+}
+
+.project-detail-hours {
+    font-weight: 700;
+    color: #6C63FF;
+    font-family: 'Inter', sans-serif;
+}
+
+.project-detail-total {
+    background: linear-gradient(135deg, #F8F9FE, #EEF0F8);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.project-detail-total .label {
+    font-weight: 500;
+    color: #6C7A93;
+}
+
+.project-detail-total .value {
+    font-weight: 800;
+    color: #6C63FF;
+    font-size: 1.1rem;
+    font-family: 'Inter', sans-serif;
+}
+
+.project-detail-empty {
+    text-align: center;
+    padding: 2rem 0;
+    color: #A0AEC0;
+}
+
+.project-detail-empty i {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* رتبه‌بندی کاربران در مودال */
+.detail-rank-badge {
+    background: #6C63FF;
+    color: white;
+    padding: 0.1rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+}
+
+.detail-rank-1 {
+    background: #FFD700;
+    color: #7B6B00;
+}
+
+.detail-rank-2 {
+    background: #C0C0C0;
+    color: #555;
+}
+
+.detail-rank-3 {
+    background: #CD7F32;
+    color: #7B3F00;
+}
+
+/* بارگذاری مودال */
+.modal-loading {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.modal-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
 
 </style>
 {% endblock %}
@@ -965,6 +1101,83 @@
     {% endif %}
 </div>
 
+
+
+
+<!-- ========== مودال جزئیات پروژه ========== -->
+<div class="modal fade" id="projectDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="projectModalTitle">
+                    <i class="fas fa-project-diagram text-primary"></i>
+                    جزئیات پروژه
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="projectModalBody">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">در حال بارگذاری...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">بستن</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- MODAL -->
+<div class="modal fade"
+     id="projectDetailModal"
+     tabindex="-1"
+     aria-labelledby="projectModalTitle"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="projectModalTitle">
+                    <i class="fas fa-project-diagram text-primary"></i>
+                    جزئیات پروژه
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body" id="projectModalBody">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">
+                            در حال بارگذاری...
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    بستن
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
 <!-- ========== داده‌ها به صورت JSON (با json_script) ========== -->
 {{ chart_data|json_script:"chart-data" }}
 {{ rankings|json_script:"rankings-data" }}
@@ -974,387 +1187,1818 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ================================================
-        // خواندن داده‌ها از تگ‌های json_script
-        // ================================================
-        
-        let chartData = null;
-        let rankingsData = null;
-        
-        try {
-            const chartDataEl = document.getElementById('chart-data');
-            const rankingsDataEl = document.getElementById('rankings-data');
-            
-            if (chartDataEl) {
-                chartData = JSON.parse(chartDataEl.textContent);
-            }
-            if (rankingsDataEl) {
-                rankingsData = JSON.parse(rankingsDataEl.textContent);
-            }
-        } catch (e) {
-            console.error('خطا در خواندن داده‌ها:', e);
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ============================================================
+    // 1. READ JSON DATA
+    // ============================================================
+
+    let chartData = null;
+    let rankingsData = null;
+
+    try {
+        const chartDataEl = document.getElementById('chart-data');
+        const rankingsDataEl = document.getElementById('rankings-data');
+
+        if (chartDataEl) {
+            chartData = JSON.parse(chartDataEl.textContent);
         }
-        
-        // بررسی وجود داده
-        if (!chartData) {
-            console.error('داده‌های نمودار موجود نیست');
+
+        if (rankingsDataEl) {
+            rankingsData = JSON.parse(rankingsDataEl.textContent);
+        }
+
+    } catch (error) {
+        console.error('Error reading JSON data:', error);
+    }
+
+    if (!chartData) {
+        console.error('Chart data is not available.');
+        return;
+    }
+
+    console.log('========================================');
+    console.log('CHART DATA');
+    console.log(chartData);
+    console.log('========================================');
+
+
+    // ============================================================
+    // 2. CHART.JS GLOBAL SETTINGS
+    // ============================================================
+
+    Chart.defaults.font.family =
+        "'Vazirmatn', 'Inter', 'Tahoma', sans-serif";
+
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = '#4A5568';
+
+    if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+
+
+    // ============================================================
+    // 3. PROJECT DETAILS DATA
+    // ============================================================
+
+    const projectUserDetails =
+        chartData.project_user_details || {};
+
+    console.log('PROJECT USER DETAILS:');
+    console.log(projectUserDetails);
+
+    console.log(
+        'AVAILABLE PROJECT KEYS:',
+        Object.keys(projectUserDetails)
+    );
+
+
+    // ============================================================
+    // 4. FIND PROJECT DATA
+    // ============================================================
+
+    function findProjectData(projectName) {
+
+        if (!projectName) {
+            console.error('Project name is empty.');
+            return null;
+        }
+
+        const originalName = String(projectName);
+        const trimmedName = originalName.trim();
+
+        console.log('Looking for project:', originalName);
+
+        // --------------------------------------------------------
+        // Exact match
+        // --------------------------------------------------------
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                projectUserDetails,
+                originalName
+            )
+        ) {
+            console.log('Exact project match found.');
+
+            return projectUserDetails[originalName];
+        }
+
+
+        // --------------------------------------------------------
+        // Trimmed match
+        // --------------------------------------------------------
+
+        const matchingKey = Object.keys(projectUserDetails).find(
+            key => String(key).trim() === trimmedName
+        );
+
+        if (matchingKey) {
+
+            console.log(
+                'Trimmed project match found:',
+                matchingKey
+            );
+
+            return projectUserDetails[matchingKey];
+        }
+
+
+        // --------------------------------------------------------
+        // Case-insensitive match
+        // --------------------------------------------------------
+
+        const lowerName = trimmedName.toLowerCase();
+
+        const caseInsensitiveKey =
+            Object.keys(projectUserDetails).find(
+                key =>
+                    String(key)
+                        .trim()
+                        .toLowerCase() === lowerName
+            );
+
+        if (caseInsensitiveKey) {
+
+            console.log(
+                'Case-insensitive project match found:',
+                caseInsensitiveKey
+            );
+
+            return projectUserDetails[caseInsensitiveKey];
+        }
+
+
+        // --------------------------------------------------------
+        // Not found
+        // --------------------------------------------------------
+
+        console.error(
+            'PROJECT NOT FOUND:',
+            originalName
+        );
+
+        console.error(
+            'AVAILABLE PROJECTS:',
+            Object.keys(projectUserDetails)
+        );
+
+        return null;
+    }
+
+
+    // ============================================================
+    // 5. SHOW PROJECT MODAL
+    // ============================================================
+
+    window.showProjectDetail = function (projectName) {
+
+        console.log('========================================');
+        console.log('OPEN PROJECT MODAL');
+        console.log('Project:', projectName);
+        console.log('========================================');
+
+
+        const modalElement =
+            document.getElementById('projectDetailModal');
+
+        const modalTitle =
+            document.getElementById('projectModalTitle');
+
+        const modalBody =
+            document.getElementById('projectModalBody');
+
+
+        // --------------------------------------------------------
+        // Validate modal elements
+        // --------------------------------------------------------
+
+        if (!modalElement) {
+            console.error(
+                'projectDetailModal element was not found.'
+            );
             return;
         }
-        
-        // ================================================
-        // تنظیمات کلی Chart.js
-        // ================================================
-        
-        Chart.defaults.font.family = "'Vazirmatn', 'Inter', 'Tahoma', sans-serif";
-        Chart.defaults.font.size = 12;
-        Chart.defaults.color = '#4A5568';
-        
-        // ثبت پلاگین DataLabels
-        Chart.register(ChartDataLabels);
-        
-        // ================================================
-        // 1. نمودار ساعات پروژه‌ها (میله‌ای)
-        // ================================================
-        
-        const projectHoursContainer = document.getElementById('chart-project-hours');
-        if (projectHoursContainer && chartData.project_hours && chartData.project_hours.length > 0) {
-            const ctx1 = projectHoursContainer.getContext('2d');
-            
-            const projectData = chartData.project_hours;
-            const colors1 = projectData.map((_, i) => {
-                const intensity = 0.3 + (0.7 * (1 - i / projectData.length));
-                return `rgba(108, 99, 255, ${intensity})`;
-            });
-            
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: projectData.map(d => d.name),
-                    datasets: [{
-                        label: 'ساعت',
-                        data: projectData.map(d => d.hours),
-                        backgroundColor: colors1,
-                        borderColor: '#6C63FF',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barPercentage: 0.7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const data = projectData[context.dataIndex];
-                                    return [
-                                        `ساعت: ${data.hours}`,
-                                        `درصد: ${data.percentage}%`,
-                                        `رتبه: ${data.rank}`
-                                    ];
-                                }
-                            }
-                        },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'end',
-                            color: '#6C63FF',
-                            font: {
-                                weight: 'bold',
-                                size: 11
-                            },
-                            formatter: function(value) {
-                                return value.toFixed(1);
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'ساعت'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toFixed(1);
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 30
-                            }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
-            });
+
+        if (!modalTitle) {
+            console.error(
+                'projectModalTitle element was not found.'
+            );
+            return;
         }
-        
-        // ================================================
-        // 2. نمودار نفر-ساعت (میله‌ای)
-        // ================================================
-        
-        const userHoursContainer = document.getElementById('chart-user-hours');
-        if (userHoursContainer && chartData.user_hours && chartData.user_hours.length > 0) {
-            const ctx2 = userHoursContainer.getContext('2d');
-            
-            const userData = chartData.user_hours;
-            const colors2 = userData.map((_, i) => {
-                const intensity = 0.3 + (0.7 * (1 - i / userData.length));
-                return `rgba(46, 204, 113, ${intensity})`;
-            });
-            
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: userData.map(d => d.name),
-                    datasets: [{
-                        label: 'ساعت',
-                        data: userData.map(d => d.hours),
-                        backgroundColor: colors2,
-                        borderColor: '#2ECC71',
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        barPercentage: 0.7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const data = userData[context.dataIndex];
-                                    return [
-                                        `ساعت: ${data.hours}`,
-                                        `درصد: ${data.percentage}%`,
-                                        `رتبه: ${data.rank}`
-                                    ];
-                                }
-                            }
-                        },
-                        datalabels: {
-                            anchor: 'end',
-                            align: 'end',
-                            color: '#2ECC71',
-                            font: {
-                                weight: 'bold',
-                                size: 11
-                            },
-                            formatter: function(value) {
-                                return value.toFixed(1);
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'ساعت'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toFixed(1);
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 30
-                            }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
-            });
+
+        if (!modalBody) {
+            console.error(
+                'projectModalBody element was not found.'
+            );
+            return;
         }
-        
-        // ================================================
-        // 3. نمودار روند روزانه (خطی)
-        // ================================================
-        
-        const dailyTrendContainer = document.getElementById('chart-daily-trend');
-        if (dailyTrendContainer && chartData.daily_trend && chartData.daily_trend.length > 0) {
-            const ctx3 = dailyTrendContainer.getContext('2d');
-            
-            const dailyData = chartData.daily_trend;
-            const dates = dailyData.map(d => {
-                const date = new Date(d.date);
-                return date.toLocaleDateString('fa-IR');
-            });
-            
-            new Chart(ctx3, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'مجموع ساعات',
-                        data: dailyData.map(d => d.hours),
-                        borderColor: '#6C63FF',
-                        backgroundColor: 'rgba(108, 99, 255, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#6C63FF',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }, {
-                        label: 'میانگین متحرک 7 روزه',
-                        data: dailyData.map(d => d.ma7 !== undefined ? d.ma7 : null),
-                        borderColor: '#E53E3E',
-                        borderDash: [5, 5],
-                        fill: false,
-                        tension: 0.4,
-                        pointRadius: 2,
-                        pointBackgroundColor: '#E53E3E',
-                        pointBorderColor: '#E53E3E'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    if (context.parsed.y !== null && context.parsed.y !== undefined) {
-                                        return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} ساعت`;
-                                    }
-                                    return `${context.dataset.label}: داده موجود نیست`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'ساعت'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toFixed(1);
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 30,
-                                font: {
-                                    size: 9
-                                }
-                            }
-                        }
-                    }
+
+
+        // --------------------------------------------------------
+        // IMPORTANT:
+        // Move modal directly under BODY
+        // This fixes backdrop / z-index problems
+        // --------------------------------------------------------
+
+        if (modalElement.parentElement !== document.body) {
+
+            document.body.appendChild(modalElement);
+
+            console.log(
+                'Modal moved to document.body'
+            );
+        }
+
+
+        // --------------------------------------------------------
+        // Bootstrap modal instance
+        // --------------------------------------------------------
+
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement,
+                {
+                    backdrop: true,
+                    keyboard: true,
+                    focus: true
                 }
-            });
-        }
-        
-        // ================================================
-        // 4. نمودار توزیع ساعات (دایره‌ای)
-        // ================================================
-        
-        const distributionContainer = document.getElementById('chart-distribution');
-        if (distributionContainer && chartData.distribution && chartData.distribution.length > 0) {
-            const ctx4 = distributionContainer.getContext('2d');
-            
-            const distData = chartData.distribution;
-            const pieColors = [
-                '#6C63FF', '#A78BFA', '#8B5CF6', '#7C3AED',
-                '#5B21B6', '#4C1D95', '#6D28D9', '#7E22CE',
-                '#A855F7', '#D946EF', '#EC4899', '#F472B6'
-            ];
-            
-            new Chart(ctx4, {
-                type: 'doughnut',
-                data: {
-                    labels: distData.map(d => d.name),
-                    datasets: [{
-                        data: distData.map(d => d.hours),
-                        backgroundColor: distData.map((_, i) => 
-                            pieColors[i % pieColors.length]
-                        ),
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '40%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const data = distData[context.dataIndex];
-                                    return [
-                                        `ساعت: ${data.hours.toFixed(1)}`,
-                                        `درصد: ${data.percentage}%`
-                                    ];
-                                }
-                            }
-                        },
-                        datalabels: {
-                            color: '#fff',
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            formatter: function(value, context) {
-                                const percentage = distData[context.dataIndex].percentage;
-                                if (percentage > 5) {
-                                    return `${percentage}%`;
-                                }
-                                return '';
-                            }
-                        }
-                    }
-                },
-                plugins: [ChartDataLabels]
-            });
-            
-            // ساخت Legend دستی
-            const legendContainer = document.getElementById('pie-legend');
-            if (legendContainer) {
-                legendContainer.innerHTML = '';
-                distData.forEach((d, i) => {
-                    const item = document.createElement('div');
-                    item.className = 'pie-legend-item';
-                    item.innerHTML = `
-                        <span class="pie-legend-color" style="background: ${pieColors[i % pieColors.length]}"></span>
-                        <span>${d.name}</span>
-                        <span style="font-weight: 700; color: #6C63FF;">${d.percentage}%</span>
+            );
+
+
+        // --------------------------------------------------------
+        // Set title
+        // --------------------------------------------------------
+
+        modalTitle.innerHTML = `
+            <i class="fas fa-project-diagram text-primary"></i>
+            جزئیات پروژه: ${escapeHtml(projectName)}
+        `;
+
+
+        // --------------------------------------------------------
+        // Show loading
+        // --------------------------------------------------------
+
+        modalBody.innerHTML = `
+            <div class="modal-loading">
+
+                <div
+                    class="spinner-border text-primary"
+                    role="status"
+                >
+                    <span class="visually-hidden">
+                        در حال بارگذاری...
+                    </span>
+                </div>
+
+                <p class="mt-2 text-muted">
+                    در حال دریافت اطلاعات...
+                </p>
+
+            </div>
+        `;
+
+
+        // --------------------------------------------------------
+        // Open modal
+        // --------------------------------------------------------
+
+        modal.show();
+
+
+        // ========================================================
+        // IMPORTANT:
+        // Get data AFTER modal.show()
+        // ========================================================
+
+        setTimeout(function () {
+
+            try {
+
+                const projectData =
+                    findProjectData(projectName);
+
+
+                // ------------------------------------------------
+                // Project not found
+                // ------------------------------------------------
+
+                if (!projectData) {
+
+                    modalBody.innerHTML = `
+                        <div class="project-detail-empty">
+
+                            <i class="fas fa-exclamation-circle"></i>
+
+                            <p>
+                                اطلاعات این پروژه پیدا نشد.
+                            </p>
+
+                            <small class="text-muted">
+                                پروژه:
+                                ${escapeHtml(projectName)}
+                            </small>
+
+                        </div>
                     `;
-                    legendContainer.appendChild(item);
+
+                    return;
+                }
+
+
+                console.log(
+                    'FOUND PROJECT DATA:',
+                    projectData
+                );
+
+
+                // ------------------------------------------------
+                // Get users
+                // ------------------------------------------------
+
+                let users =
+                    Array.isArray(projectData.users)
+                        ? projectData.users
+                        : [];
+
+
+                // ------------------------------------------------
+                // No users
+                // ------------------------------------------------
+
+                if (users.length === 0) {
+
+                    modalBody.innerHTML = `
+                        <div class="project-detail-empty">
+
+                            <i class="fas fa-users"></i>
+
+                            <p>
+                                هیچ کاربری برای این پروژه یافت نشد.
+                            </p>
+
+                            <small class="text-muted">
+                                پروژه:
+                                ${escapeHtml(projectName)}
+                            </small>
+
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                // ------------------------------------------------
+                // Convert numbers
+                // ------------------------------------------------
+
+                users = users.map(function (user) {
+
+                    return {
+                        ...user,
+
+                        name:
+                            user.name !== undefined &&
+                            user.name !== null
+                                ? String(user.name)
+                                : 'نامشخص',
+
+                        hours:
+                            Number(user.hours) || 0
+                    };
+
                 });
+
+
+                // ------------------------------------------------
+                // Sort users by hours DESC
+                // ------------------------------------------------
+
+                users.sort(function (a, b) {
+
+                    return b.hours - a.hours;
+
+                });
+
+
+                // ------------------------------------------------
+                // Total hours
+                // ------------------------------------------------
+
+                let totalHours =
+                    Number(projectData.total_hours);
+
+                if (!Number.isFinite(totalHours)) {
+
+                    totalHours =
+                        users.reduce(
+                            function (sum, user) {
+                                return sum + user.hours;
+                            },
+                            0
+                        );
+                }
+
+
+                // =================================================
+                // BUILD USERS HTML
+                // =================================================
+
+                let usersHTML = '';
+
+
+                users.forEach(function (user, index) {
+
+                    let rankClass = '';
+
+                    if (index === 0) {
+                        rankClass = 'detail-rank-1';
+                    }
+                    else if (index === 1) {
+                        rankClass = 'detail-rank-2';
+                    }
+                    else if (index === 2) {
+                        rankClass = 'detail-rank-3';
+                    }
+
+
+                    const percentage =
+                        totalHours > 0
+                            ? (
+                                (user.hours / totalHours) * 100
+                            ).toFixed(1)
+                            : '0.0';
+
+
+                    usersHTML += `
+
+                        <div class="project-detail-item">
+
+                            <div class="project-detail-user">
+
+                                <i class="fas fa-user-circle"></i>
+
+                                <span class="user-name">
+                                    ${escapeHtml(user.name)}
+                                </span>
+
+                                <span
+                                    class="detail-rank-badge ${rankClass}"
+                                >
+                                    #${index + 1}
+                                </span>
+
+                            </div>
+
+
+                            <div
+                                class="d-flex align-items-center gap-3"
+                            >
+
+                                <span
+                                    class="project-detail-hours"
+                                >
+                                    ${user.hours.toFixed(1)}
+                                    ساعت
+                                </span>
+
+                                <span
+                                    class="badge bg-light text-dark"
+                                >
+                                    ${percentage}%
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                });
+
+
+                // =================================================
+                // FINAL MODAL CONTENT
+                // =================================================
+
+                modalBody.innerHTML = `
+
+                    <div class="mb-3">
+
+                        <div class="project-detail-total">
+
+                            <span class="label">
+                                مجموع ساعات پروژه
+                            </span>
+
+                            <span class="value">
+                                ${totalHours.toFixed(1)}
+                                ساعت
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mt-3">
+
+                        <p class="text-muted mb-2">
+
+                            <i class="fas fa-users"></i>
+
+                            کاربران مشارکت‌کننده
+
+                            (${users.length} نفر)
+
+                        </p>
+
+
+                        ${usersHTML}
+
+                    </div>
+
+                `;
+
+
+                console.log(
+                    'Project modal rendered successfully.'
+                );
+
+
             }
+            catch (error) {
+
+                console.error(
+                    'ERROR RENDERING PROJECT MODAL:',
+                    error
+                );
+
+
+                modalBody.innerHTML = `
+
+                    <div class="project-detail-empty">
+
+                        <i
+                            class="fas fa-exclamation-triangle text-danger"
+                        ></i>
+
+                        <p>
+                            خطا در نمایش اطلاعات پروژه
+                        </p>
+
+                        <small class="text-danger">
+                            ${escapeHtml(error.message)}
+                        </small>
+
+                    </div>
+
+                `;
+
+            }
+
+        }, 0);
+
+    };
+
+
+    // ============================================================
+    // 6. HTML ESCAPE
+    // ============================================================
+
+    function escapeHtml(value) {
+
+        if (value === null || value === undefined) {
+            return '';
         }
-    });
+
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+    }
+
+
+    // ============================================================
+    // 7. PROJECT HOURS CHART
+    // ============================================================
+
+    const projectHoursContainer =
+        document.getElementById('chart-project-hours');
+
+    if (
+        projectHoursContainer &&
+        chartData.project_hours &&
+        chartData.project_hours.length > 0
+    ) {
+
+        const ctx1 =
+            projectHoursContainer.getContext('2d');
+
+        const projectData =
+            chartData.project_hours;
+
+
+        const colors1 =
+            projectData.map(function (_, i) {
+
+                const intensity =
+                    0.3 +
+                    (
+                        0.7 *
+                        (
+                            1 -
+                            i / projectData.length
+                        )
+                    );
+
+                return `rgba(108, 99, 255, ${intensity})`;
+
+            });
+
+
+        new Chart(ctx1, {
+
+            type: 'bar',
+
+            data: {
+
+                labels:
+                    projectData.map(d => d.name),
+
+                datasets: [{
+
+                    label: 'ساعت',
+
+                    data:
+                        projectData.map(
+                            d => Number(d.hours) || 0
+                        ),
+
+                    backgroundColor: colors1,
+
+                    borderColor: '#6C63FF',
+
+                    borderWidth: 1,
+
+                    borderRadius: 6,
+
+                    barPercentage: 0.7
+
+                }]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+
+                onClick: function (event, elements) {
+
+                    if (
+                        elements &&
+                        elements.length > 0
+                    ) {
+
+                        const index =
+                            elements[0].index;
+
+                        const project =
+                            projectData[index];
+
+                        if (project) {
+
+                            showProjectDetail(
+                                project.name
+                            );
+
+                        }
+
+                    }
+
+                },
+
+
+                onHover: function (event, elements) {
+
+                    const canvas =
+                        event.native.target;
+
+                    canvas.style.cursor =
+                        elements &&
+                        elements.length > 0
+                            ? 'pointer'
+                            : 'default';
+
+                },
+
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                const data =
+                                    projectData[
+                                        context.dataIndex
+                                    ];
+
+                                return [
+
+                                    `ساعت: ${data.hours}`,
+
+                                    `درصد: ${data.percentage}%`,
+
+                                    `رتبه: ${data.rank}`,
+
+                                    '👆 کلیک برای مشاهده جزئیات'
+
+                                ];
+
+                            }
+
+                        }
+
+                    },
+
+
+                    datalabels: {
+
+                        anchor: 'end',
+
+                        align: 'end',
+
+                        color: '#6C63FF',
+
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+
+                        formatter: function (value) {
+
+                            return Number(value).toFixed(1);
+
+                        }
+
+                    }
+
+                },
+
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: 'ساعت'
+                        },
+
+                        ticks: {
+
+                            callback: function (value) {
+
+                                return Number(value).toFixed(1);
+
+                            }
+
+                        }
+
+                    },
+
+
+                    x: {
+
+                        ticks: {
+
+                            maxRotation: 45,
+
+                            minRotation: 30
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+            plugins:
+                typeof ChartDataLabels !== 'undefined'
+                    ? [ChartDataLabels]
+                    : []
+
+        });
+
+    }
+
+
+    // ============================================================
+    // 8. USER HOURS CHART
+    // ============================================================
+
+    const userHoursContainer =
+        document.getElementById('chart-user-hours');
+
+    if (
+        userHoursContainer &&
+        chartData.user_hours &&
+        chartData.user_hours.length > 0
+    ) {
+
+        const ctx2 =
+            userHoursContainer.getContext('2d');
+
+        const userData =
+            chartData.user_hours;
+
+
+        const colors2 =
+            userData.map(function (_, i) {
+
+                const intensity =
+                    0.3 +
+                    (
+                        0.7 *
+                        (
+                            1 -
+                            i / userData.length
+                        )
+                    );
+
+                return `rgba(46, 204, 113, ${intensity})`;
+
+            });
+
+
+        new Chart(ctx2, {
+
+            type: 'bar',
+
+            data: {
+
+                labels:
+                    userData.map(d => d.name),
+
+                datasets: [{
+
+                    label: 'ساعت',
+
+                    data:
+                        userData.map(
+                            d => Number(d.hours) || 0
+                        ),
+
+                    backgroundColor: colors2,
+
+                    borderColor: '#2ECC71',
+
+                    borderWidth: 1,
+
+                    borderRadius: 6,
+
+                    barPercentage: 0.7
+
+                }]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                const data =
+                                    userData[
+                                        context.dataIndex
+                                    ];
+
+                                return [
+
+                                    `ساعت: ${data.hours}`,
+
+                                    `درصد: ${data.percentage}%`,
+
+                                    `رتبه: ${data.rank}`
+
+                                ];
+
+                            }
+
+                        }
+
+                    },
+
+
+                    datalabels: {
+
+                        anchor: 'end',
+
+                        align: 'end',
+
+                        color: '#2ECC71',
+
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+
+                        formatter: function (value) {
+
+                            return Number(value).toFixed(1);
+
+                        }
+
+                    }
+
+                },
+
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: 'ساعت'
+                        },
+
+                        ticks: {
+
+                            callback: function (value) {
+
+                                return Number(value).toFixed(1);
+
+                            }
+
+                        }
+
+                    },
+
+
+                    x: {
+
+                        ticks: {
+
+                            maxRotation: 45,
+
+                            minRotation: 30
+
+                        }
+
+                    }
+
+                }
+
+            },
+
+            plugins:
+                typeof ChartDataLabels !== 'undefined'
+                    ? [ChartDataLabels]
+                    : []
+
+        });
+
+    }
+
+
+    // ============================================================
+    // 9. DAILY TREND CHART
+    // ============================================================
+
+    const dailyTrendContainer =
+        document.getElementById('chart-daily-trend');
+
+    if (
+        dailyTrendContainer &&
+        chartData.daily_trend &&
+        chartData.daily_trend.length > 0
+    ) {
+
+        const ctx3 =
+            dailyTrendContainer.getContext('2d');
+
+        const dailyData =
+            chartData.daily_trend;
+
+
+        const dates =
+            dailyData.map(function (d) {
+
+                const date =
+                    new Date(d.date);
+
+                return date.toLocaleDateString('fa-IR');
+
+            });
+
+
+        new Chart(ctx3, {
+
+            type: 'line',
+
+            data: {
+
+                labels: dates,
+
+                datasets: [
+
+                    {
+
+                        label: 'مجموع ساعات',
+
+                        data:
+                            dailyData.map(
+                                d => Number(d.hours) || 0
+                            ),
+
+                        borderColor: '#6C63FF',
+
+                        backgroundColor:
+                            'rgba(108, 99, 255, 0.1)',
+
+                        fill: true,
+
+                        tension: 0.4,
+
+                        pointBackgroundColor: '#6C63FF',
+
+                        pointRadius: 4,
+
+                        pointHoverRadius: 6
+
+                    },
+
+
+                    {
+
+                        label: 'میانگین متحرک 7 روزه',
+
+                        data:
+                            dailyData.map(
+                                d =>
+                                    d.ma7 !== undefined
+                                        ? Number(d.ma7)
+                                        : null
+                            ),
+
+                        borderColor: '#E53E3E',
+
+                        borderDash: [5, 5],
+
+                        fill: false,
+
+                        tension: 0.4,
+
+                        pointRadius: 2,
+
+                        pointBackgroundColor: '#E53E3E',
+
+                        pointBorderColor: '#E53E3E'
+
+                    }
+
+                ]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+
+
+                plugins: {
+
+                    legend: {
+
+                        position: 'top',
+
+                        labels: {
+
+                            usePointStyle: true,
+
+                            padding: 20,
+
+                            font: {
+                                size: 11
+                            }
+
+                        }
+
+                    },
+
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                if (
+                                    context.parsed.y !== null &&
+                                    context.parsed.y !== undefined
+                                ) {
+
+                                    return (
+                                        `${context.dataset.label}: ` +
+                                        `${Number(context.parsed.y).toFixed(1)} ساعت`
+                                    );
+
+                                }
+
+                                return (
+                                    `${context.dataset.label}: داده موجود نیست`
+                                );
+
+                            }
+
+                        }
+
+                    }
+
+                },
+
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        title: {
+                            display: true,
+                            text: 'ساعت'
+                        },
+
+                        ticks: {
+
+                            callback: function (value) {
+
+                                return Number(value).toFixed(1);
+
+                            }
+
+                        }
+
+                    },
+
+
+                    x: {
+
+                        ticks: {
+
+                            maxRotation: 45,
+
+                            minRotation: 30,
+
+                            font: {
+                                size: 9
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
+    }
+
+
+    // ============================================================
+    // 10. DISTRIBUTION / DOUGHNUT CHART
+    // ============================================================
+
+    const distributionContainer =
+        document.getElementById('chart-distribution');
+
+    if (
+        distributionContainer &&
+        chartData.distribution &&
+        chartData.distribution.length > 0
+    ) {
+
+        const ctx4 =
+            distributionContainer.getContext('2d');
+
+        const distData =
+            chartData.distribution;
+
+
+        const pieColors = [
+
+            '#6C63FF',
+            '#A78BFA',
+            '#8B5CF6',
+            '#7C3AED',
+            '#5B21B6',
+            '#4C1D95',
+            '#6D28D9',
+            '#7E22CE',
+            '#A855F7',
+            '#D946EF',
+            '#EC4899',
+            '#F472B6'
+
+        ];
+
+
+        new Chart(ctx4, {
+
+            type: 'doughnut',
+
+            data: {
+
+                labels:
+                    distData.map(d => d.name),
+
+                datasets: [{
+
+                    data:
+                        distData.map(
+                            d => Number(d.hours) || 0
+                        ),
+
+                    backgroundColor:
+                        distData.map(
+                            (_, i) =>
+                                pieColors[
+                                    i % pieColors.length
+                                ]
+                        ),
+
+                    borderWidth: 2,
+
+                    borderColor: '#fff'
+
+                }]
+
+            },
+
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                cutout: '40%',
+
+
+                onClick: function (event, elements) {
+
+                    if (
+                        elements &&
+                        elements.length > 0
+                    ) {
+
+                        const index =
+                            elements[0].index;
+
+                        const project =
+                            distData[index];
+
+                        if (
+                            project &&
+                            project.name !== 'سایر'
+                        ) {
+
+                            showProjectDetail(
+                                project.name
+                            );
+
+                        }
+
+                    }
+
+                },
+
+
+                onHover: function (event, elements) {
+
+                    const canvas =
+                        event.native.target;
+
+                    if (
+                        elements &&
+                        elements.length > 0
+                    ) {
+
+                        const project =
+                            distData[
+                                elements[0].index
+                            ];
+
+                        canvas.style.cursor =
+                            project &&
+                            project.name !== 'سایر'
+                                ? 'pointer'
+                                : 'default';
+
+                    }
+                    else {
+
+                        canvas.style.cursor =
+                            'default';
+
+                    }
+
+                },
+
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    },
+
+
+                    tooltip: {
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                const data =
+                                    distData[
+                                        context.dataIndex
+                                    ];
+
+                                return [
+
+                                    `ساعت: ${Number(data.hours).toFixed(1)}`,
+
+                                    `درصد: ${data.percentage}%`,
+
+                                    data.name !== 'سایر'
+                                        ? '👆 کلیک برای مشاهده جزئیات'
+                                        : ''
+
+                                ];
+
+                            }
+
+                        }
+
+                    },
+
+
+                    datalabels: {
+
+                        color: '#fff',
+
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        },
+
+                        formatter:
+                            function (value, context) {
+
+                                const percentage =
+                                    distData[
+                                        context.dataIndex
+                                    ].percentage;
+
+                                if (
+                                    Number(percentage) > 5
+                                ) {
+
+                                    return `${percentage}%`;
+
+                                }
+
+                                return '';
+
+                            }
+
+                    }
+
+                }
+
+            },
+
+            plugins:
+                typeof ChartDataLabels !== 'undefined'
+                    ? [ChartDataLabels]
+                    : []
+
+        });
+
+
+        // ========================================================
+        // PIE LEGEND
+        // ========================================================
+
+        const legendContainer =
+            document.getElementById('pie-legend');
+
+
+        if (legendContainer) {
+
+            legendContainer.innerHTML = '';
+
+
+            distData.forEach(function (d, i) {
+
+                const item =
+                    document.createElement('div');
+
+                item.className =
+                    'pie-legend-item';
+
+
+                item.style.cursor =
+                    d.name !== 'سایر'
+                        ? 'pointer'
+                        : 'default';
+
+
+                item.onclick = function () {
+
+                    if (
+                        d.name !== 'سایر'
+                    ) {
+
+                        showProjectDetail(
+                            d.name
+                        );
+
+                    }
+
+                };
+
+
+                item.innerHTML = `
+
+                    <span
+                        class="pie-legend-color"
+                        style="
+                            background:
+                            ${pieColors[
+                                i % pieColors.length
+                            ]}
+                        "
+                    ></span>
+
+                    <span>
+                        ${escapeHtml(d.name)}
+                    </span>
+
+                    <span
+                        style="
+                            font-weight: 700;
+                            color: #6C63FF;
+                        "
+                    >
+                        ${d.percentage}%
+                    </span>
+
+                `;
+
+
+                legendContainer.appendChild(item);
+
+            });
+
+        }
+
+    }
+
+
+    // ============================================================
+    // 11. TOP 3 PROJECTS PER USER
+    // ============================================================
+
+    if (
+        chartData.user_top_projects &&
+        chartData.user_top_projects.length > 0
+    ) {
+
+        const topUsers =
+            chartData.user_top_projects.slice(0, 6);
+
+
+        topUsers.forEach(function (userData, index) {
+
+            const containerId =
+                `user-top-projects-${index}`;
+
+
+            const container =
+                document.getElementById(containerId);
+
+
+            if (
+                container &&
+                userData.projects &&
+                userData.projects.length > 0
+            ) {
+
+                const ctx =
+                    container.getContext('2d');
+
+
+                const projectNames =
+                    userData.projects.map(
+                        p => p.name
+                    );
+
+
+                const projectHours =
+                    userData.projects.map(
+                        p => Number(p.hours) || 0
+                    );
+
+
+                const colors = [
+
+                    'rgba(108, 99, 255, 0.8)',
+
+                    'rgba(46, 204, 113, 0.8)',
+
+                    'rgba(231, 76, 60, 0.8)'
+
+                ];
+
+
+                new Chart(ctx, {
+
+                    type: 'bar',
+
+                    data: {
+
+                        labels: projectNames,
+
+                        datasets: [{
+
+                            data: projectHours,
+
+                            backgroundColor:
+                                colors.slice(
+                                    0,
+                                    projectHours.length
+                                ),
+
+                            borderColor:
+                                colors
+                                    .slice(
+                                        0,
+                                        projectHours.length
+                                    )
+                                    .map(
+                                        c =>
+                                            c.replace(
+                                                '0.8',
+                                                '1'
+                                            )
+                                    ),
+
+                            borderWidth: 1,
+
+                            borderRadius: 4,
+
+                            barPercentage: 0.6
+
+                        }]
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            },
+
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label: function (context) {
+
+                                        return (
+                                            `${Number(
+                                                context.parsed.y
+                                            ).toFixed(1)} ساعت`
+                                        );
+
+                                    }
+
+                                }
+
+                            },
+
+
+                            datalabels: {
+
+                                anchor: 'end',
+
+                                align: 'end',
+
+                                color: '#6C63FF',
+
+                                font: {
+                                    weight: 'bold',
+                                    size: 9
+                                },
+
+                                formatter:
+                                    function (value) {
+
+                                        return Number(
+                                            value
+                                        ).toFixed(1);
+
+                                    }
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                grid: {
+                                    display: false
+                                },
+
+                                ticks: {
+
+                                    font: {
+                                        size: 8
+                                    },
+
+                                    callback:
+                                        function (value) {
+
+                                            return Number(
+                                                value
+                                            ).toFixed(1);
+
+                                        }
+
+                                }
+
+                            },
+
+
+                            x: {
+
+                                grid: {
+                                    display: false
+                                },
+
+                                ticks: {
+
+                                    font: {
+                                        size: 8
+                                    },
+
+                                    maxRotation: 20,
+
+                                    minRotation: 10
+
+                                }
+
+                            }
+
+                        },
+
+
+                        animation: {
+                            duration: 500
+                        }
+
+                    },
+
+                    plugins:
+                        typeof ChartDataLabels !== 'undefined'
+                            ? [ChartDataLabels]
+                            : []
+
+                });
+
+            }
+
+        });
+
+    }
+
+
+    // ============================================================
+    // 12. CLEANUP MODAL BACKDROP
+    // ============================================================
+    // This protects against leftover Bootstrap backdrops.
+    // ============================================================
+
+    const modalElement =
+        document.getElementById('projectDetailModal');
+
+
+    if (modalElement) {
+
+        modalElement.addEventListener(
+            'hidden.bs.modal',
+            function () {
+
+                // Remove leftover backdrop(s)
+                document
+                    .querySelectorAll('.modal-backdrop')
+                    .forEach(function (backdrop) {
+
+                        backdrop.remove();
+
+                    });
+
+
+                // Restore body state
+                document.body.classList.remove(
+                    'modal-open'
+                );
+
+                document.body.style.removeProperty(
+                    'padding-right'
+                );
+
+                document.body.style.removeProperty(
+                    'overflow'
+                );
+
+            }
+        );
+
+    }
+
+
+});
 </script>
+
+
+
+
+
+
 {% endblock %}

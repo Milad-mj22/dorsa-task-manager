@@ -391,3 +391,11 @@ GOOGLE_SHEET_ID = '1GcJeQljGDe4eN5J1uYRHTtHZ-FttBXb7S_zU6kpywoQ'  # از URL ش�
 
 # مسیر credentials
 GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, 'credentials', 'google_sheets_credentials.json')
+
+
+
+# اگر True باشد، از فایل محلی استفاده می‌کند
+USE_LOCAL_EXCEL_FOR_DEBUG = False  # این flag را اضافه کنید
+
+# مسیر فایل اکسل محلی (برای حالت Debug)
+LOCAL_EXCEL_PATH = os.path.join(BASE_DIR, 'cache', 'sample.xlsx')
