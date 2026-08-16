@@ -1059,6 +1059,78 @@ def normalize_persian_text(value):
 
     return s
 
+
+
+def prepare_user_task_details(df):
+    """Prepare detailed task information for each user-project combination"""
+    user_task_details = {}
+    
+    if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
+        
+        # ========== پر کردن مقادیر خالی ==========
+        df['project'] = df['project'].fillna('بدون پروژه').astype(str).str.strip()
+        df['full_name'] = df['full_name'].fillna('ناشناس').astype(str).str.strip()
+        
+        # فقط WBS را در نظر بگیریم (اگر وجود دارد)
+        if 'wbs' in df.columns:
+            df['wbs'] = df['wbs'].fillna('بدون WBS').astype(str).str.strip()
+            df['wbs'] = df['wbs'].replace('', 'بدون WBS')
+            
+            # گروه‌بندی بر اساس پروژه، کاربر و WBS
+            task_data = df.groupby(['project', 'full_name', 'wbs'])['hours'].sum().reset_index()
+            
+            print(f"[DEBUG] After grouping by WBS - shape: {task_data.shape}")
+            print(f"[DEBUG] Unique projects: {task_data['project'].nunique()}")
+            
+            for _, row in task_data.iterrows():
+                project = row['project']
+                user = row['full_name']
+                key = f"{project}||{user}"
+                
+                if key not in user_task_details:
+                    user_task_details[key] = []
+                
+                task_info = {
+                    'hours': round(row['hours'], 2),
+                    'wbs': row['wbs'],
+                    'description': 'بدون توضیح',
+                    'result': 'بدون نتیجه',
+                    'obstacle': 'بدون مانع'
+                }
+                
+                # اضافه کردن توضیحات اگر موجود باشد
+                if 'description' in df.columns:
+                    desc = df[(df['project'] == project) & 
+                             (df['full_name'] == user) & 
+                             (df['wbs'] == row['wbs'])]['description'].iloc[0] if not df[(df['project'] == project) & (df['full_name'] == user) & (df['wbs'] == row['wbs'])].empty else 'بدون توضیح'
+                    if pd.notna(desc) and str(desc).strip():
+                        task_info['description'] = str(desc).strip()
+                
+                user_task_details[key].append(task_info)
+        else:
+            # اگر WBS وجود ندارد، همه رکوردها را به عنوان یک تسک در نظر بگیر
+            print("[WARNING] WBS column not found, grouping by project and user only")
+            task_data = df.groupby(['project', 'full_name'])['hours'].sum().reset_index()
+            
+            for _, row in task_data.iterrows():
+                project = row['project']
+                user = row['full_name']
+                key = f"{project}||{user}"
+                
+                if key not in user_task_details:
+                    user_task_details[key] = []
+                
+                task_info = {
+                    'hours': round(row['hours'], 2),
+                    'wbs': 'بدون WBS',
+                    'description': 'بدون توضیح',
+                    'result': 'بدون نتیجه',
+                    'obstacle': 'بدون مانع'
+                }
+                user_task_details[key].append(task_info)
+    
+    print(f"[DEBUG] Final user_task_details keys: {len(user_task_details)}")
+    return user_task_details
 from django.conf import settings
 @login_required
 def google_sheets_dashboard(request):
@@ -1357,6 +1429,9 @@ def google_sheets_dashboard(request):
         else:
             date_range = {'start': 'نامشخص', 'end': 'نامشخص'}
 
+
+        user_task_details = prepare_user_task_details(df)
+
         # ========== آماده‌سازی context ==========
         context = {
             'stats': {
@@ -1383,6 +1458,7 @@ def google_sheets_dashboard(request):
                 'distribution': chart_distribution_data,
                 'user_top_projects': user_top_projects_data,
                 'project_user_details': project_user_details,  # داده جدید برای مودال
+                'user_task_details': user_task_details,  # Add this new data
             },
             'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
             'total_data_rows': len(df),

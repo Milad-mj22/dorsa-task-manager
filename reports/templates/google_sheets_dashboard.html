@@ -770,6 +770,107 @@
     height: 3rem;
 }
 
+
+    .user-clickable {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        padding: 0.5rem;
+        margin-bottom: 0.25rem;
+        border: 1px solid transparent;
+    }
+    
+    .user-clickable:hover {
+        background: #F8F9FE;
+        border-color: #6C63FF;
+        transform: translateX(5px);
+    }
+    
+    .user-clickable .expand-icon {
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+    
+    .user-clickable.active .expand-icon {
+        transform: rotate(180deg);
+    }
+    
+    .user-task-details {
+        display: none;
+        padding: 0.75rem 1rem;
+        margin-top: 0.5rem;
+        background: #FAFBFF;
+        border-radius: 8px;
+        border: 1px solid #E8ECF4;
+    }
+    
+    .user-task-details.show {
+        display: block;
+        animation: fadeInUp 0.3s ease;
+    }
+    
+    .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #F1F3F9;
+    }
+    
+    .task-item:last-child {
+        border-bottom: none;
+    }
+    
+    .task-info {
+        flex: 1;
+        margin-left: 0.5rem;
+    }
+    
+    .task-wbs {
+        font-size: 0.7rem;
+        color: #6C7A93;
+        background: #E8ECF4;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    
+    .task-description {
+        font-size: 0.9rem;
+        color: #2D3748;
+        display: block;
+        margin-top: 0.2rem;
+    }
+    
+    .task-hours-badge {
+        background: linear-gradient(135deg, #6C63FF, #8B7BF7);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .task-result {
+        font-size: 0.75rem;
+        color: #48BB78;
+        margin-top: 0.2rem;
+    }
+    
+    .task-obstacle {
+        font-size: 0.75rem;
+        color: #E53E3E;
+        margin-top: 0.2rem;
+    }
+    
+    .user-task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+
 </style>
 {% endblock %}
 
@@ -1131,53 +1232,6 @@
 
 
 
-<!-- MODAL -->
-<div class="modal fade"
-     id="projectDetailModal"
-     tabindex="-1"
-     aria-labelledby="projectModalTitle"
-     aria-hidden="true">
-
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="projectModalTitle">
-                    <i class="fas fa-project-diagram text-primary"></i>
-                    جزئیات پروژه
-                </h5>
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                </button>
-            </div>
-
-            <div class="modal-body" id="projectModalBody">
-                <div class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">
-                            در حال بارگذاری...
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    بستن
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-</div>
-
-
 <!-- ========== داده‌ها به صورت JSON (با json_script) ========== -->
 {{ chart_data|json_script:"chart-data" }}
 {{ rankings|json_script:"rankings-data" }}
@@ -1187,6 +1241,34 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
 <script>
+
+
+// ============================================================
+// TOGGLE USER TASKS FUNCTION - MUST BE GLOBAL
+// ============================================================
+
+// Define this OUTSIDE the DOMContentLoaded event listener
+window.toggleUserTasks = function(element) {
+    // Close other open task details
+    document.querySelectorAll('.user-clickable.active').forEach(function(el) {
+        if (el !== element) {
+            el.classList.remove('active');
+            const details = el.querySelector('.user-task-details');
+            if (details) {
+                details.classList.remove('show');
+            }
+        }
+    });
+    
+    // Toggle current
+    element.classList.toggle('active');
+    const details = element.querySelector('.user-task-details');
+    if (details) {
+        details.classList.toggle('show');
+    }
+};
+
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // ============================================================
@@ -1351,419 +1433,267 @@ document.addEventListener('DOMContentLoaded', function () {
     // ============================================================
     // 5. SHOW PROJECT MODAL
     // ============================================================
+// ============================================================
+// 5. SHOW PROJECT MODAL - UPDATED WITH TASK DETAILS
+// ============================================================
 
-    window.showProjectDetail = function (projectName) {
+window.showProjectDetail = function (projectName) {
 
-        console.log('========================================');
-        console.log('OPEN PROJECT MODAL');
-        console.log('Project:', projectName);
-        console.log('========================================');
+    console.log('========================================');
+    console.log('OPEN PROJECT MODAL');
+    console.log('Project:', projectName);
+    console.log('========================================');
 
+    const modalElement = document.getElementById('projectDetailModal');
+    const modalTitle = document.getElementById('projectModalTitle');
+    const modalBody = document.getElementById('projectModalBody');
 
-        const modalElement =
-            document.getElementById('projectDetailModal');
+    // Validate modal elements
+    if (!modalElement) {
+        console.error('projectDetailModal element was not found.');
+        return;
+    }
+    if (!modalTitle) {
+        console.error('projectModalTitle element was not found.');
+        return;
+    }
+    if (!modalBody) {
+        console.error('projectModalBody element was not found.');
+        return;
+    }
 
-        const modalTitle =
-            document.getElementById('projectModalTitle');
+    // Move modal directly under BODY
+    if (modalElement.parentElement !== document.body) {
+        document.body.appendChild(modalElement);
+        console.log('Modal moved to document.body');
+    }
 
-        const modalBody =
-            document.getElementById('projectModalBody');
+    // Bootstrap modal instance
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement, {
+        backdrop: true,
+        keyboard: true,
+        focus: true
+    });
 
+    // Set title
+    modalTitle.innerHTML = `
+        <i class="fas fa-project-diagram text-primary"></i>
+        جزئیات پروژه: ${escapeHtml(projectName)}
+    `;
 
-        // --------------------------------------------------------
-        // Validate modal elements
-        // --------------------------------------------------------
-
-        if (!modalElement) {
-            console.error(
-                'projectDetailModal element was not found.'
-            );
-            return;
-        }
-
-        if (!modalTitle) {
-            console.error(
-                'projectModalTitle element was not found.'
-            );
-            return;
-        }
-
-        if (!modalBody) {
-            console.error(
-                'projectModalBody element was not found.'
-            );
-            return;
-        }
-
-
-        // --------------------------------------------------------
-        // IMPORTANT:
-        // Move modal directly under BODY
-        // This fixes backdrop / z-index problems
-        // --------------------------------------------------------
-
-        if (modalElement.parentElement !== document.body) {
-
-            document.body.appendChild(modalElement);
-
-            console.log(
-                'Modal moved to document.body'
-            );
-        }
-
-
-        // --------------------------------------------------------
-        // Bootstrap modal instance
-        // --------------------------------------------------------
-
-        const modal =
-            bootstrap.Modal.getOrCreateInstance(
-                modalElement,
-                {
-                    backdrop: true,
-                    keyboard: true,
-                    focus: true
-                }
-            );
-
-
-        // --------------------------------------------------------
-        // Set title
-        // --------------------------------------------------------
-
-        modalTitle.innerHTML = `
-            <i class="fas fa-project-diagram text-primary"></i>
-            جزئیات پروژه: ${escapeHtml(projectName)}
-        `;
-
-
-        // --------------------------------------------------------
-        // Show loading
-        // --------------------------------------------------------
-
-        modalBody.innerHTML = `
-            <div class="modal-loading">
-
-                <div
-                    class="spinner-border text-primary"
-                    role="status"
-                >
-                    <span class="visually-hidden">
-                        در حال بارگذاری...
-                    </span>
-                </div>
-
-                <p class="mt-2 text-muted">
-                    در حال دریافت اطلاعات...
-                </p>
-
+    // Show loading
+    modalBody.innerHTML = `
+        <div class="modal-loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">در حال بارگذاری...</span>
             </div>
-        `;
-
-
-        // --------------------------------------------------------
-        // Open modal
-        // --------------------------------------------------------
-
-        modal.show();
-
-
-        // ========================================================
-        // IMPORTANT:
-        // Get data AFTER modal.show()
-        // ========================================================
-
-        setTimeout(function () {
-
-            try {
-
-                const projectData =
-                    findProjectData(projectName);
-
-
-                // ------------------------------------------------
-                // Project not found
-                // ------------------------------------------------
-
-                if (!projectData) {
-
-                    modalBody.innerHTML = `
-                        <div class="project-detail-empty">
-
-                            <i class="fas fa-exclamation-circle"></i>
-
-                            <p>
-                                اطلاعات این پروژه پیدا نشد.
-                            </p>
-
-                            <small class="text-muted">
-                                پروژه:
-                                ${escapeHtml(projectName)}
-                            </small>
-
-                        </div>
-                    `;
-
-                    return;
-                }
-
-
-                console.log(
-                    'FOUND PROJECT DATA:',
-                    projectData
-                );
-
-
-                // ------------------------------------------------
-                // Get users
-                // ------------------------------------------------
-
-                let users =
-                    Array.isArray(projectData.users)
-                        ? projectData.users
-                        : [];
-
-
-                // ------------------------------------------------
-                // No users
-                // ------------------------------------------------
-
-                if (users.length === 0) {
-
-                    modalBody.innerHTML = `
-                        <div class="project-detail-empty">
-
-                            <i class="fas fa-users"></i>
-
-                            <p>
-                                هیچ کاربری برای این پروژه یافت نشد.
-                            </p>
-
-                            <small class="text-muted">
-                                پروژه:
-                                ${escapeHtml(projectName)}
-                            </small>
-
-                        </div>
-                    `;
-
-                    return;
-                }
-
-
-                // ------------------------------------------------
-                // Convert numbers
-                // ------------------------------------------------
-
-                users = users.map(function (user) {
-
-                    return {
-                        ...user,
-
-                        name:
-                            user.name !== undefined &&
-                            user.name !== null
-                                ? String(user.name)
-                                : 'نامشخص',
-
-                        hours:
-                            Number(user.hours) || 0
-                    };
-
-                });
-
-
-                // ------------------------------------------------
-                // Sort users by hours DESC
-                // ------------------------------------------------
-
-                users.sort(function (a, b) {
-
-                    return b.hours - a.hours;
-
-                });
-
-
-                // ------------------------------------------------
-                // Total hours
-                // ------------------------------------------------
-
-                let totalHours =
-                    Number(projectData.total_hours);
-
-                if (!Number.isFinite(totalHours)) {
-
-                    totalHours =
-                        users.reduce(
-                            function (sum, user) {
-                                return sum + user.hours;
-                            },
-                            0
-                        );
-                }
-
-
-                // =================================================
-                // BUILD USERS HTML
-                // =================================================
-
-                let usersHTML = '';
-
-
-                users.forEach(function (user, index) {
-
-                    let rankClass = '';
-
-                    if (index === 0) {
-                        rankClass = 'detail-rank-1';
-                    }
-                    else if (index === 1) {
-                        rankClass = 'detail-rank-2';
-                    }
-                    else if (index === 2) {
-                        rankClass = 'detail-rank-3';
-                    }
-
-
-                    const percentage =
-                        totalHours > 0
-                            ? (
-                                (user.hours / totalHours) * 100
-                            ).toFixed(1)
-                            : '0.0';
-
-
-                    usersHTML += `
-
-                        <div class="project-detail-item">
-
-                            <div class="project-detail-user">
-
-                                <i class="fas fa-user-circle"></i>
-
-                                <span class="user-name">
-                                    ${escapeHtml(user.name)}
-                                </span>
-
-                                <span
-                                    class="detail-rank-badge ${rankClass}"
-                                >
-                                    #${index + 1}
-                                </span>
-
-                            </div>
-
-
-                            <div
-                                class="d-flex align-items-center gap-3"
-                            >
-
-                                <span
-                                    class="project-detail-hours"
-                                >
-                                    ${user.hours.toFixed(1)}
-                                    ساعت
-                                </span>
-
-                                <span
-                                    class="badge bg-light text-dark"
-                                >
-                                    ${percentage}%
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    `;
-
-                });
-
-
-                // =================================================
-                // FINAL MODAL CONTENT
-                // =================================================
-
+            <p class="mt-2 text-muted">در حال دریافت اطلاعات...</p>
+        </div>
+    `;
+
+    // Open modal
+    modal.show();
+
+    // Get data AFTER modal.show()
+    setTimeout(function () {
+        try {
+            const projectData = findProjectData(projectName);
+
+            // Project not found
+            if (!projectData) {
                 modalBody.innerHTML = `
-
-                    <div class="mb-3">
-
-                        <div class="project-detail-total">
-
-                            <span class="label">
-                                مجموع ساعات پروژه
-                            </span>
-
-                            <span class="value">
-                                ${totalHours.toFixed(1)}
-                                ساعت
-                            </span>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="mt-3">
-
-                        <p class="text-muted mb-2">
-
-                            <i class="fas fa-users"></i>
-
-                            کاربران مشارکت‌کننده
-
-                            (${users.length} نفر)
-
-                        </p>
-
-
-                        ${usersHTML}
-
-                    </div>
-
-                `;
-
-
-                console.log(
-                    'Project modal rendered successfully.'
-                );
-
-
-            }
-            catch (error) {
-
-                console.error(
-                    'ERROR RENDERING PROJECT MODAL:',
-                    error
-                );
-
-
-                modalBody.innerHTML = `
-
                     <div class="project-detail-empty">
-
-                        <i
-                            class="fas fa-exclamation-triangle text-danger"
-                        ></i>
-
-                        <p>
-                            خطا در نمایش اطلاعات پروژه
-                        </p>
-
-                        <small class="text-danger">
-                            ${escapeHtml(error.message)}
-                        </small>
-
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>اطلاعات این پروژه پیدا نشد.</p>
+                        <small class="text-muted">پروژه: ${escapeHtml(projectName)}</small>
                     </div>
-
                 `;
-
+                return;
             }
 
-        }, 0);
+            console.log('FOUND PROJECT DATA:', projectData);
 
-    };
+            // Get users
+            let users = Array.isArray(projectData.users) ? projectData.users : [];
 
+            // No users
+            if (users.length === 0) {
+                modalBody.innerHTML = `
+                    <div class="project-detail-empty">
+                        <i class="fas fa-users"></i>
+                        <p>هیچ کاربری برای این پروژه یافت نشد.</p>
+                        <small class="text-muted">پروژه: ${escapeHtml(projectName)}</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Convert numbers
+            users = users.map(function (user) {
+                return {
+                    ...user,
+                    name: user.name !== undefined && user.name !== null ? String(user.name) : 'نامشخص',
+                    hours: Number(user.hours) || 0
+                };
+            });
+
+            // Sort users by hours DESC
+            users.sort(function (a, b) {
+                return b.hours - a.hours;
+            });
+
+            // Total hours
+            let totalHours = Number(projectData.total_hours);
+            if (!Number.isFinite(totalHours)) {
+                totalHours = users.reduce(function (sum, user) {
+                    return sum + user.hours;
+                }, 0);
+            }
+
+            // Get user task details
+            const userTaskDetails = chartData.user_task_details || {};
+
+            // =================================================
+            // BUILD USERS HTML WITH TASK DETAILS
+            // =================================================
+
+            let usersHTML = '';
+
+            users.forEach(function (user, index) {
+                let rankClass = '';
+                if (index === 0) rankClass = 'detail-rank-1';
+                else if (index === 1) rankClass = 'detail-rank-2';
+                else if (index === 2) rankClass = 'detail-rank-3';
+
+                const percentage = totalHours > 0 
+                    ? ((user.hours / totalHours) * 100).toFixed(1) 
+                    : '0.0';
+
+                // Get tasks for this user-project combination
+                const key = `${projectName}||${user.name}`;
+                const userTasks = userTaskDetails[key] || [];
+                const hasTasks = userTasks.length > 0;
+
+                // Build tasks HTML
+                let tasksHTML = '';
+                if (hasTasks) {
+                    userTasks.forEach(function(task) {
+                        tasksHTML += `
+                            <div class="task-item">
+                                <div class="task-info">
+                                    ${task.wbs ? `<span class="task-wbs">${escapeHtml(task.wbs)}</span>` : ''}
+                                    ${task.description ? `<span class="task-description">${escapeHtml(task.description)}</span>` : ''}
+                                    ${task.result ? `<div class="task-result">✅ ${escapeHtml(task.result)}</div>` : ''}
+                                    ${task.obstacle ? `<div class="task-obstacle">⚠️ ${escapeHtml(task.obstacle)}</div>` : ''}
+                                </div>
+                                <span class="task-hours-badge">${task.hours.toFixed(1)} ساعت</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    tasksHTML = `
+                        <div class="text-muted text-center py-2" style="font-size:0.85rem;">
+                            <i class="fas fa-info-circle"></i>
+                            بدون تسک ثبت شده
+                        </div>
+                    `;
+                }
+
+                usersHTML += `
+                    <div class="user-clickable" onclick="toggleUserTasks(this)" data-user="${escapeHtml(user.name)}">
+                        <div class="project-detail-item">
+                            <div class="project-detail-user">
+                                <i class="fas fa-user-circle"></i>
+                                <span class="user-name">${escapeHtml(user.name)}</span>
+                                <span class="detail-rank-badge ${rankClass}">#${index + 1}</span>
+                                <span class="badge-soft-primary" style="font-size:0.65rem;">
+                                    <i class="fas fa-tasks"></i>
+                                    ${userTasks.length} تسک
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="project-detail-hours">${user.hours.toFixed(1)} ساعت</span>
+                                <span class="badge bg-light text-dark">${percentage}%</span>
+                                <span class="expand-icon" style="color:#6C63FF;font-size:0.8rem;">
+                                    <i class="fas fa-chevron-down"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="user-task-details">
+                            ${tasksHTML}
+                            ${hasTasks ? `
+                                <div class="text-muted text-center mt-2" style="font-size:0.7rem;">
+                                    مجموع: ${userTasks.reduce((sum, t) => sum + t.hours, 0).toFixed(1)} ساعت
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // =================================================
+            // FINAL MODAL CONTENT
+            // =================================================
+
+            modalBody.innerHTML = `
+                <div class="mb-3">
+                    <div class="project-detail-total">
+                        <span class="label">مجموع ساعات پروژه</span>
+                        <span class="value">${totalHours.toFixed(1)} ساعت</span>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size:0.75rem;">
+                        <i class="fas fa-info-circle"></i>
+                        برای مشاهده جزئیات تسک‌ها روی هر کاربر کلیک کنید
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <p class="text-muted mb-2">
+                        <i class="fas fa-users"></i>
+                        کاربران مشارکت‌کننده (${users.length} نفر)
+                    </p>
+                    ${usersHTML}
+                </div>
+            `;
+
+            console.log('Project modal rendered successfully with task details.');
+
+        } catch (error) {
+            console.error('ERROR RENDERING PROJECT MODAL:', error);
+
+            modalBody.innerHTML = `
+                <div class="project-detail-empty">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    <p>خطا در نمایش اطلاعات پروژه</p>
+                    <small class="text-danger">${escapeHtml(error.message)}</small>
+                </div>
+            `;
+        }
+    }, 0);
+};
+
+// ============================================================
+// TOGGLE USER TASKS FUNCTION
+// ============================================================
+
+function toggleUserTasks(element) {
+    // Close other open task details
+    document.querySelectorAll('.user-clickable.active').forEach(function(el) {
+        if (el !== element) {
+            el.classList.remove('active');
+            const details = el.querySelector('.user-task-details');
+            if (details) {
+                details.classList.remove('show');
+            }
+        }
+    });
+    
+    // Toggle current
+    element.classList.toggle('active');
+    const details = element.querySelector('.user-task-details');
+    if (details) {
+        details.classList.toggle('show');
+    }
+}
 
     // ============================================================
     // 6. HTML ESCAPE
