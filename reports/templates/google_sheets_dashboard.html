@@ -901,6 +901,161 @@
             {{ error }}
         </div>
     {% else %}
+
+
+
+    {% if is_filtered_empty %}
+        <div class="alert alert-warning mt-4" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            هیچ داده‌ای در بازه تاریخی انتخاب شده یافت نشد.
+            <a href="?" class="alert-link">برای مشاهده تمام داده‌ها کلیک کنید</a>
+        </div>
+    {% endif %}
+
+
+
+    <!-- ========== Date Filter Section ========== -->
+<!-- ========== Date Filter Section ========== -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="dashboard-card" style="background: linear-gradient(135deg, #F8F9FE, #EEF0F8);">
+            <h5>
+                <i class="fas fa-filter text-primary"></i>
+                فیلتر تاریخ
+                <span class="badge-soft-primary me-auto">
+                    <i class="fas fa-calendar-alt"></i>
+                    بازه زمانی
+                </span>
+                {% if has_filter %}
+                    <span class="badge-soft-primary" style="background: rgba(46, 204, 113, 0.15); color: #2ECC71;">
+                        <i class="fas fa-check-circle"></i>
+                        فیلتر فعال
+                    </span>
+                {% endif %}
+            </h5>
+            
+            <!-- ========== دکمه‌های سریع ========== -->
+            <div class="row g-2 mb-3">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn quick-filter-btn" data-days="0" style="background: rgba(108, 99, 255, 0.08); color: #6C63FF; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid rgba(108, 99, 255, 0.15); transition: all 0.3s ease;">
+                            <i class="fas fa-sun"></i>
+                            امروز
+                        </button>
+                        <button type="button" class="btn quick-filter-btn" data-days="1" style="background: rgba(108, 99, 255, 0.08); color: #6C63FF; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid rgba(108, 99, 255, 0.15); transition: all 0.3s ease;">
+                            <i class="fas fa-calendar-day"></i>
+                            دیروز
+                        </button>
+                        <button type="button" class="btn quick-filter-btn" data-days="7" style="background: rgba(108, 99, 255, 0.08); color: #6C63FF; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid rgba(108, 99, 255, 0.15); transition: all 0.3s ease;">
+                            <i class="fas fa-calendar-week"></i>
+                            ۷ روز گذشته
+                        </button>
+                        <button type="button" class="btn quick-filter-btn" data-days="30" style="background: rgba(108, 99, 255, 0.08); color: #6C63FF; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid rgba(108, 99, 255, 0.15); transition: all 0.3s ease;">
+                            <i class="fas fa-calendar-alt"></i>
+                            ماه گذشته
+                        </button>
+                        <button type="button" class="btn quick-filter-btn" data-days="month-start" style="background: rgba(108, 99, 255, 0.08); color: #6C63FF; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid rgba(108, 99, 255, 0.15); transition: all 0.3s ease;">
+                            <i class="fas fa-calendar-check"></i>
+                            از ابتدای ماه
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="GET" action="" class="row g-3 align-items-end" id="dateFilterForm">
+                <div class="col-12 col-md-4">
+                    <label for="start_date" class="form-label fw-bold" style="font-size: 0.9rem; color: #2D3748;">
+                        <i class="fas fa-play text-primary"></i>
+                        تاریخ شروع
+                    </label>
+                    <input type="date" 
+                        class="form-control form-control-lg" 
+                        id="start_date" 
+                        name="start_date" 
+                        value="{{ filter_info.start_date|default:'' }}"
+                        style="border-radius: 12px; border: 2px solid #E2E8F0; transition: all 0.3s ease;"
+                        onfocus="this.style.borderColor='#6C63FF'; this.style.boxShadow='0 0 0 3px rgba(108,99,255,0.1)'"
+                        onblur="this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">
+                </div>
+                
+                <div class="col-12 col-md-4">
+                    <label for="end_date" class="form-label fw-bold" style="font-size: 0.9rem; color: #2D3748;">
+                        <i class="fas fa-stop text-danger"></i>
+                        تاریخ پایان
+                    </label>
+                    <input type="date" 
+                        class="form-control form-control-lg" 
+                        id="end_date" 
+                        name="end_date" 
+                        value="{{ filter_info.end_date|default:'' }}"
+                        style="border-radius: 12px; border: 2px solid #E2E8F0; transition: all 0.3s ease;"
+                        onfocus="this.style.borderColor='#6C63FF'; this.style.boxShadow='0 0 0 3px rgba(108,99,255,0.1)'"
+                        onblur="this.style.borderColor='#E2E8F0'; this.style.boxShadow='none'">
+                </div>
+                
+                <div class="col-12 col-md-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="refresh-btn" style="flex:1;">
+                            <i class="fas fa-search"></i>
+                            اعمال فیلتر
+                        </button>
+                        {% if has_filter %}
+                            <a href="?" class="refresh-btn" style="background: linear-gradient(135deg, #E53E3E, #C53030); box-shadow: 0 4px 12px rgba(229, 62, 62, 0.25); flex:0.5;">
+                                <i class="fas fa-times"></i>
+                                حذف
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+            
+            {% if has_filter %}
+                <div class="mt-3 p-3" style="background: white; border-radius: 12px; border-right: 4px solid #6C63FF; animation: fadeInUp 0.4s ease;">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <span class="badge-soft-primary" style="font-size: 0.9rem; padding: 0.4rem 1rem;">
+                            <i class="fas fa-calendar-check"></i>
+                            بازه انتخاب شده: 
+                            <strong>{{ filter_info.start_date|default:'نامشخص' }}</strong>
+                            تا
+                            <strong>{{ filter_info.end_date|default:'نامشخص' }}</strong>
+                        </span>
+                        <span class="badge-soft-primary" style="font-size: 0.9rem; padding: 0.4rem 1rem; background: rgba(46, 204, 113, 0.1); color: #2ECC71;">
+                            <i class="fas fa-database"></i>
+                            تعداد رکوردها: <strong>{{ total_data_rows }}</strong>
+                            {% if original_total %}
+                                <span style="color: #A0AEC0; font-weight: 400;">(از {{ original_total }} رکورد)</span>
+                            {% endif %}
+                        </span>
+                        <span class="badge-soft-primary" style="font-size: 0.9rem; padding: 0.4rem 1rem; background: rgba(108, 99, 255, 0.05);">
+                            <i class="fas fa-clock"></i>
+                            مجموع ساعات: <strong>{{ stats.total_hours|floatformat:1 }}</strong>
+                        </span>
+                    </div>
+                </div>
+            {% else %}
+                <div class="mt-3 p-3" style="background: white; border-radius: 12px; border-right: 4px solid #A0AEC0;">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <span style="color: #6C7A93; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i>
+                            تمام داده‌ها نمایش داده می‌شوند ({{ total_data_rows }} رکورد)
+                        </span>
+                        <span style="color: #6C7A93; font-size: 0.9rem;">
+                            <i class="fas fa-clock"></i>
+                            مجموع ساعات: <strong>{{ stats.total_hours|floatformat:1 }}</strong>
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
     
     <!-- ========== Statistics Cards ========== -->
     <div class="row g-4 mb-4">
@@ -2924,6 +3079,208 @@ function toggleUserTasks(element) {
 
 
 });
+
+
+
+
+// ============================================================
+// QUICK FILTER BUTTONS
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    
+    // ============================================================
+    // SETUP QUICK FILTER BUTTONS
+    // ============================================================
+    
+    const quickFilterBtns = document.querySelectorAll('.quick-filter-btn');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const filterForm = document.getElementById('dateFilterForm');
+    
+    if (quickFilterBtns.length > 0 && startDateInput && endDateInput) {
+        
+        quickFilterBtns.forEach(function(btn) {
+            
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const days = this.dataset.days;
+                const today = new Date();
+                
+                // Reset time to start of day
+                const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                
+                let startDate = new Date(startOfDay);
+                let endDate = new Date(startOfDay);
+                
+                // Format date as YYYY-MM-DD
+                function formatDate(date) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+                
+                if (days === '0') {
+                    // امروز
+                    startDate = new Date(startOfDay);
+                    endDate = new Date(startOfDay);
+                    
+                } else if (days === '1') {
+                    // دیروز
+                    startDate = new Date(startOfDay);
+                    startDate.setDate(startDate.getDate() - 1);
+                    endDate = new Date(startOfDay);
+                    endDate.setDate(endDate.getDate() - 1);
+                    
+                } else if (days === '7') {
+                    // ۷ روز گذشته
+                    startDate = new Date(startOfDay);
+                    startDate.setDate(startDate.getDate() - 7);
+                    endDate = new Date(startOfDay);
+                    endDate.setDate(endDate.getDate() - 1);
+                    
+                } else if (days === '30') {
+                    // ماه گذشته (۳۰ روز گذشته)
+                    startDate = new Date(startOfDay);
+                    startDate.setDate(startDate.getDate() - 30);
+                    endDate = new Date(startOfDay);
+                    endDate.setDate(endDate.getDate() - 1);
+                    
+                } else if (days === 'month-start') {
+                    // از ابتدای ماه
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = new Date(startOfDay);
+                    endDate.setDate(endDate.getDate() - 1);
+                    
+                } else {
+                    // اگر عدد باشد (مثلاً 14 روز)
+                    const numDays = parseInt(days);
+                    if (!isNaN(numDays)) {
+                        startDate = new Date(startOfDay);
+                        startDate.setDate(startDate.getDate() - numDays);
+                        endDate = new Date(startOfDay);
+                        endDate.setDate(endDate.getDate() - 1);
+                    }
+                }
+                
+                // Set the input values
+                startDateInput.value = formatDate(startDate);
+                endDateInput.value = formatDate(endDate);
+                
+                // Highlight the active button
+                quickFilterBtns.forEach(function(b) {
+                    b.style.background = 'rgba(108, 99, 255, 0.08)';
+                    b.style.color = '#6C63FF';
+                    b.style.borderColor = 'rgba(108, 99, 255, 0.15)';
+                });
+                this.style.background = '#6C63FF';
+                this.style.color = 'white';
+                this.style.borderColor = '#6C63FF';
+                
+                // Auto-submit the form after a small delay
+                setTimeout(function() {
+                    filterForm.submit();
+                }, 300);
+            });
+            
+            // Hover effects
+            btn.addEventListener('mouseenter', function() {
+                if (this.style.background !== 'rgb(108, 99, 255)') {
+                    this.style.background = 'rgba(108, 99, 255, 0.15)';
+                }
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                if (this.style.background !== 'rgb(108, 99, 255)') {
+                    this.style.background = 'rgba(108, 99, 255, 0.08)';
+                }
+            });
+        });
+    }
+    
+    // ============================================================
+    // AUTO SUBMIT ON DATE CHANGE (Optional)
+    // ============================================================
+    
+    // If you want auto-submit when user changes date manually
+    // startDateInput.addEventListener('change', function() {
+    //     filterForm.submit();
+    // });
+    // endDateInput.addEventListener('change', function() {
+    //     filterForm.submit();
+    // });
+    
+    // ============================================================
+    // CHECK IF FILTER IS ACTIVE AND HIGHLIGHT BUTTON
+    // ============================================================
+    
+    // If filter is active, try to highlight the matching quick button
+    if (startDateInput.value && endDateInput.value) {
+        const startVal = startDateInput.value;
+        const endVal = endDateInput.value;
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Check if it matches any quick filter
+        const checks = [
+            { days: '0', label: 'امروز' },
+            { days: '1', label: 'دیروز' },
+            { days: '7', label: '۷ روز گذشته' },
+            { days: '30', label: 'ماه گذشته' },
+            { days: 'month-start', label: 'از ابتدای ماه' }
+        ];
+        
+        checks.forEach(function(check) {
+            let testStart = new Date(startOfDay);
+            let testEnd = new Date(startOfDay);
+            
+            if (check.days === '0') {
+                // امروز
+            } else if (check.days === '1') {
+                testStart.setDate(testStart.getDate() - 1);
+                testEnd.setDate(testEnd.getDate() - 1);
+            } else if (check.days === '7') {
+                testStart.setDate(testStart.getDate() - 7);
+                testEnd.setDate(testEnd.getDate() - 1);
+            } else if (check.days === '30') {
+                testStart.setDate(testStart.getDate() - 30);
+                testEnd.setDate(testEnd.getDate() - 1);
+            } else if (check.days === 'month-start') {
+                testStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                testEnd.setDate(testEnd.getDate() - 1);
+            }
+            
+            const testStartStr = formatDate(testStart);
+            const testEndStr = formatDate(testEnd);
+            
+            if (startVal === testStartStr && endVal === testEndStr) {
+                // Highlight this button
+                quickFilterBtns.forEach(function(b) {
+                    if (b.dataset.days === check.days) {
+                        b.style.background = '#6C63FF';
+                        b.style.color = 'white';
+                        b.style.borderColor = '#6C63FF';
+                    } else {
+                        b.style.background = 'rgba(108, 99, 255, 0.08)';
+                        b.style.color = '#6C63FF';
+                        b.style.borderColor = 'rgba(108, 99, 255, 0.15)';
+                    }
+                });
+            }
+        });
+    }
+});
+
+
 </script>
 
 

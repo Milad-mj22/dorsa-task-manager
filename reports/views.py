@@ -1136,17 +1136,21 @@ from django.conf import settings
 def google_sheets_dashboard(request):
     """داشبورد نمایش داده‌های Google Sheets با نمودارها"""
 
+    # ========== دریافت پارامترهای فیلتر ==========
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    filter_applied = False
+    filter_info = {'applied': False}
+    original_total = 0
+
     # ایجاد نمونه از مدیریت Google Sheets
-    # اگر حالت Debug فعال باشد و flag استفاده از فایل محلی True باشد
     if settings.DEBUG and getattr(settings, 'USE_LOCAL_EXCEL_FOR_DEBUG', False):
         try:
-            # Read data from local Excel file
             excel_path = getattr(settings, 'LOCAL_EXCEL_PATH', None)
             
             if excel_path and os.path.exists(excel_path):
                 print(f"[DEBUG] Reading data from local file: {excel_path}")
                 
-                # Read Excel file based on format
                 if excel_path.endswith('.xlsx'):
                     df = pd.read_excel(excel_path, engine='openpyxl')
                 elif excel_path.endswith('.xls'):
@@ -1162,7 +1166,6 @@ def google_sheets_dashboard(request):
                 print(f"[DEBUG] Local file not found: {excel_path}")
                 print("[DEBUG] Falling back to Google Sheets...")
                 
-                # Fallback to Google Sheets
                 gs_manager = GoogleSheetsManager()
                 df = gs_manager.get_sheet_data()
                 data_source = "Google Sheets (Fallback)"
@@ -1171,24 +1174,16 @@ def google_sheets_dashboard(request):
             print(f"[DEBUG] Error reading local file: {e}")
             print("[DEBUG] Falling back to Google Sheets...")
             
-            # Fallback to Google Sheets in case of error
             gs_manager = GoogleSheetsManager()
             df = gs_manager.get_sheet_data()
             data_source = "Google Sheets (Fallback after error)"
     else:
-        # Normal mode - connect to Google Sheets
         print("[INFO] Connecting to Google Sheets...")
         gs_manager = GoogleSheetsManager()
         df = gs_manager.get_sheet_data()
         data_source = "Google Sheets"
 
     # بررسی داده‌ها
-    if df is None or df.empty:
-        context = {
-            'error': 'امکان اتصال به Google Sheets وجود ندارد یا داده‌ای وجود ندارد'
-        }
-        return render(request, 'google_sheets_dashboard.html', context)
-
     if df is None or df.empty:
         context = {
             'error': 'امکان اتصال به Google Sheets وجود ندارد یا داده‌ای وجود ندارد'
@@ -1215,7 +1210,6 @@ def google_sheets_dashboard(request):
             'Date': 'date',
         }
 
-        # تغییر نام ستون‌ها
         df = df.rename(columns=column_mapping)
         df.columns = [col.strip() for col in df.columns]
 
@@ -1230,7 +1224,7 @@ def google_sheets_dashboard(request):
         if 'hours' in df.columns and 'project' in df.columns:
             df = df.dropna(subset=['hours', 'project'])
 
-        # تبدیل تاریخ
+        # ========== تبدیل تاریخ ==========
         if 'date' in df.columns:
             try:
                 df['date'] = pd.to_datetime(df['date'], errors='coerce')
@@ -1238,31 +1232,65 @@ def google_sheets_dashboard(request):
             except Exception as e:
                 print(f"خطا در تبدیل تاریخ: {e}")
 
-        # تبدیل ساعت به عدد
+        # ========== تبدیل ساعت به عدد ==========
         if 'hours' in df.columns:
             df['hours'] = pd.to_numeric(df['hours'], errors='coerce')
             df = df[df['hours'] > 0]
 
-        # پر کردن مقادیر خالی
+        # ========== ذخیره تعداد کل رکوردها قبل از فیلتر ==========
+        original_total = len(df)
+
+        # ============================================================
+        # ========== اعمال فیلتر تاریخ (در ابتدای پردازش) ==========
+        # ============================================================
+        if start_date and end_date:
+            try:
+                start_date_parsed = pd.to_datetime(start_date)
+                end_date_parsed = pd.to_datetime(end_date) + pd.Timedelta(days=1)  # شامل کردن کل روز پایان
+                
+                # فیلتر کردن بر اساس بازه تاریخ
+                df = df[(df['date'] >= start_date_parsed) & (df['date'] < end_date_parsed)]
+                filter_applied = True
+                filter_info = {
+                    'applied': True,
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'records_count': len(df),
+                    'total_before': original_total
+                }
+                print(f"[FILTER] Applied date filter: {start_date} to {end_date}")
+                print(f"[FILTER] Records before: {original_total}, after: {len(df)}")
+                
+                # اگر بعد از فیلتر هیچ داده‌ای باقی نماند
+                if df.empty:
+                    print("[WARNING] No records found in the selected date range")
+                    
+            except Exception as e:
+                print(f"[FILTER] Error applying date filter: {e}")
+                filter_info = {'applied': False, 'error': str(e)}
+
+        # ========== پر کردن مقادیر خالی ==========
         if 'full_name' in df.columns:
             df['full_name'] = df['full_name'].fillna('ناشناس')
         if 'project' in df.columns:
             df['project'] = df['project'].fillna('بدون پروژه')
 
-        # ========== محاسبات اصلی ==========
+        # ============================================================
+        # ========== ادامه محاسبات اصلی با داده‌های فیلتر شده ==========
+        # ============================================================
 
         # 1. مجموع کل ساعات
         total_hours = df['hours'].sum() if 'hours' in df.columns else 0
 
         # 2. ساعات هر پروژه
-        if 'project' in df.columns and 'hours' in df.columns:
+        if 'project' in df.columns and 'hours' in df.columns and not df.empty:
             hours_per_project = df.groupby('project')['hours'].sum().sort_values(ascending=False)
             hours_per_project_dict = hours_per_project.to_dict()
         else:
             hours_per_project_dict = {}
 
         # 3. ساعات هر کاربر
-        if 'full_name' in df.columns and 'hours' in df.columns:
+        if 'full_name' in df.columns and 'hours' in df.columns and not df.empty:
             hours_per_user = df.groupby('full_name')['hours'].sum().sort_values(ascending=False)
             hours_per_user_dict = hours_per_user.to_dict()
         else:
@@ -1270,7 +1298,7 @@ def google_sheets_dashboard(request):
 
         # ========== محاسبه ۳ پروژه برتر هر کاربر ==========
         user_top_projects_data = []
-        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
+        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns and not df.empty:
             user_project_hours = df.groupby(['full_name', 'project'])['hours'].sum().reset_index()
             
             for user in user_project_hours['full_name'].unique():
@@ -1297,8 +1325,7 @@ def google_sheets_dashboard(request):
 
         # ========== محاسبه ساعات هر کاربر در هر پروژه (برای مودال) ==========
         project_user_details = {}
-        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns:
-            # گروه‌بندی بر اساس پروژه و کاربر
+        if 'full_name' in df.columns and 'project' in df.columns and 'hours' in df.columns and not df.empty:
             project_user_data = df.groupby(['project', 'full_name'])['hours'].sum().reset_index()
             
             for project in project_user_data['project'].unique():
@@ -1314,9 +1341,7 @@ def google_sheets_dashboard(request):
                     'total_hours': round(project_data['hours'].sum(), 2)
                 }
 
-        # ========== ایجاد رتبه‌بندی (منبع واحد) ==========
-
-        # رتبه‌بندی پروژه‌ها (با درصد)
+        # ========== ایجاد رتبه‌بندی ==========
         top_projects = []
         if hours_per_project_dict:
             sorted_projects = sorted(hours_per_project_dict.items(), key=lambda x: x[1], reverse=True)
@@ -1330,7 +1355,6 @@ def google_sheets_dashboard(request):
                 for idx, (name, hours) in enumerate(sorted_projects)
             ]
 
-        # رتبه‌بندی کاربران (با درصد)
         top_users = []
         if hours_per_user_dict:
             sorted_users = sorted(hours_per_user_dict.items(), key=lambda x: x[1], reverse=True)
@@ -1344,11 +1368,9 @@ def google_sheets_dashboard(request):
                 for idx, (name, hours) in enumerate(sorted_users)
             ]
 
-        # ========== آماده‌سازی داده‌های نمودارها به صورت لیست (مانند Ranking) ==========
-        
-        # داده‌های نمودار ساعات پروژه‌ها (میله‌ای)
+        # ========== آماده‌سازی داده‌های نمودارها ==========
         chart_project_hours_data = []
-        for project in top_projects[:10]:  # 10 پروژه برتر
+        for project in top_projects[:10]:
             chart_project_hours_data.append({
                 'name': project['name'],
                 'hours': project['hours'],
@@ -1356,9 +1378,8 @@ def google_sheets_dashboard(request):
                 'percentage': project['percentage']
             })
 
-        # داده‌های نمودار نفر-ساعت (میله‌ای)
         chart_user_hours_data = []
-        for user in top_users[:10]:  # 10 کاربر برتر
+        for user in top_users[:10]:
             chart_user_hours_data.append({
                 'name': user['name'],
                 'hours': user['hours'],
@@ -1380,7 +1401,7 @@ def google_sheets_dashboard(request):
             
             chart_daily_trend_data = daily_trend.to_dict('records')
 
-        # داده‌های نمودار توزیع ساعات (دایره‌ای)
+        # داده‌های نمودار توزیع ساعات
         chart_distribution_data = []
         MAX_PROJECTS_PIE = 8
         if top_projects:
@@ -1408,8 +1429,7 @@ def google_sheets_dashboard(request):
                     })
 
         # ========== آمارهای دیگر ==========
-
-        if 'date' in df.columns and 'hours' in df.columns:
+        if 'date' in df.columns and 'hours' in df.columns and not df.empty:
             daily_hours = df.groupby(df['date'].dt.date)['hours'].sum()
             avg_daily_hours = daily_hours.mean() if not daily_hours.empty else 0
             std_daily_hours = daily_hours.std() if len(daily_hours) > 1 else 0
@@ -1428,7 +1448,6 @@ def google_sheets_dashboard(request):
             }
         else:
             date_range = {'start': 'نامشخص', 'end': 'نامشخص'}
-
 
         user_task_details = prepare_user_task_details(df)
 
@@ -1450,18 +1469,21 @@ def google_sheets_dashboard(request):
                 'all_users': top_users,
                 'all_projects': top_projects,
             },
-            # داده‌های نمودارها به صورت لیست (مانند Ranking)
             'chart_data': {
                 'project_hours': chart_project_hours_data,
                 'user_hours': chart_user_hours_data,
                 'daily_trend': chart_daily_trend_data,
                 'distribution': chart_distribution_data,
                 'user_top_projects': user_top_projects_data,
-                'project_user_details': project_user_details,  # داده جدید برای مودال
-                'user_task_details': user_task_details,  # Add this new data
+                'project_user_details': project_user_details,
+                'user_task_details': user_task_details,
             },
             'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
             'total_data_rows': len(df),
+            'filter_info': filter_info,
+            'has_filter': filter_applied,
+            'original_total': original_total,
+            'is_filtered_empty': df.empty and filter_applied,  # برای نمایش پیغام خالی بودن
         }
 
         return render(request, 'google_sheets_dashboard.html', context)
