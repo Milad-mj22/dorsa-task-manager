@@ -1139,6 +1139,9 @@ def google_sheets_dashboard(request):
     # ========== دریافت پارامترهای فیلتر ==========
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+
+    selected_units = request.GET.getlist('units')  # این یک لیست از مقادیر انتخاب شده برمی‌گرداند
+
     filter_applied = False
     filter_info = {'applied': False}
     original_total = 0
@@ -1268,6 +1271,33 @@ def google_sheets_dashboard(request):
             except Exception as e:
                 print(f"[FILTER] Error applying date filter: {e}")
                 filter_info = {'applied': False, 'error': str(e)}
+
+
+
+        # ============================================================
+        # ========== اعمال فیلتر واحدها ==========
+        # ============================================================
+        unit_filter_applied = False
+        selected_units_list = []
+        
+        if selected_units and 'unit' in df.columns:
+            # پاکسازی و نرمال‌سازی واحدهای انتخاب شده
+            selected_units_list = [normalize_persian_text(u) for u in selected_units if u]
+            
+            if selected_units_list:
+                # فیلتر کردن بر اساس واحدهای انتخاب شده
+                df = df[df['unit'].isin(selected_units_list)]
+                unit_filter_applied = True
+                filter_applied = True
+                
+                # به‌روزرسانی اطلاعات فیلتر
+                filter_info['selected_units'] = selected_units_list
+                filter_info['unit_filter_applied'] = True
+                filter_info['records_count'] = len(df)
+                
+                print(f"[FILTER] Applied unit filter: {selected_units_list}")
+                print(f"[FILTER] Records after unit filter: {len(df)}")
+
 
         # ========== پر کردن مقادیر خالی ==========
         if 'full_name' in df.columns:
@@ -1451,6 +1481,17 @@ def google_sheets_dashboard(request):
 
         user_task_details = prepare_user_task_details(df)
 
+
+
+        # ========== دریافت لیست واحدهای موجود در داده‌ها ==========
+        available_units = []
+        if 'unit' in df.columns and not df.empty:
+            available_units = df['unit'].unique().tolist()
+            available_units = [u for u in available_units if u and u != 'بدون واحد']
+        if available_units == []:
+            available_units= ['مکانیک','برق','نرم افزار']
+
+
         # ========== آماده‌سازی context ==========
         context = {
             'stats': {
@@ -1484,6 +1525,11 @@ def google_sheets_dashboard(request):
             'has_filter': filter_applied,
             'original_total': original_total,
             'is_filtered_empty': df.empty and filter_applied,  # برای نمایش پیغام خالی بودن
+            'selected_units': selected_units_list,
+            'available_units': available_units,  # لیست واحدهای موجود
+            'unit_filter_applied': unit_filter_applied,
+
+
         }
 
         return render(request, 'google_sheets_dashboard.html', context)

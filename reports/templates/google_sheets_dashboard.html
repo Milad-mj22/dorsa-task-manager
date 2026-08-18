@@ -871,6 +871,76 @@
     }
 
 
+
+
+
+/* ========== Unit Filter Buttons ========== */
+.unit-filter-btn {
+    transition: all 0.3s ease !important;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+}
+
+.unit-filter-btn:hover {
+    transform: translateY(-2px);
+}
+
+.unit-filter-btn:active {
+    transform: scale(0.95);
+}
+
+.unit-filter-btn i {
+    margin-left: 0.3rem;
+}
+
+/* Active state for unit filter buttons */
+.unit-filter-btn.active {
+    background: #6C63FF !important;
+    color: white !important;
+    border-color: #6C63FF !important;
+    box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+}
+
+.unit-filter-btn.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+}
+
+/* Select all / Deselect all buttons */
+.unit-select-all:hover {
+    background: rgba(108, 99, 255, 0.2) !important;
+}
+
+.unit-deselect-all:hover {
+    background: rgba(229, 62, 62, 0.2) !important;
+}
+
+/* Remove unit link */
+.remove-unit {
+    transition: all 0.2s ease;
+}
+
+.remove-unit:hover {
+    transform: scale(1.2);
+}
+
+/* Responsive for unit buttons */
+@media (max-width: 576px) {
+    .unit-filter-btn {
+        font-size: 0.75rem !important;
+        padding: 0.3rem 0.8rem !important;
+    }
+}
+
+
+
+
+
+
+
 </style>
 {% endblock %}
 
@@ -1051,10 +1121,91 @@
 </div>
 
 
-
-
-
-
+<!-- ========== Unit Filter Section ========== -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="dashboard-card" style="background: linear-gradient(135deg, #F8F9FE, #EEF0F8); opacity: 0.7;">
+            <h5>
+                <i class="fas fa-building text-primary"></i>
+                فیلتر واحدها
+                <span class="badge-soft-primary me-auto">
+                    <i class="fas fa-layer-group"></i>
+                    انتخاب واحد
+                </span>
+                <span class="badge-soft-primary" style="background: rgba(229, 62, 62, 0.1); color: #E53E3E;">
+                    <i class="fas fa-lock"></i>
+                    غیرفعال
+                </span>
+            </h5>
+            
+            <form method="GET" action="" id="unitFilterForm">
+                <!-- حفظ پارامترهای تاریخ -->
+                {% if filter_info.start_date %}
+                    <input type="hidden" name="start_date" value="{{ filter_info.start_date }}">
+                {% endif %}
+                {% if filter_info.end_date %}
+                    <input type="hidden" name="end_date" value="{{ filter_info.end_date }}">
+                {% endif %}
+                
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- دکمه انتخاب همه - غیرفعال -->
+                            <button type="button" class="btn unit-filter-btn unit-select-all" disabled style="background: #E2E8F0; color: #A0AEC0; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid #E2E8F0; cursor: not-allowed; opacity: 0.6;">
+                                <i class="fas fa-check-double"></i>
+                                انتخاب همه
+                            </button>
+                            
+                            <!-- دکمه لغو انتخاب همه - غیرفعال -->
+                            <button type="button" class="btn unit-filter-btn unit-deselect-all" disabled style="background: #E2E8F0; color: #A0AEC0; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid #E2E8F0; cursor: not-allowed; opacity: 0.6;">
+                                <i class="fas fa-times"></i>
+                                لغو همه
+                            </button>
+                            
+                            <!-- دکمه‌های واحدها - غیرفعال -->
+                            {% if available_units %}
+                                {% for unit in available_units %}
+                                    <button type="button" 
+                                            class="btn unit-filter-btn unit-item" 
+                                            data-unit="{{ unit }}"
+                                            disabled
+                                            style="background: #E2E8F0; color: #A0AEC0; border-radius: 50px; padding: 0.4rem 1.2rem; font-size: 0.85rem; border: 1px solid #E2E8F0; cursor: not-allowed; opacity: 0.6;">
+                                        <i class="fas fa-circle" style="font-size: 0.5rem;"></i>
+                                        {{ unit }}
+                                    </button>
+                                {% endfor %}
+                            {% else %}
+                                <span class="text-muted" style="font-size: 0.9rem;">
+                                    <i class="fas fa-info-circle"></i>
+                                    هیچ واحدی در داده‌ها یافت نشد
+                                </span>
+                            {% endif %}
+                            
+                            <!-- دکمه اعمال فیلتر واحد - غیرفعال -->
+                            <button type="submit" class="refresh-btn" disabled style="padding: 0.4rem 1.5rem; font-size: 0.85rem; background: #E2E8F0; color: #A0AEC0; cursor: not-allowed; box-shadow: none; opacity: 0.6;">
+                                <i class="fas fa-filter"></i>
+                                اعمال فیلتر واحد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- فیلدهای مخفی برای ارسال واحدهای انتخاب شده -->
+                {% for unit in selected_units %}
+                    <input type="hidden" name="units" value="{{ unit }}">
+                {% endfor %}
+            </form>
+            
+            <!-- پیغام غیرفعال بودن -->
+            <div class="mt-2">
+                <span style="font-size: 0.8rem; color: #A0AEC0;">
+                    <i class="fas fa-info-circle"></i>
+                    این بخش در حال حاضر غیرفعال است
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
 
     
     <!-- ========== Statistics Cards ========== -->
@@ -3276,6 +3427,252 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 });
             }
+        });
+    }
+});
+
+// ============================================================
+// UNIT FILTER CONTROLS
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function () {
+    
+    // ============================================================
+    // UNIT FILTER BUTTONS
+    // ============================================================
+    
+    const unitFilterForm = document.getElementById('unitFilterForm');
+    const unitButtons = document.querySelectorAll('.unit-item');
+    const selectAllBtn = document.querySelector('.unit-select-all');
+    const deselectAllBtn = document.querySelector('.unit-deselect-all');
+    const removeUnitLinks = document.querySelectorAll('.remove-unit');
+    
+    // ============================================================
+    // TOGGLE UNIT SELECTION
+    // ============================================================
+    
+    unitButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const unit = this.dataset.unit;
+            
+            // Toggle active class
+            this.classList.toggle('active');
+            
+            // Update button style
+            if (this.classList.contains('active')) {
+                this.style.background = '#6C63FF';
+                this.style.color = 'white';
+                this.style.borderColor = '#6C63FF';
+                this.style.boxShadow = '0 4px 15px rgba(108, 99, 255, 0.3)';
+                
+                // Add checkmark
+                if (!this.querySelector('.fa-check-circle')) {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.cssText = 'color: white; margin-right: 0.3rem;';
+                    this.prepend(icon);
+                }
+            } else {
+                this.style.background = 'rgba(108, 99, 255, 0.08)';
+                this.style.color = '#6C63FF';
+                this.style.borderColor = 'rgba(108, 99, 255, 0.15)';
+                this.style.boxShadow = 'none';
+                
+                // Remove checkmark
+                const checkmark = this.querySelector('.fa-check-circle');
+                if (checkmark) {
+                    checkmark.remove();
+                }
+            }
+            
+            // Update hidden inputs
+            updateUnitHiddenInputs();
+        });
+        
+        // Hover effects
+        btn.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('active')) {
+                this.style.background = 'rgba(108, 99, 255, 0.15)';
+            }
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.background = 'rgba(108, 99, 255, 0.08)';
+            }
+        });
+    });
+    
+    // ============================================================
+    // SELECT ALL UNITS
+    // ============================================================
+    
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            unitButtons.forEach(function(btn) {
+                // Activate if not already active
+                if (!btn.classList.contains('active')) {
+                    btn.classList.add('active');
+                    btn.style.background = '#6C63FF';
+                    btn.style.color = 'white';
+                    btn.style.borderColor = '#6C63FF';
+                    btn.style.boxShadow = '0 4px 15px rgba(108, 99, 255, 0.3)';
+                    
+                    if (!btn.querySelector('.fa-check-circle')) {
+                        const icon = document.createElement('i');
+                        icon.className = 'fas fa-check-circle';
+                        icon.style.cssText = 'color: white; margin-right: 0.3rem;';
+                        btn.prepend(icon);
+                    }
+                }
+            });
+            
+            updateUnitHiddenInputs();
+        });
+    }
+    
+    // ============================================================
+    // DESELECT ALL UNITS
+    // ============================================================
+    
+    if (deselectAllBtn) {
+        deselectAllBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            unitButtons.forEach(function(btn) {
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    btn.style.background = 'rgba(108, 99, 255, 0.08)';
+                    btn.style.color = '#6C63FF';
+                    btn.style.borderColor = 'rgba(108, 99, 255, 0.15)';
+                    btn.style.boxShadow = 'none';
+                    
+                    const checkmark = btn.querySelector('.fa-check-circle');
+                    if (checkmark) {
+                        checkmark.remove();
+                    }
+                }
+            });
+            
+            updateUnitHiddenInputs();
+        });
+    }
+    
+    // ============================================================
+    // REMOVE INDIVIDUAL UNIT
+    // ============================================================
+    
+    removeUnitLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const unit = this.dataset.unit;
+            
+            // Find and deactivate the corresponding button
+            unitButtons.forEach(function(btn) {
+                if (btn.dataset.unit === unit) {
+                    btn.classList.remove('active');
+                    btn.style.background = 'rgba(108, 99, 255, 0.08)';
+                    btn.style.color = '#6C63FF';
+                    btn.style.borderColor = 'rgba(108, 99, 255, 0.15)';
+                    btn.style.boxShadow = 'none';
+                    
+                    const checkmark = btn.querySelector('.fa-check-circle');
+                    if (checkmark) {
+                        checkmark.remove();
+                    }
+                }
+            });
+            
+            // Remove this badge
+            this.closest('.badge').remove();
+            
+            // Update hidden inputs and submit
+            updateUnitHiddenInputs();
+            
+            // Auto-submit the form
+            setTimeout(function() {
+                unitFilterForm.submit();
+            }, 300);
+        });
+    });
+    
+    // ============================================================
+    // UPDATE HIDDEN INPUTS
+    // ============================================================
+    
+    function updateUnitHiddenInputs() {
+        // Remove existing unit hidden inputs
+        const existingHiddenInputs = unitFilterForm.querySelectorAll('input[name="units"]');
+        existingHiddenInputs.forEach(function(input) {
+            input.remove();
+        });
+        
+        // Get active units
+        const activeUnits = [];
+        unitButtons.forEach(function(btn) {
+            if (btn.classList.contains('active')) {
+                activeUnits.push(btn.dataset.unit);
+            }
+        });
+        
+        // Add hidden inputs for active units
+        activeUnits.forEach(function(unit) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'units';
+            input.value = unit;
+            unitFilterForm.appendChild(input);
+        });
+    }
+    
+    // ============================================================
+    // PRESELECT UNITS FROM URL PARAMETERS
+    // ============================================================
+    
+    // Get selected units from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedUnitsFromUrl = urlParams.getAll('units');
+    
+    if (selectedUnitsFromUrl.length > 0) {
+        unitButtons.forEach(function(btn) {
+            const unit = btn.dataset.unit;
+            if (selectedUnitsFromUrl.includes(unit)) {
+                btn.classList.add('active');
+                btn.style.background = '#6C63FF';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#6C63FF';
+                btn.style.boxShadow = '0 4px 15px rgba(108, 99, 255, 0.3)';
+                
+                if (!btn.querySelector('.fa-check-circle')) {
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-check-circle';
+                    icon.style.cssText = 'color: white; margin-right: 0.3rem;';
+                    btn.prepend(icon);
+                }
+            }
+        });
+        
+        // Update hidden inputs
+        updateUnitHiddenInputs();
+    }
+    
+    // ============================================================
+    // AUTO SUBMIT ON UNIT CHANGE
+    // ============================================================
+    
+    // Add auto-submit when unit filter changes
+    const unitFilterSubmitBtn = unitFilterForm.querySelector('button[type="submit"]');
+    if (unitFilterSubmitBtn) {
+        // Replace the submit button functionality
+        unitFilterSubmitBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            updateUnitHiddenInputs();
+            unitFilterForm.submit();
         });
     }
 });
