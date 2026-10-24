@@ -104,3 +104,5 @@ selenium
 
 django-pwa
 pandas
+plotly
+smsir-python
