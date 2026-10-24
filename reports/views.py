@@ -1131,6 +1131,10 @@ def prepare_user_task_details(df):
     
     print(f"[DEBUG] Final user_task_details keys: {len(user_task_details)}")
     return user_task_details
+
+
+
+
 from django.conf import settings
 @login_required
 def google_sheets_dashboard(request):
@@ -1431,6 +1435,12 @@ def google_sheets_dashboard(request):
             
             chart_daily_trend_data = daily_trend.to_dict('records')
 
+
+        for item in chart_daily_trend_data:
+            item['hours'] = round(item['hours'])
+            item['ma7'] = round(item['ma7'])
+
+
         # داده‌های نمودار توزیع ساعات
         chart_distribution_data = []
         MAX_PROJECTS_PIE = 8
@@ -1491,6 +1501,8 @@ def google_sheets_dashboard(request):
         if available_units == []:
             available_units= ['مکانیک','برق','نرم افزار']
 
+        data_preview = df.tail(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None
+
 
         # ========== آماده‌سازی context ==========
         context = {
@@ -1519,7 +1531,7 @@ def google_sheets_dashboard(request):
                 'project_user_details': project_user_details,
                 'user_task_details': user_task_details,
             },
-            'data_preview': df.head(20).to_html(classes='table table-striped table-hover', index=False) if not df.empty else None,
+            'data_preview': data_preview,
             'total_data_rows': len(df),
             'filter_info': filter_info,
             'has_filter': filter_applied,
